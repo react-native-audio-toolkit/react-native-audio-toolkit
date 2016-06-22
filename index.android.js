@@ -83,7 +83,6 @@ class AudioExample extends Component {
           {this._renderButton("RECORD", () => {this._record()}, this.state.recording )}
           {this._renderButton("STOP", () => {this._stop()} )}
           {this._renderButton("PLAY", () => {this._play()}, this.state.playing )}
-          <Text style={styles.progressText}>{this.state.currentTime}s</Text>
         </View>
       </View>
     );
