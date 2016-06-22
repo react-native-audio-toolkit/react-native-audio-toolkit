@@ -49,3 +49,9 @@ https://developer.android.com/guide/appendix/media-formats.html for supported
 media formats.
 
 Welcome to the wonderful world of React Native development!
+
+License
+-------
+
+All Java code here licensed under MIT license, see LICENSE file. Some of the files
+are from React Native templates and are licensed accordingly.
