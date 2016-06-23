@@ -3,11 +3,16 @@ package com.futurice;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Environment;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.WritableNativeMap;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import java.io.IOException;
 
@@ -27,6 +32,15 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
     public AudioRecorderModule(ReactApplicationContext reactContext) {
         super(reactContext);
     }
+
+    private void sendEvent(ReactContext reactContext,
+                           String eventName,
+                           @Nullable WritableMap params) {
+        reactContext
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit(eventName, params);
+    }
+
 
     @Override
     public String getName() {
@@ -79,8 +93,15 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
             mRecorderRecording = true;
             try {
                 mRecorder.start();
-            } catch (Exception e) {
-                e.printStackTrace();
+                WritableMap payload = new WritableNativeMap();
+                payload.putString("path", outputPath);
+                sendEvent(getReactApplicationContext(), "rec_start", payload);
+
+            } catch (IllegalStateException e) {
+                Log.d(LOG_TAG, "Recording start failed. start() called before prepare()");
+                WritableMap payload = new WritableNativeMap();
+                payload.putString("error", e.toString());
+                sendEvent(getReactApplicationContext(), "rec_error", payload);
             }
             Log.d(LOG_TAG, "Recording started");
         }
@@ -94,6 +115,11 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
             mRecorder.release();
             mRecorder = null;
             mRecorderRecording = false;
+
+            WritableMap payload = new WritableNativeMap();
+            payload.putString("path", outputPath);
+            sendEvent(getReactApplicationContext(), "rec_end", payload);
+
         }
     }
 
@@ -146,10 +172,20 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
     @Override
     public void onError(MediaRecorder mr, int what, int extra) {
         Log.e(LOG_TAG, "Error during recording: " + what + extra);
+        WritableMap payload = new WritableNativeMap();
+        payload.putInt("what", what);
+        payload.putInt("extra", extra);
+        sendEvent(getReactApplicationContext(), "rec_error", payload);
+
     }
 
     @Override
     public void onInfo(MediaRecorder mr, int what, int extra) {
         Log.e(LOG_TAG, "Info about recording: " + what + extra);
+        WritableMap payload = new WritableNativeMap();
+        payload.putInt("what", what);
+        payload.putInt("extra", extra);
+        sendEvent(getReactApplicationContext(), "rec_info", payload);
+
     }
 }

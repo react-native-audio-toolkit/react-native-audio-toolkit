@@ -35,7 +35,8 @@ import {
   Text,
   View,
   TouchableHighlight,
-  NativeModules
+  NativeModules,
+  DeviceEventEmitter
 } from 'react-native';
 
 const AudioRecorder = NativeModules.AudioRecorder;
@@ -50,6 +51,14 @@ class AudioExample extends Component {
     playing: false,
     finished: false
   };
+
+  componentWillMount() {
+    DeviceEventEmitter.addListener('rec_start', this._recordingStarted);
+    DeviceEventEmitter.addListener('rec_end', this._recordingEnded);
+    DeviceEventEmitter.addListener('rec_error', this._recordingError);
+    DeviceEventEmitter.addListener('rec_info', this._recordingInfo);
+
+  }
 
   componentDidMount() {
     let audioFilename = 'testi.mp4';
@@ -99,6 +108,26 @@ class AudioExample extends Component {
     }
     AudioRecorder.playRecording();
     this.setState({playing: true});
+  }
+
+  _recordingStarted(e: Event) {
+    console.log("Recording was started! Data: ");
+    console.log(e);
+  }
+
+  _recordingEnded(e: Event) {
+    console.log("Recording was successfully ended and saved! Data: ");
+    console.log(e);
+  }
+
+  _recordingInfo(e: Event) {
+    console.log("Info about recording: ");
+    console.log(e);
+  }
+
+  _recordingError(e: Event) {
+    console.log("Recording failed with error: ");
+    console.log(e);
   }
 
   render() {
