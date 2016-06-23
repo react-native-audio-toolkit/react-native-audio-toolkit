@@ -14,7 +14,8 @@ import java.io.IOException;
 /**
  * Created by jvah on 15/06/16.
  */
-public class AudioRecorderModule extends ReactContextBaseJavaModule {
+public class AudioRecorderModule extends ReactContextBaseJavaModule implements MediaRecorder.OnInfoListener,
+        MediaRecorder.OnErrorListener {
     private static final String LOG_TAG = "AudioRecorderModule";
 
     private String outputPath;
@@ -36,7 +37,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule {
     public void prepareRecordinWithFilename(String filename) {
         String path = Environment.getExternalStorageDirectory().getAbsolutePath();
         if (filename == null) {
-            path += "/audiorecordtest.3gp";
+            path += "/audiorecordtest.mp4";
         } else {
             path += "/" + filename;
         }
@@ -61,6 +62,8 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule {
         // Android music player cannot play ADTS so let's use MPEG_4
         mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         mRecorder.setOutputFile(outputPath);
+        mRecorder.setOnErrorListener(this);
+        mRecorder.setOnInfoListener(this);
         mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
 
         try {
@@ -138,5 +141,15 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule {
         if (mPlayer != null && mPlayer.isPlaying()) {
             mPlayer.stop();
         }
+    }
+
+    @Override
+    public void onError(MediaRecorder mr, int what, int extra) {
+        Log.e(LOG_TAG, "Error during recording: " + what + extra);
+    }
+
+    @Override
+    public void onInfo(MediaRecorder mr, int what, int extra) {
+        Log.e(LOG_TAG, "Info about recording: " + what + extra);
     }
 }

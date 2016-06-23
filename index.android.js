@@ -52,7 +52,7 @@ class AudioExample extends Component {
   };
 
   componentDidMount() {
-    let audioFilename = 'testi.3gp';
+    let audioFilename = 'testi.mp4';
     AudioRecorder.prepareRecordinWithFilename(audioFilename);
     console.log("prepared recording");
     AudioRecorder.onProgress = (data) => {
