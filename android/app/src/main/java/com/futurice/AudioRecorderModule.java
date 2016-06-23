@@ -33,10 +33,12 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void prepareRecordingAtPath(String path) {
-        if (path == null) {
-            path = Environment.getExternalStorageDirectory().getAbsolutePath();
-            path += "/audiorecordtest.mp4";
+    public void prepareRecordinWithFilename(String filename) {
+        String path = Environment.getExternalStorageDirectory().getAbsolutePath();
+        if (filename == null) {
+            path += "/audiorecordtest.3gp";
+        } else {
+            path += "/" + filename;
         }
         outputPath = path;
 
@@ -47,11 +49,13 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule {
             mRecorder = null;
         }
         mRecorder = new MediaRecorder();
+        mRecorder.reset();
 
         this.prepare();
     }
 
     private void prepare() {
+        Log.d(LOG_TAG, "Path: " + outputPath);
         // See the state diagram at https://developer.android.com/reference/android/media/MediaRecorder.html, it is good
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         // Android music player cannot play ADTS so let's use MPEG_4
@@ -70,7 +74,12 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule {
     public void startRecording() {
         if (mRecorder != null && !mRecorderRecording) {
             mRecorderRecording = true;
-            mRecorder.start();
+            try {
+                mRecorder.start();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            Log.d(LOG_TAG, "Recording started");
         }
     }
 
@@ -78,8 +87,10 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule {
     public void stopRecording() {
         if (mRecorder != null) {
             mRecorder.stop();
+            mRecorder.reset();
+            mRecorder.release();
+            mRecorder = null;
             mRecorderRecording = false;
-            this.prepare();
         }
     }
 
