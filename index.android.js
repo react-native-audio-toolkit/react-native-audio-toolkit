@@ -40,6 +40,7 @@ import {
 } from 'react-native';
 
 const AudioRecorder = NativeModules.AudioRecorder;
+const AudioPlayer = NativeModules.AudioPlayer;
 
 let audioFilename = 'testi.mp4';
 
@@ -77,6 +78,12 @@ class AudioExample extends Component {
       this.setState({finished: data.finished});
       console.log(`Finished recording: ${data.finished}`);
     };
+    AudioPlayer.onProgress = (data) => {
+      console.log(data);
+    };
+    AudioPlayer.onFinished = (data) => {
+      console.log('Finished playback: ' + data);
+    };
   }
 
   _renderButton(title, onPress, active) {
@@ -96,7 +103,7 @@ class AudioExample extends Component {
       AudioRecorder.stopRecording();
       this.setState({stoppedRecording: true, recording: false});
     } else if (this.state.playing) {
-      AudioRecorder.stopPlayback();
+      AudioPlayer.stopPlayback();
       this.setState({playing: false, stoppedPlaying: true});
     }
   }
@@ -111,7 +118,7 @@ class AudioExample extends Component {
       this._stop();
       this.setState({recording: false});
     }
-    AudioRecorder.playAudioWithFilename(audioFilename);
+    AudioPlayer.playAudioWithFilename(audioFilename);
     this.setState({playing: true});
   }
 

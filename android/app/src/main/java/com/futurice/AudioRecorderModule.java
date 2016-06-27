@@ -1,6 +1,5 @@
 package com.futurice;
 
-import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Environment;
 import android.support.annotation.Nullable;
@@ -16,9 +15,6 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import java.io.IOException;
 
-/**
- * Created by jvah on 15/06/16.
- */
 public class AudioRecorderModule extends ReactContextBaseJavaModule implements MediaRecorder.OnInfoListener,
         MediaRecorder.OnErrorListener {
     private static final String LOG_TAG = "AudioRecorderModule";
@@ -26,7 +22,6 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
     private String outputPath;
 
     private MediaRecorder mRecorder = null;
-    private MediaPlayer mPlayer = null;
 
     public AudioRecorderModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -50,17 +45,6 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
         getReactApplicationContext()
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit(event, payload);
-    }
-
-    private void destroy_mPlayer() {
-        if (mPlayer == null) {
-            emitError("playbackError", "Attempted to destroy null mPlayer");
-            return;
-        }
-
-        mPlayer.reset();
-        mPlayer.release();
-        mPlayer = null;
     }
 
     private void destroy_mRecorder() {
@@ -149,103 +133,14 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
 
     }
 
-    @ReactMethod
-    public void playAudioWithFilename(String filename) {
-        String path = Environment.getExternalStorageDirectory().getAbsolutePath();
-        if (filename == null) {
-            emitError("playbackError", "No filename provided");
-        } else {
-            path += "/" + filename;
-            playAudioOnPath(path);
-        }
-    }
-
-    @ReactMethod
-    public void playAudioOnPath(String path) {
-        if (mPlayer == null) {
-            mPlayer = new MediaPlayer();
-        }
-
-        mPlayer.reset();
-
-        try {
-            outputPath = path;
-            mPlayer.setDataSource(path);
-        } catch (IOException e) {
-            emitError("playbackError", e.toString());
-            destroy_mPlayer();
-        }
-
-        try {
-            mPlayer.prepare();
-            mPlayer.start();
-
-            emitEvent("playbackStarted", path);
-        } catch (Exception e) {
-            emitError("playbackError", e.toString());
-            destroy_mPlayer();
-        }
-    }
-
-    @ReactMethod
-    public void pausePlayback() {
-        if (mPlayer == null) {
-            emitError("playbackError", "No media prepared");
-            return;
-        }
-
-        try {
-            mPlayer.pause();
-            emitEvent("playbackPaused", outputPath);
-
-        } catch (Exception e) {
-            destroy_mPlayer();
-            emitError("playbackError", e.toString());
-        }
-    }
-
-    @ReactMethod
-    public void resumePlayback() {
-        if (mPlayer == null) {
-            emitError("playbackError", "No media prepared");
-            return;
-        }
-
-        try {
-            mPlayer.start();
-            emitEvent("playbackResumed", outputPath);
-        } catch (Exception e) {
-            destroy_mPlayer();
-            emitError("playbackError", e.toString());
-        }
-    }
-
-    @ReactMethod
-    public void stopPlayback() {
-        if (mPlayer == null) {
-            emitError("playbackError", "No media prepared");
-            return;
-        }
-
-        try {
-            mPlayer.stop();
-            destroy_mPlayer();
-            emitEvent("playbackStopped", outputPath);
-        } catch (Exception e) {
-            destroy_mPlayer();
-            emitError("playbackError", e.toString());
-        }
-    }
-
     @Override
     public void onError(MediaRecorder mr, int what, int extra) {
-        destroy_mPlayer();
+        destroy_mRecorder();
         emitError("recordingError", "Error during recording - what: " + what + " extra: " + extra);
     }
 
     @Override
     public void onInfo(MediaRecorder mr, int what, int extra) {
-        destroy_mPlayer();
         emitEvent("recordingInfo", "Info during recording - what: " + what + " extra: " + extra);
     }
 }

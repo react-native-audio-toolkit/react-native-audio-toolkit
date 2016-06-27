@@ -10,14 +10,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Created by jvah on 15/06/16.
- */
 public class AudioPackage implements ReactPackage {
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         List<NativeModule> modules = new ArrayList<>();
         modules.add(new AudioRecorderModule(reactContext));
+        modules.add(new AudioPlayerModule(reactContext));
         return modules;
     }
 
