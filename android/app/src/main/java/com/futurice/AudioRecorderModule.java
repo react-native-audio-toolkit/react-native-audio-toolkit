@@ -26,19 +26,33 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
     private String outputPath;
 
     private boolean mRecorderRecording = false;
-    private MediaRecorder mRecorder = null;
-    private MediaPlayer mPlayer = null;
+    // TODO: we should .release() the mediarecorder once we're done recording,
+    // and not keep it around unnecessarily until we actually record
+    private MediaRecorder mRecorder = new MediaRecorder();
+    private MediaPlayer mPlayer = new MediaPlayer();
 
     public AudioRecorderModule(ReactApplicationContext reactContext) {
         super(reactContext);
     }
 
-    private void sendEvent(ReactContext reactContext,
-                           String eventName,
-                           @Nullable WritableMap params) {
-        reactContext
+    private void emitError(String event, String s) {
+        Log.e(LOG_TAG, event + ": " + s);
+        WritableMap payload = new WritableNativeMap();
+        payload.putString(event, s);
+
+        getReactApplicationContext()
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                .emit(eventName, params);
+                .emit(event, payload);
+    }
+
+    private void emitEvent(String event, String s) {
+        Log.d(LOG_TAG, event + ": " + s);
+        WritableMap payload = new WritableNativeMap();
+        payload.putString(event, s);
+
+        getReactApplicationContext()
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit(event, payload);
     }
 
 
@@ -48,78 +62,59 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
     }
 
     @ReactMethod
-    public void prepareRecordinWithFilename(String filename) {
+    public void startRecordingToFilename(String filename) {
         String path = Environment.getExternalStorageDirectory().getAbsolutePath();
         if (filename == null) {
-            path += "/audiorecordtest.mp4";
+            emitError("recordingError", "No filename provided");
         } else {
             path += "/" + filename;
+            startRecording(path);
         }
-        outputPath = path;
-
-        // If we already have a recorder, destroy
-        if (mRecorder != null) {
-            mRecorder.reset();
-            mRecorder.release();
-            mRecorder = null;
-        }
-        mRecorder = new MediaRecorder();
-        mRecorder.reset();
-
-        this.prepare();
     }
 
-    private void prepare() {
-        Log.d(LOG_TAG, "Path: " + outputPath);
-        // See the state diagram at https://developer.android.com/reference/android/media/MediaRecorder.html, it is good
+    @ReactMethod
+    public void startRecording(String path) {
+        if (mRecorderRecording) {
+            Log.e(LOG_TAG, "mediaRecorder already recording!");
+            return;
+        }
+
+        mRecorderRecording = false;
+        outputPath = path;
+
+        // See the state diagram at
+        // https://developer.android.com/reference/android/media/MediaRecorder.html
+        mRecorder.reset();
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         // Android music player cannot play ADTS so let's use MPEG_4
         mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        mRecorder.setOutputFile(outputPath);
+        mRecorder.setOutputFile(path);
         mRecorder.setOnErrorListener(this);
         mRecorder.setOnInfoListener(this);
         mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
 
         try {
             mRecorder.prepare();
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "record prepare() failed");
-        }
-    }
-
-    @ReactMethod
-    public void startRecording() {
-        if (mRecorder != null && !mRecorderRecording) {
+            mRecorder.start();
             mRecorderRecording = true;
-            try {
-                mRecorder.start();
-                WritableMap payload = new WritableNativeMap();
-                payload.putString("path", outputPath);
-                sendEvent(getReactApplicationContext(), "rec_start", payload);
-
-            } catch (IllegalStateException e) {
-                Log.d(LOG_TAG, "Recording start failed. start() called before prepare()");
-                WritableMap payload = new WritableNativeMap();
-                payload.putString("error", e.toString());
-                sendEvent(getReactApplicationContext(), "rec_error", payload);
-            }
             Log.d(LOG_TAG, "Recording started");
+
+            emitEvent("recordingStarted", path);
+        } catch (Exception e) {
+            emitError("recordingError", e.toString());
         }
     }
 
     @ReactMethod
     public void stopRecording() {
-        if (mRecorder != null) {
+        try {
             mRecorder.stop();
             mRecorder.reset();
-            mRecorder.release();
-            mRecorder = null;
             mRecorderRecording = false;
 
-            WritableMap payload = new WritableNativeMap();
-            payload.putString("path", outputPath);
-            sendEvent(getReactApplicationContext(), "rec_end", payload);
-
+            emitEvent("recordingStopped", outputPath);
+        } catch (Exception e) {
+            emitError("playbackError", e.toString());
         }
     }
 
@@ -133,10 +128,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
     public void playAudioWithFilename(String filename) {
         String path = Environment.getExternalStorageDirectory().getAbsolutePath();
         if (filename == null) {
-            Log.e(LOG_TAG, "No file name provided to play file");
-            WritableMap payload = new WritableNativeMap();
-            payload.putString("error", "No filename provided");
-            sendEvent(getReactApplicationContext(), "play_error", payload);
+            emitError("playbackError", "No filename provided");
         } else {
             path += "/" + filename;
             playAudioOnPath(path);
@@ -145,112 +137,58 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
 
     @ReactMethod
     public void playAudioOnPath(String path) {
-        if (mRecorder != null && mRecorderRecording) {
-            mPlayer.reset();
-            mPlayer.release();
-            mPlayer = null;
-            Log.e(LOG_TAG, "stop the recording before playing");
+        mPlayer.reset();
 
-            WritableMap payload = new WritableNativeMap();
-            payload.putString("error", "Stop recording before playing");
-            sendEvent(getReactApplicationContext(), "play_error", payload);
+        try {
+            outputPath = path;
+            mPlayer.setDataSource(path);
+            mPlayer.prepare();
+            mPlayer.start();
 
-            return;
-        }
-
-        if (!mPlayer.isPlaying()) {
-            if (mPlayer != null) {
-                mPlayer.reset();
-                mPlayer.release();
-                mPlayer = null;
-            }
-            mPlayer = new MediaPlayer();
-            try {
-                mPlayer.setDataSource(path);
-                mPlayer.prepare();
-                mPlayer.start();
-
-                WritableMap payload = new WritableNativeMap();
-                payload.putString("path", path);
-                sendEvent(getReactApplicationContext(), "play_start", payload);
-
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "play prepare() failed");
-
-                WritableMap payload = new WritableNativeMap();
-                payload.putString("error", "Player initialization failed");
-                sendEvent(getReactApplicationContext(), "play_error", payload);
-            }
-        } else {
-            WritableMap payload = new WritableNativeMap();
-            payload.putString("error", "Please stop playing previous file before starting new");
-            sendEvent(getReactApplicationContext(), "play_error", payload);
-
+            emitEvent("playbackStarted", path);
+        } catch (Exception e) {
+            emitError("playbackError", e.toString());
         }
     }
 
     @ReactMethod
-    public void pausePlaying() {
-        if (mPlayer != null && mPlayer.isPlaying()) {
-            try {
-                mPlayer.pause();
-                WritableMap payload = new WritableNativeMap();
-                sendEvent(getReactApplicationContext(), "play_pause", payload);
+    public void pausePlayback() {
+        try {
+            mPlayer.pause();
+            emitEvent("playbackPaused", outputPath);
 
-            } catch (IllegalStateException e) {
-                WritableMap payload = new WritableNativeMap();
-                payload.putString("error", "Cannot pause; Audio engine not initialized");
-                sendEvent(getReactApplicationContext(), "play_error", payload);
-
-            }
+        } catch (Exception e) {
+            emitError("playbackError", e.toString());
         }
     }
 
     @ReactMethod
-    public void continuePlaying() {
-        if (mPlayer != null && !mPlayer.isPlaying()) {
-            try {
-                mPlayer.start();
-                WritableMap payload = new WritableNativeMap();
-                sendEvent(getReactApplicationContext(), "play_continue", payload);
-
-            } catch (IllegalStateException e) {
-                WritableMap payload = new WritableNativeMap();
-                payload.putString("error", "Cannot continue; Audio engine not initialized");
-                sendEvent(getReactApplicationContext(), "play_error", payload);
-
-            }
+    public void resumePlayback() {
+        try {
+            mPlayer.start();
+            emitEvent("playbackResumed", outputPath);
+        } catch (Exception e) {
+            emitError("playbackError", e.toString());
         }
     }
 
     @ReactMethod
     public void stopPlaying() {
-        if (mPlayer != null && mPlayer.isPlaying()) {
-            try {
-                mPlayer.stop();
-            } catch (IllegalStateException e) {
-                WritableMap payload = new WritableNativeMap();
-                payload.putString("error", "Cannot stop; Audio engine not initialized");
-                sendEvent(getReactApplicationContext(), "play_error", payload);
-            }
+        try {
+            mPlayer.stop();
+            emitEvent("playbackStopped", outputPath);
+        } catch (Exception e) {
+            emitError("playbackError", e.toString());
         }
     }
 
     @Override
     public void onError(MediaRecorder mr, int what, int extra) {
-        Log.e(LOG_TAG, "Error during recording: " + what + extra);
-        WritableMap payload = new WritableNativeMap();
-        payload.putString("error", "Error during recording - what: " + what + " extra: " + extra);
-        sendEvent(getReactApplicationContext(), "rec_error", payload);
-
+        emitError("recordingError", "Error during recording - what: " + what + " extra: " + extra);
     }
 
     @Override
     public void onInfo(MediaRecorder mr, int what, int extra) {
-        Log.e(LOG_TAG, "Info about recording: " + what + extra);
-        WritableMap payload = new WritableNativeMap();
-        payload.putString("info", "Info during recording - what: " + what + " extra: " + extra);
-        sendEvent(getReactApplicationContext(), "rec_info", payload);
-
+        emitEvent("recordingInfo", "Info during recording - what: " + what + " extra: " + extra);
     }
 }
