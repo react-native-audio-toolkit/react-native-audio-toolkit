@@ -88,6 +88,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         } catch (IOException e) {
             emitError("playbackError", e.toString());
             destroy_mPlayer();
+            return;
         }
 
         try {
