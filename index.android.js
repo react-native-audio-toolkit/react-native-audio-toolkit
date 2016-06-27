@@ -55,17 +55,17 @@ class AudioExample extends Component {
   };
 
   componentWillMount() {
-    DeviceEventEmitter.addListener('recordingStarted', this._recordingStarted);
-    DeviceEventEmitter.addListener('recordingStopped', this._recordingStopped);
-    DeviceEventEmitter.addListener('recordingInfo', this._recordingInfo);
-    DeviceEventEmitter.addListener('recordingError', this._recordingError);
+    DeviceEventEmitter.addListener('recordingStarted', console.log);
+    DeviceEventEmitter.addListener('recordingStopped', console.log);
+    DeviceEventEmitter.addListener('recordingInfo', console.log);
+    DeviceEventEmitter.addListener('recordingError', console.log);
 
-    DeviceEventEmitter.addListener('playbackStarted', this._playbackStarted);
-    DeviceEventEmitter.addListener('playbackStopped', this._playbackStopped);
-    DeviceEventEmitter.addListener('playbackPaused', this._playbackPaused);
-    DeviceEventEmitter.addListener('playbackResumed', this._playbackResumed);
-    DeviceEventEmitter.addListener('playbackInfo', this._playbackInfo);
-    DeviceEventEmitter.addListener('playbackError', this._playbackError);
+    DeviceEventEmitter.addListener('playbackStarted', console.log);
+    DeviceEventEmitter.addListener('playbackStopped', console.log);
+    DeviceEventEmitter.addListener('playbackPaused', console.log);
+    DeviceEventEmitter.addListener('playbackResumed', console.log);
+    DeviceEventEmitter.addListener('playbackInfo', console.log);
+    DeviceEventEmitter.addListener('playbackError', console.log);
   }
 
   componentDidMount() {
@@ -96,7 +96,7 @@ class AudioExample extends Component {
       AudioRecorder.stopRecording();
       this.setState({stoppedRecording: true, recording: false});
     } else if (this.state.playing) {
-      AudioRecorder.stopPlaying();
+      AudioRecorder.stopPlayback();
       this.setState({playing: false, stoppedPlaying: true});
     }
   }
@@ -106,26 +106,6 @@ class AudioExample extends Component {
     this.setState({recording: true, playing: false});
   }
 
-  _recordingStarted(e: Event) {
-    console.log("Recording started: ");
-    console.log(e);
-  }
-
-  _recordingStopped(e: Event) {
-    console.log("Recording ended: ");
-    console.log(e);
-  }
-
-  _recordingInfo(e: Event) {
-    console.log("Info about recording: ");
-    console.log(e);
-  }
-
-  _recordingError(e: Event) {
-    console.log("Recording error: ");
-    console.log(e);
-  }
-
  _play() {
     if (this.state.recording) {
       this._stop();
@@ -133,35 +113,6 @@ class AudioExample extends Component {
     }
     AudioRecorder.playAudioWithFilename(audioFilename);
     this.setState({playing: true});
-  }
-
-  _playbackStarted(e: Event) {
-    console.log("Playback was started: ");
-    console.log(e);
-  }
-
-  _playbackStopped(e: Event) {
-    console.log("Playback was stopped: ");
-    console.log(e);
-  }
-
-  _playbackPaused(e: Event) {
-    console.log("Playback was paused: ");
-    console.log(e);
-  }
-  _playbackResumed(e: Event) {
-    console.log("Playback was resumed: ");
-    console.log(e);
-  }
-
-  _playbackInfo(e: Event) {
-    console.log("Info about playback: ");
-    console.log(e);
-  }
-
-  _playbackError(e: Event) {
-    console.log("Playback error: ");
-    console.log(e);
   }
 
   render() {
