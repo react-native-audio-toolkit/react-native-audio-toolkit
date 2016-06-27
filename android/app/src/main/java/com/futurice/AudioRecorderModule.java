@@ -197,7 +197,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
                 WritableMap payload = new WritableNativeMap();
                 sendEvent(getReactApplicationContext(), "play_pause", payload);
 
-            } catch (IllegalStateException) {
+            } catch (IllegalStateException e) {
                 WritableMap payload = new WritableNativeMap();
                 payload.putString("error", "Cannot pause; Audio engine not initialized");
                 sendEvent(getReactApplicationContext(), "play_error", payload);
@@ -214,7 +214,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
                 WritableMap payload = new WritableNativeMap();
                 sendEvent(getReactApplicationContext(), "play_continue", payload);
 
-            } catch (IllegalStateException) {
+            } catch (IllegalStateException e) {
                 WritableMap payload = new WritableNativeMap();
                 payload.putString("error", "Cannot continue; Audio engine not initialized");
                 sendEvent(getReactApplicationContext(), "play_error", payload);
