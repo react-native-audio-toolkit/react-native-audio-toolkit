@@ -89,14 +89,15 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
             // See the state diagram at
             // https://developer.android.com/reference/android/media/MediaRecorder.html
             mRecorder.reset();
+
             mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
             // Android music player cannot play ADTS so let's use MPEG_4
             mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
             mRecorder.setOutputFile(path);
-            mRecorder.setOnErrorListener(this);
-            mRecorder.setOnInfoListener(this);
             mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
 
+            mRecorder.setOnErrorListener(this);
+            mRecorder.setOnInfoListener(this);
             mRecorder.prepare();
             mRecorder.start();
             Log.d(LOG_TAG, "Recording started");

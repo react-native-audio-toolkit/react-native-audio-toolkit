@@ -81,6 +81,9 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         }
 
         mPlayer.reset();
+        mPlayer.setOnErrorListener(this);
+        mPlayer.setOnInfoListener(this);
+        mPlayer.setOnCompletionListener(this);
 
         try {
             outputPath = path;
