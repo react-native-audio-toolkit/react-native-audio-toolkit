@@ -8,11 +8,12 @@
 
 #import "AudioRecorder.h"
 
+@import AVFoundation;
+
 @interface AudioRecorder () <AVAudioRecorderDelegate>
 
 @property (nonatomic, strong) NSURL *recordPath;
 @property (nonatomic, strong) AVAudioRecorder *recorder;
-@property (nonatomic, strong) AVAudioSession *audioSession;
 
 @end
 
@@ -46,15 +47,15 @@ RCT_EXPORT_METHOD(stopRecording) {
 - (void)prepareAndStartRecordingToPath:(NSURL *)path {
   _recordPath = path;
   
-  _audioSession = [AVAudioSession sharedInstance];
+  AVAudioSession *audioSession = [AVAudioSession sharedInstance];
   NSError *error = nil;
-  [_audioSession setCategory:AVAudioSessionCategoryRecord error:&error];
+  [audioSession setCategory:AVAudioSessionCategoryRecord error:&error];
   if (error) {
     NSLog (@"Failed to set session category");
     return;
   }
   
-  [_audioSession setActive:YES error:&error];
+  [audioSession setActive:YES error:&error];
   if (error) {
     NSLog (@"Could not set session active.");
     return;
@@ -92,8 +93,9 @@ RCT_EXPORT_METHOD(stopRecording) {
   [_recorder stop];
   _recorder = nil;
   
+  AVAudioSession *audioSession = [AVAudioSession sharedInstance];
   NSError *error = nil;
-  [_audioSession setActive:NO error:&error];
+  [audioSession setActive:NO error:&error];
   
   if (error) {
     NSLog (@"Could not deactivate current audio session.");
