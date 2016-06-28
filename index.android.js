@@ -56,17 +56,19 @@ class AudioExample extends Component {
   };
 
   componentWillMount() {
-    DeviceEventEmitter.addListener('recordingStarted', console.log);
-    DeviceEventEmitter.addListener('recordingStopped', console.log);
-    DeviceEventEmitter.addListener('recordingInfo', console.log);
-    DeviceEventEmitter.addListener('recordingError', console.log);
+    DeviceEventEmitter.addListener('RCTAudioRecorder:start', console.log);
+    DeviceEventEmitter.addListener('RCTAudioRecorder:abort', console.log);
+    DeviceEventEmitter.addListener('RCTAudioRecorder:error', console.log);
 
-    DeviceEventEmitter.addListener('playbackStarted', console.log);
-    DeviceEventEmitter.addListener('playbackStopped', console.log);
-    DeviceEventEmitter.addListener('playbackPaused', console.log);
-    DeviceEventEmitter.addListener('playbackResumed', console.log);
-    DeviceEventEmitter.addListener('playbackInfo', console.log);
-    DeviceEventEmitter.addListener('playbackError', console.log);
+    DeviceEventEmitter.addListener('RCTAudioRecorder:info', console.log);
+
+    DeviceEventEmitter.addListener('RCTAudioPlayer:playing', console.log);
+    DeviceEventEmitter.addListener('RCTAudioPlayer:abort', console.log);
+    DeviceEventEmitter.addListener('RCTAudioPlayer:pause', console.log);
+    DeviceEventEmitter.addListener('RCTAudioPlayer:play', console.log);
+    DeviceEventEmitter.addListener('RCTAudioPlayer:error', console.log);
+
+    DeviceEventEmitter.addListener('RCTAudioPlayer:info', console.log);
   }
 
   componentDidMount() {

@@ -49,7 +49,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
 
     private void destroy_mRecorder() {
         if (mRecorder == null) {
-            emitError("recordingError", "Attempted to destroy null mRecorder");
+            emitError("RCTAudioRecorder:error", "Attempted to destroy null mRecorder");
             return;
         }
 
@@ -67,7 +67,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
     public void startRecordingToFilename(String filename) {
         String path = Environment.getExternalStorageDirectory().getAbsolutePath();
         if (filename == null) {
-            emitError("recordingError", "No filename provided");
+            emitError("RCTAudioRecorder:error", "No filename provided");
         } else {
             path += "/" + filename;
             startRecording(path);
@@ -102,9 +102,9 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
             mRecorder.start();
             Log.d(LOG_TAG, "Recording started");
 
-            emitEvent("recordingStarted", path);
+            emitEvent("RCTAudioRecorder:recording", path);
         } catch (Exception e) {
-            emitError("recordingError", e.toString());
+            emitError("RCTAudioRecorder:error", e.toString());
             destroy_mRecorder();
         }
     }
@@ -112,7 +112,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
     @ReactMethod
     public void stopRecording() {
         if (mRecorder == null) {
-            emitError("recordingError", "Not prepared for recording");
+            emitError("RCTAudioRecorder:error", "Not prepared for recording");
             return;
         }
 
@@ -120,10 +120,10 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
             mRecorder.stop();
             mRecorder.reset();
 
-            emitEvent("recordingStopped", outputPath);
+            emitEvent("RCTAudioRecorder:stopRecording", outputPath);
             destroy_mRecorder();
         } catch (Exception e) {
-            emitError("recordingError", e.toString());
+            emitError("RCTAudioRecorder:error", e.toString());
             destroy_mRecorder();
         }
     }
@@ -137,11 +137,12 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
     @Override
     public void onError(MediaRecorder mr, int what, int extra) {
         destroy_mRecorder();
-        emitError("recordingError", "Error during recording - what: " + what + " extra: " + extra);
+        emitError("RCTAudioRecorder:error", "Error during recording - what: " + what + " extra: " + extra);
     }
 
     @Override
     public void onInfo(MediaRecorder mr, int what, int extra) {
-        emitEvent("recordingInfo", "Info during recording - what: " + what + " extra: " + extra);
+        // TODO: what to do about this
+        emitEvent("RCTAudioRecorder:info", "Info during recording - what: " + what + " extra: " + extra);
     }
 }

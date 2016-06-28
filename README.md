@@ -50,6 +50,14 @@ media formats.
 
 Welcome to the wonderful world of React Native development!
 
+Media events
+------------
+
+Mostly follows HTML5 <audio> tag conventions:
+https://developer.mozilla.org/en/docs/Web/Guide/Events/Media_events
+
+WIP
+
 License
 -------
 
