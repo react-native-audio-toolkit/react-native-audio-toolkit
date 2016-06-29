@@ -118,7 +118,7 @@ Media events
 ------------
 
 The project aims to follows
-[HTML5 <audio> tag](https://developer.mozilla.org/en/docs/Web/Guide/Events/Media_events)
+[HTML5 \<audio\> tag](https://developer.mozilla.org/en/docs/Web/Guide/Events/Media_events)
 conventions as close as possible, however because React Native events are global,
 the events are prefixed with `RCTAudioPlayer` and `RCTAudioRecorder` accordingly:
 
