@@ -149,7 +149,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         try {
             mPlayer.stop();
             destroy_mPlayer();
-            emitEvent("RCTAudioPlayer:abort", "Stopped playback");
+            emitEvent("RCTAudioPlayer:ended", "Stopped playback");
         } catch (Exception e) {
             destroy_mPlayer();
             emitError("RCTAudioPlayer:error", e.toString());

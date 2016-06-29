@@ -57,13 +57,13 @@ class AudioExample extends Component {
 
   componentWillMount() {
     DeviceEventEmitter.addListener('RCTAudioRecorder:start', console.log);
-    DeviceEventEmitter.addListener('RCTAudioRecorder:abort', console.log);
+    DeviceEventEmitter.addListener('RCTAudioRecorder:ended', console.log);
     DeviceEventEmitter.addListener('RCTAudioRecorder:error', console.log);
 
     DeviceEventEmitter.addListener('RCTAudioRecorder:info', console.log);
 
     DeviceEventEmitter.addListener('RCTAudioPlayer:playing', console.log);
-    DeviceEventEmitter.addListener('RCTAudioPlayer:abort', console.log);
+    DeviceEventEmitter.addListener('RCTAudioPlayer:ended', console.log);
     DeviceEventEmitter.addListener('RCTAudioPlayer:pause', console.log);
     DeviceEventEmitter.addListener('RCTAudioPlayer:play', console.log);
     DeviceEventEmitter.addListener('RCTAudioPlayer:error', console.log);

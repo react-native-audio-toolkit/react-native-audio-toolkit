@@ -102,7 +102,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
             mRecorder.start();
             Log.d(LOG_TAG, "Recording started");
 
-            emitEvent("RCTAudioRecorder:recording", path);
+            emitEvent("RCTAudioRecorder:start", path);
         } catch (Exception e) {
             emitError("RCTAudioRecorder:error", e.toString());
             destroy_mRecorder();
@@ -120,7 +120,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
             mRecorder.stop();
             mRecorder.reset();
 
-            emitEvent("RCTAudioRecorder:stopRecording", outputPath);
+            emitEvent("RCTAudioRecorder:ended", outputPath);
             destroy_mRecorder();
         } catch (Exception e) {
             emitError("RCTAudioRecorder:error", e.toString());
