@@ -21,7 +21,7 @@
 
 #pragma mark - React exposed functions
 
-RCT_EXPORT_MODULE(@"AudioRecorder");
+RCT_EXPORT_MODULE();
 
 RCT_EXPORT_METHOD(startRecordingToFilename:(NSString *)filename) {
   
