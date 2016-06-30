@@ -1,4 +1,4 @@
-package com.futurice;
+package com.futurice.rctaudiotoolkit;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.JavaScriptModule;

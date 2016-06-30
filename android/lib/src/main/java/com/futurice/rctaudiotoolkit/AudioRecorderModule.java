@@ -1,4 +1,4 @@
-package com.futurice;
+package com.futurice.rctaudiotoolkit;
 
 import android.media.MediaRecorder;
 import android.os.Environment;
@@ -22,9 +22,11 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
     private String outputPath;
 
     private MediaRecorder mRecorder = null;
+    private ReactApplicationContext context;
 
     public AudioRecorderModule(ReactApplicationContext reactContext) {
         super(reactContext);
+        this.context = reactContext;
     }
 
     private void emitError(String event, String s) {
@@ -32,7 +34,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
         WritableMap payload = new WritableNativeMap();
         payload.putString(event, s);
 
-        getReactApplicationContext()
+        this.context
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit(event, payload);
     }
@@ -42,14 +44,14 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
         WritableMap payload = new WritableNativeMap();
         payload.putString(event, s);
 
-        getReactApplicationContext()
+        this.context
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit(event, payload);
     }
 
     private void destroy_mRecorder() {
         if (mRecorder == null) {
-            emitError("RCTAudioRecorder:error", "Attempted to destroy null mRecorder");
+            emitError("RCTAudioRecorder_error", "Attempted to destroy null mRecorder");
             return;
         }
 
@@ -60,14 +62,14 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
 
     @Override
     public String getName() {
-        return "AudioRecorder";
+        return "RCTAudioRecorder";
     }
 
     @ReactMethod
     public void startRecordingToFilename(String filename) {
         String path = Environment.getExternalStorageDirectory().getAbsolutePath();
         if (filename == null) {
-            emitError("RCTAudioRecorder:error", "No filename provided");
+            emitError("RCTAudioRecorder_error", "No filename provided");
         } else {
             path += "/" + filename;
             startRecording(path);
@@ -102,9 +104,9 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
             mRecorder.start();
             Log.d(LOG_TAG, "Recording started");
 
-            emitEvent("RCTAudioRecorder:start", path);
+            emitEvent("RCTAudioRecorder_start", path);
         } catch (Exception e) {
-            emitError("RCTAudioRecorder:error", e.toString());
+            emitError("RCTAudioRecorder_error", e.toString());
             destroy_mRecorder();
         }
     }
@@ -112,7 +114,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
     @ReactMethod
     public void stopRecording() {
         if (mRecorder == null) {
-            emitError("RCTAudioRecorder:error", "Not prepared for recording");
+            emitError("RCTAudioRecorder_error", "Not prepared for recording");
             return;
         }
 
@@ -120,10 +122,10 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
             mRecorder.stop();
             mRecorder.reset();
 
-            emitEvent("RCTAudioRecorder:ended", outputPath);
+            emitEvent("RCTAudioRecorder_ended", outputPath);
             destroy_mRecorder();
         } catch (Exception e) {
-            emitError("RCTAudioRecorder:error", e.toString());
+            emitError("RCTAudioRecorder_error", e.toString());
             destroy_mRecorder();
         }
     }
@@ -137,12 +139,12 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
     @Override
     public void onError(MediaRecorder mr, int what, int extra) {
         destroy_mRecorder();
-        emitError("RCTAudioRecorder:error", "Error during recording - what: " + what + " extra: " + extra);
+        emitError("RCTAudioRecorder_error", "Error during recording - what: " + what + " extra: " + extra);
     }
 
     @Override
     public void onInfo(MediaRecorder mr, int what, int extra) {
         // TODO: what to do about this
-        emitEvent("RCTAudioRecorder:info", "Info during recording - what: " + what + " extra: " + extra);
+        emitEvent("RCTAudioRecorder_info", "Info during recording - what: " + what + " extra: " + extra);
     }
 }

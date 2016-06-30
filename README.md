@@ -26,7 +26,7 @@ an actual Android/iOS device:
     ...
 
     include ':react-native-audio-toolkit'
-    project(':react-native-audio-toolkit').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-audio-toolkit/android/player')
+    project(':react-native-audio-toolkit').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-audio-toolkit/android/lib')
     ```
 
 2. Add dependency to `android/app/build.gradle`
@@ -49,14 +49,15 @@ an actual Android/iOS device:
     import com.facebook.react.ReactPackage;
     import com.facebook.react.shell.MainReactPackage;
 
-    import com.futurice.AudioPackage; // <------------------------ here
+    import com.futurice.rctaudiotoolkit.AudioPackage; // <-------- here
 
     ...
 
     protected List<ReactPackage> getPackages() {
         return Arrays.<ReactPackage>asList(
             ...
-            new MainReactPackage(), new AudioPackage() // <------- here
+            new MainReactPackage(),
+            new AudioPackage() // <------------------------------- here
         );
     }
     ```
