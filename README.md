@@ -88,13 +88,9 @@ TODO
 
 ### Example app
 
-#### `index.android.js`
+[index.android.js](examples/index.android.js)
 
-```
-TODO
-```
-
-#### `index.ios.js`
+`index.ios.js`
 
 ```
 TODO
