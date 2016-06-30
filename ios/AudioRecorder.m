@@ -63,7 +63,7 @@ RCT_EXPORT_METHOD(stopRecording) {
   
   NSMutableDictionary *recordSetting = [[NSMutableDictionary alloc] init];
   
-  [recordSetting setValue :[NSNumber numberWithInt:kAudioFormatLinearPCM] forKey:AVFormatIDKey];
+  [recordSetting setValue :[NSNumber numberWithInt:kAudioFormatMPEG4AAC] forKey:AVFormatIDKey];
   [recordSetting setValue:[NSNumber numberWithFloat:44100.0] forKey:AVSampleRateKey];
   [recordSetting setValue:[NSNumber numberWithInt: 2] forKey:AVNumberOfChannelsKey];
   
@@ -72,12 +72,12 @@ RCT_EXPORT_METHOD(stopRecording) {
   [recordSetting setValue :[NSNumber numberWithBool:NO] forKey:AVLinearPCMIsFloatKey];
 
   _recorder = [[AVAudioRecorder alloc] initWithURL:_recordPath settings:recordSetting error:&error];
-  
+  NSLog(@"path = %@", _recorder);
   if (error) {
-    NSLog (@"Allocating recorder failed. Settings are probably wrong.");
+    NSLog (@"Allocating recorder failed. Settings are probably wrong. Error: %@", error);
     return;
   } else if (!_recorder) {
-    NSLog (@"Recorder failed to initialize.");
+    NSLog (@"Recorder failed to initialize. Error: %@", error);
     return;
   }
   
@@ -98,7 +98,7 @@ RCT_EXPORT_METHOD(stopRecording) {
   [audioSession setActive:NO error:&error];
   
   if (error) {
-    NSLog (@"Could not deactivate current audio session.");
+    NSLog (@"Could not deactivate current audio session. Error: %@", error);
     return;
   }
   
