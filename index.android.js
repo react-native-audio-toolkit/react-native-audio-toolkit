@@ -36,7 +36,8 @@ import {
   View,
   TouchableHighlight,
   NativeModules,
-  DeviceEventEmitter
+  DeviceEventEmitter,
+  NativeAppEventEmitter
 } from 'react-native';
 
 const AudioRecorder = NativeModules.AudioRecorder;
@@ -56,10 +57,10 @@ class AudioExample extends Component {
   };
 
   componentWillMount() {
-    DeviceEventEmitter.addListener('recordingStarted', console.log);
-    DeviceEventEmitter.addListener('recordingStopped', console.log);
-    DeviceEventEmitter.addListener('recordingInfo', console.log);
-    DeviceEventEmitter.addListener('recordingError', console.log);
+    DeviceEventEmitter.addListener('RCTAudioRecorder:start', console.log);
+    DeviceEventEmitter.addListener('RCTAudioRecorder:stop', console.log);
+    DeviceEventEmitter.addListener('RCTAudioRecorder:pause', console.log);
+    DeviceEventEmitter.addListener('RCTAudioRecorder:error', console.log);
 
     DeviceEventEmitter.addListener('playbackStarted', console.log);
     DeviceEventEmitter.addListener('playbackStopped', console.log);

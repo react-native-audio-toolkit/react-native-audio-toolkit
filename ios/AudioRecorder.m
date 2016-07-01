@@ -7,6 +7,7 @@
 //
 
 #import "AudioRecorder.h"
+#import "RCTEventDispatcher.h"
 
 @import AVFoundation;
 
@@ -17,13 +18,15 @@
 
 @end
 
-@implementation AudioRecorder 
+@implementation AudioRecorder
+
+@synthesize bridge = _bridge;
 
 #pragma mark - React exposed functions
 
 RCT_EXPORT_MODULE();
 
-RCT_EXPORT_METHOD(startRecordingToFilename:(NSString *)filename) {
+RCT_EXPORT_METHOD(recordLocal:(NSString *)filename) {
   
   NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
   NSString *documentsDirectory = [paths objectAtIndex:0];
@@ -33,13 +36,35 @@ RCT_EXPORT_METHOD(startRecordingToFilename:(NSString *)filename) {
 
 }
 
-RCT_EXPORT_METHOD(startRecording:(NSString *)path) {
+RCT_EXPORT_METHOD(record:(NSString *)path) {
   if (path == nil) return;
   [self prepareAndStartRecordingToPath:[NSURL URLWithString:path]];
 }
 
-RCT_EXPORT_METHOD(stopRecording) {
+RCT_EXPORT_METHOD(stop) {
   [self stopCurrentRecording];
+}
+
+RCT_EXPORT_METHOD(pause) {
+  if (_recorder.recording) {
+    [_recorder pause];
+    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:pause"
+                                                 body:@{}];
+  } else {
+    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:error"
+                                                 body:@{@"error": @"RCTAudioRecorder: Cannot pause when not recording"}];
+  }
+}
+
+RCT_EXPORT_METHOD(resumeRecording) {
+  if (_recorder && !_recorder.recording) {
+    [_recorder record];
+    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:resume"
+                                                 body:@{}];
+  } else {
+    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:error"
+                                                 body:@{@"error": @"RCTAudioRecorder: Cannot resume when not recording or paused"}];
+  }
 }
 
 #pragma mark - Main functions
@@ -51,13 +76,19 @@ RCT_EXPORT_METHOD(stopRecording) {
   NSError *error = nil;
   [audioSession setCategory:AVAudioSessionCategoryRecord error:&error];
   if (error) {
-    NSLog (@"Failed to set session category");
+    NSLog (@"RCTAudioRecorder: Failed to set session category");
+    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:error"
+                                                 body:@{@"error": [error description]}];
+
     return;
   }
   
   [audioSession setActive:YES error:&error];
   if (error) {
-    NSLog (@"Could not set session active.");
+    NSLog (@"RCTAudioRecorder: Could not set session active.");
+    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:error"
+                                                 body:@{@"error": [error description]}];
+
     return;
   }
   
@@ -72,12 +103,17 @@ RCT_EXPORT_METHOD(stopRecording) {
   [recordSetting setValue :[NSNumber numberWithBool:NO] forKey:AVLinearPCMIsFloatKey];
 
   _recorder = [[AVAudioRecorder alloc] initWithURL:_recordPath settings:recordSetting error:&error];
-  NSLog(@"path = %@", _recorder);
   if (error) {
-    NSLog (@"Allocating recorder failed. Settings are probably wrong. Error: %@", error);
+    NSLog (@"RCTAudioRecorder: Allocating recorder failed. Settings are probably wrong. Error: %@", error);
+    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:error"
+                                                 body:@{@"error": [error description]}];
+
     return;
   } else if (!_recorder) {
-    NSLog (@"Recorder failed to initialize. Error: %@", error);
+    NSLog (@"RCTAudioRecorder: Recorder failed to initialize. Error: %@", error);
+    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:error"
+                                                 body:@{@"error": [error description]}];
+
     return;
   }
   
@@ -86,6 +122,10 @@ RCT_EXPORT_METHOD(stopRecording) {
   
   // start recording
   [_recorder record];
+  
+  // Send event
+  [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:start"
+                                               body:@{@"path": [_recordPath absoluteString]}];
   
 }
 
@@ -98,18 +138,25 @@ RCT_EXPORT_METHOD(stopRecording) {
   [audioSession setActive:NO error:&error];
   
   if (error) {
-    NSLog (@"Could not deactivate current audio session. Error: %@", error);
+    NSLog (@"RCTAudioRecorder: Could not deactivate current audio session. Error: %@", error);
+    // Send event
+    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:error"
+                                                 body:@{@"error": [error description]}];
     return;
   }
-  
 }
 
 #pragma mark - Delegate methods
 - (void)audioRecorderDidFinishRecording:(AVAudioRecorder *) aRecorder successfully:(BOOL)flag {
-  
-  NSLog (@"Recording finished");
-  // your actions here
-  
+  NSLog (@"RCTAudioRecorder: Recording finished, successful: %d", flag);
+  [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:ended"
+                                                 body:@{@"path": [_recordPath absoluteString]}];
+}
+
+- (void)audioRecorderEncodeErrorDidOccur:(AVAudioRecorder *)recorder
+                                   error:(NSError *)error {
+  [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:error"
+                                               body:@{@"error": [error description]}];
 }
 
 @end
