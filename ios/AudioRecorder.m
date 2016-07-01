@@ -56,7 +56,7 @@ RCT_EXPORT_METHOD(pause) {
   }
 }
 
-RCT_EXPORT_METHOD(resumeRecording) {
+RCT_EXPORT_METHOD(resume) {
   if (_recorder && !_recorder.recording) {
     [_recorder record];
     [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:resume"
@@ -131,6 +131,14 @@ RCT_EXPORT_METHOD(resumeRecording) {
 
 - (void)stopCurrentRecording {
   [_recorder stop];
+}
+
+#pragma mark - Delegate methods
+- (void)audioRecorderDidFinishRecording:(AVAudioRecorder *) aRecorder successfully:(BOOL)flag {
+  NSLog (@"RCTAudioRecorder: Recording finished, successful: %d", flag);
+  [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:ended"
+                                                 body:@{@"path": [_recordPath absoluteString]}];
+  
   _recorder = nil;
   
   AVAudioSession *audioSession = [AVAudioSession sharedInstance];
@@ -141,16 +149,10 @@ RCT_EXPORT_METHOD(resumeRecording) {
     NSLog (@"RCTAudioRecorder: Could not deactivate current audio session. Error: %@", error);
     // Send event
     [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:error"
-                                                 body:@{@"error": [error description]}];
+                                                    body:@{@"error": [error description]}];
     return;
   }
-}
 
-#pragma mark - Delegate methods
-- (void)audioRecorderDidFinishRecording:(AVAudioRecorder *) aRecorder successfully:(BOOL)flag {
-  NSLog (@"RCTAudioRecorder: Recording finished, successful: %d", flag);
-  [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:ended"
-                                                 body:@{@"path": [_recordPath absoluteString]}];
 }
 
 - (void)audioRecorderEncodeErrorDidOccur:(AVAudioRecorder *)recorder

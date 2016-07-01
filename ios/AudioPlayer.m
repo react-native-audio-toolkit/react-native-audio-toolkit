@@ -37,12 +37,44 @@ RCT_EXPORT_METHOD(play:(NSString *)path) {
 }
 
 RCT_EXPORT_METHOD(stop) {
-  [self stopPlaying];
+  if (_player.isPlaying) {
+    [self stopPlaying];
+  } else {
+    NSString *errorDescription = [NSString stringWithFormat:@"Cannot stop when no audio playing."];
+    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioPlayer:error"
+                                                    body:@{@"error": errorDescription}];
+
+  }
 }
 
 RCT_EXPORT_METHOD(pause) {
-  [_player pause];
+  if (_player.isPlaying) {
+    [_player pause];
+    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioPlayer:resume"
+                                                    body:@{}];
+
+  } else {
+    NSString *errorDescription = [NSString stringWithFormat:@"Cannot pause when no audio playing."];
+    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioPlayer:error"
+                                                    body:@{@"error": errorDescription}];
+  }
 }
+
+RCT_EXPORT_METHOD(resume) {
+  if (_player && !_player.playing) {
+    [_player play];
+    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioPlayer:play"
+                                                    body:@{}];
+    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioPlayer:playing"
+                                                    body:@{}];
+  } else {
+    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:error"
+                                                    body:@{@"error": @"RCTAudioPlayer: Cannot resume when not paused"}];
+  }
+}
+
+
+
 
 #pragma mark Audio
 
@@ -94,7 +126,6 @@ RCT_EXPORT_METHOD(pause) {
 
 - (void)stopPlaying {
   [_player stop];
-  _player = nil;
   
 }
 
@@ -103,9 +134,23 @@ RCT_EXPORT_METHOD(pause) {
 - (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player
                        successfully:(BOOL)flag {
   
+  _player = nil;
+
   NSLog (@"RCTAudioPlayer: Playing finished, successful: %d", flag);
   [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioPlayer:ended"
                                                   body:@{@"path": [_playbackPath absoluteString]}];
+  
+  AVAudioSession *audioSession = [AVAudioSession sharedInstance];
+  NSError *error = nil;
+  [audioSession setActive:NO error:&error];
+  
+  if (error) {
+    NSLog (@"RCTAudioPlayer: Could not deactivate current audio session. Error: %@", error);
+    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioPlayer:error"
+                                                    body:@{@"error": [error description]}];
+    return;
+  }
+
 
 }
 

@@ -55,7 +55,8 @@ class AudioExample extends Component {
     stoppedRecording: false,
     stoppedPlaying: false,
     playing: false,
-    finished: false
+    finished: false,
+    paused: false
   };
 
   componentWillMount() {
@@ -112,6 +113,26 @@ class AudioExample extends Component {
     this.setState({playing: true});
   }
 
+  _resume() {
+    if (this.state.recording && this.state.paused) {
+      AudioRecorder.resume();
+      this.setState({paused: false});
+    } else if (this.state.playing && this.state.paused) {
+      AudioPlayer.resume();
+      this.setState({paused: false});
+    }
+   }
+
+  _pause() {
+    if (this.state.recording) {
+      AudioRecorder.pause();
+      this.setState({paused: true});
+    } else if (this.state.playing) {
+      AudioPlayer.pause();
+      this.setState({paused: true});
+    }
+  }
+
   render() {
 
     return (
@@ -119,6 +140,8 @@ class AudioExample extends Component {
         <View style={styles.controls}>
           {this._renderButton("RECORD", () => {this._record()}, this.state.recording )}
           {this._renderButton("STOP", () => {this._stop()} )}
+          {this._renderButton("PAUSE", () => {this._pause()} )}
+          {this._renderButton("RESUME", () => {this._resume()} )}
           {this._renderButton("PLAY", () => {this._play()}, this.state.playing )}
         </View>
       </View>
