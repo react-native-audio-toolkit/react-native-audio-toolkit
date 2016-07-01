@@ -24,27 +24,27 @@ class AudioTest extends Component {
   };
 
   componentWillMount() {
-    DeviceEventEmitter.addListener('RCTAudioRecorder_start', (e: Event) => {console.log(e);});
-    DeviceEventEmitter.addListener('RCTAudioRecorder_ended', (e: Event) => {
+    DeviceEventEmitter.addListener('RCTAudioRecorder:start', (e: Event) => {console.log(e);});
+    DeviceEventEmitter.addListener('RCTAudioRecorder:ended', (e: Event) => {
       console.log(e);
 
       this.setState({recording: false});
     });
-    DeviceEventEmitter.addListener('RCTAudioRecorder_error', (e: Event) => {console.log(e);});
+    DeviceEventEmitter.addListener('RCTAudioRecorder:error', (e: Event) => {console.log(e);});
 
-    DeviceEventEmitter.addListener('RCTAudioRecorder_info', (e: Event) => {console.log(e);});
+    DeviceEventEmitter.addListener('RCTAudioRecorder:info', (e: Event) => {console.log(e);});
 
-    DeviceEventEmitter.addListener('RCTAudioPlayer_playing', (e: Event) => {console.log(e);});
-    DeviceEventEmitter.addListener('RCTAudioPlayer_ended', (e: Event) => {
+    DeviceEventEmitter.addListener('RCTAudioPlayer:playing', (e: Event) => {console.log(e);});
+    DeviceEventEmitter.addListener('RCTAudioPlayer:ended', (e: Event) => {
       console.log(e);
 
       this.setState({playing: false});
     });
-    DeviceEventEmitter.addListener('RCTAudioPlayer_pause', (e: Event) => {console.log(e);});
-    DeviceEventEmitter.addListener('RCTAudioPlayer_play', (e: Event) => {console.log(e);});
-    DeviceEventEmitter.addListener('RCTAudioPlayer_error', (e: Event) => {console.log(e);});
+    DeviceEventEmitter.addListener('RCTAudioPlayer:pause', (e: Event) => {console.log(e);});
+    DeviceEventEmitter.addListener('RCTAudioPlayer:play', (e: Event) => {console.log(e);});
+    DeviceEventEmitter.addListener('RCTAudioPlayer:error', (e: Event) => {console.log(e);});
 
-    DeviceEventEmitter.addListener('RCTAudioPlayer_info', (e: Event) => {console.log(e);});
+    DeviceEventEmitter.addListener('RCTAudioPlayer:info', (e: Event) => {console.log(e);});
   }
 
   componentDidMount() {

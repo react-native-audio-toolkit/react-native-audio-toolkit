@@ -122,6 +122,7 @@ Method name                  | Description
 `playLocal(filename)`        | Start playback of `filename` in app data directory
 `stop()`                     | Stop playback
 `pause()`                    | Pause playback
+`resume()`                   | Resume playback
 
 ### RCTAudioRecorder methods
 
@@ -131,6 +132,7 @@ Method name                  | Description
 `recordLocal(filename)`      | Start recording to `filename` in app data directory
 `stop()`                     | Stop recording
 `pause()`                    | Pause recording
+`resume()`                   | Resume recording
 
 Media events
 ------------

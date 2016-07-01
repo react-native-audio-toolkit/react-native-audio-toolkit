@@ -51,7 +51,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
 
     private void destroy_mPlayer() {
         if (mPlayer == null) {
-            emitError("RCTAudioPlayer_error", "Attempted to destroy null mPlayer");
+            emitError("RCTAudioPlayer:error", "Attempted to destroy null mPlayer");
             return;
         }
 
@@ -66,18 +66,18 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     }
 
     @ReactMethod
-    public void playAudioWithFilename(String filename) {
+    public void playLocal(String filename) {
         String path = Environment.getExternalStorageDirectory().getAbsolutePath();
         if (filename == null) {
-            emitError("RCTAudioPlayer_error", "No filename provided");
+            emitError("RCTAudioPlayer:error", "No filename provided");
         } else {
             path += "/" + filename;
-            playAudioOnPath(path);
+            play(path);
         }
     }
 
     @ReactMethod
-    public void playAudioOnPath(String path) {
+    public void play(String path) {
         if (mPlayer == null) {
             mPlayer = new MediaPlayer();
         }
@@ -91,7 +91,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             outputPath = path;
             mPlayer.setDataSource(path);
         } catch (IOException e) {
-            emitError("RCTAudioPlayer_error", e.toString());
+            emitError("RCTAudioPlayer:error", e.toString());
             destroy_mPlayer();
             return;
         }
@@ -100,81 +100,81 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             mPlayer.prepare();
             mPlayer.start();
 
-            emitEvent("RCTAudioPlayer_playing", path);
+            emitEvent("RCTAudioPlayer:playing", path);
         } catch (Exception e) {
-            emitError("RCTAudioPlayer_error", e.toString());
+            emitError("RCTAudioPlayer:error", e.toString());
             destroy_mPlayer();
         }
     }
 
     @ReactMethod
-    public void pausePlayback() {
+    public void pause() {
         if (mPlayer == null) {
-            emitError("RCTAudioPlayer_error", "No media prepared");
+            emitError("RCTAudioPlayer:error", "No media prepared");
             return;
         }
 
         try {
             mPlayer.pause();
-            emitEvent("RCTAudioPlayer_pause", outputPath);
+            emitEvent("RCTAudioPlayer:pause", outputPath);
 
         } catch (Exception e) {
             destroy_mPlayer();
-            emitError("RCTAudioPlayer_error", e.toString());
+            emitError("RCTAudioPlayer:error", e.toString());
         }
     }
 
     @ReactMethod
-    public void resumePlayback() {
+    public void resume() {
         if (mPlayer == null) {
-            emitError("RCTAudioPlayer_error", "No media prepared");
+            emitError("RCTAudioPlayer:error", "No media prepared");
             return;
         }
 
         try {
             mPlayer.start();
-            emitEvent("RCTAudioPlayer_play", outputPath);
-            emitEvent("RCTAudioPlayer_playing", outputPath);
+            emitEvent("RCTAudioPlayer:play", outputPath);
+            emitEvent("RCTAudioPlayer:playing", outputPath);
         } catch (Exception e) {
             destroy_mPlayer();
-            emitError("RCTAudioPlayer_error", e.toString());
+            emitError("RCTAudioPlayer:error", e.toString());
         }
     }
 
     @ReactMethod
-    public void stopPlayback() {
+    public void stop() {
         if (mPlayer == null) {
-            emitError("RCTAudioPlayer_error", "No media prepared");
+            emitError("RCTAudioPlayer:error", "No media prepared");
             return;
         }
 
         try {
             mPlayer.stop();
             destroy_mPlayer();
-            emitEvent("RCTAudioPlayer_ended", "Stopped playback");
+            emitEvent("RCTAudioPlayer:ended", "Stopped playback");
         } catch (Exception e) {
             destroy_mPlayer();
-            emitError("RCTAudioPlayer_error", e.toString());
+            emitError("RCTAudioPlayer:error", e.toString());
         }
     }
 
     @Override
     public void onCompletion(MediaPlayer mp) {
         destroy_mPlayer();
-        emitEvent("RCTAudioPlayer_ended", "Finished playback");
+        emitEvent("RCTAudioPlayer:ended", "Finished playback");
     }
 
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
         destroy_mPlayer();
-        emitError("RCTAudioPlayer_error", "Error during playback - what: " + what + " extra: " + extra);
+        emitError("RCTAudioPlayer:error", "Error during playback - what: " + what + " extra: " + extra);
         return true; // don't call onCompletion listener afterwards
     }
 
     @Override
     public boolean onInfo(MediaPlayer mp, int what, int extra) {
         // TODO: what to do with this
-        emitEvent("RCTAudioPlayer_info", "Info during playback - what: " + what + " extra: " + extra);
+        emitEvent("RCTAudioPlayer:info", "Info during playback - what: " + what + " extra: " + extra);
         return false;
     }
 }
