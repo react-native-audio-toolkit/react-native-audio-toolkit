@@ -16,13 +16,14 @@
 		133E29F31AD74F7200F7D852 /* libRCTLinking.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 78C398B91ACF4ADC00677621 /* libRCTLinking.a */; };
 		139105C61AF99C1200B5F7CC /* libRCTSettings.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 139105C11AF99BAD00B5F7CC /* libRCTSettings.a */; };
 		139FDEF61B0652A700C62182 /* libRCTWebSocket.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 139FDEF41B06529B00C62182 /* libRCTWebSocket.a */; };
-		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
-		13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB11A68108700A75B9A /* LaunchScreen.xib */; };
-		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		146834051AC3E58100842450 /* libReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 146834041AC3E56700842450 /* libReact.a */; };
-		5E669E761D22962A00C8A237 /* AudioRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 5E669E751D22962A00C8A237 /* AudioRecorder.m */; };
-		5E669E831D22B7E100C8A237 /* AudioPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 5E669E821D22B7E100C8A237 /* AudioPlayer.m */; };
+		5E8FD9671D2688F600CF68CC /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 5E8FD95F1D2688F600CF68CC /* AppDelegate.m */; };
+		5E8FD9681D2688F600CF68CC /* AudioPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 5E8FD9611D2688F600CF68CC /* AudioPlayer.m */; };
+		5E8FD9691D2688F600CF68CC /* AudioRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 5E8FD9631D2688F600CF68CC /* AudioRecorder.m */; };
+		5E8FD96A1D2688F600CF68CC /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5E8FD9641D2688F600CF68CC /* Images.xcassets */; };
+		5E8FD96B1D2688F600CF68CC /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5E8FD9651D2688F600CF68CC /* Info.plist */; };
+		5E8FD96C1D2688F600CF68CC /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 5E8FD9661D2688F600CF68CC /* main.m */; };
+		5E8FD96F1D2688FD00CF68CC /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5E8FD96D1D2688FD00CF68CC /* LaunchScreen.xib */; };
 		832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 832341B51AAA6A8300B99B32 /* libRCTText.a */; };
 /* End PBXBuildFile section */
 
@@ -119,17 +120,17 @@
 		139105B61AF99BAD00B5F7CC /* RCTSettings.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTSettings.xcodeproj; path = "../node_modules/react-native/Libraries/Settings/RCTSettings.xcodeproj"; sourceTree = "<group>"; };
 		139FDEE61B06529A00C62182 /* RCTWebSocket.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTWebSocket.xcodeproj; path = "../node_modules/react-native/Libraries/WebSocket/RCTWebSocket.xcodeproj"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* ReactNativeAudioToolkit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReactNativeAudioToolkit.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = AwesomeProject/AppDelegate.h; sourceTree = "<group>"; };
-		13B07FB01A68108700A75B9A /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = AwesomeProject/AppDelegate.m; sourceTree = "<group>"; };
-		13B07FB21A68108700A75B9A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
-		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = AwesomeProject/Images.xcassets; sourceTree = "<group>"; };
-		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = AwesomeProject/Info.plist; sourceTree = "<group>"; };
-		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = AwesomeProject/main.m; sourceTree = "<group>"; };
 		146833FF1AC3E56700842450 /* React.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = React.xcodeproj; path = "../node_modules/react-native/React/React.xcodeproj"; sourceTree = "<group>"; };
-		5E669E741D22962A00C8A237 /* AudioRecorder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AudioRecorder.h; sourceTree = "<group>"; };
-		5E669E751D22962A00C8A237 /* AudioRecorder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AudioRecorder.m; sourceTree = "<group>"; };
-		5E669E811D22B7E100C8A237 /* AudioPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AudioPlayer.h; sourceTree = "<group>"; };
-		5E669E821D22B7E100C8A237 /* AudioPlayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AudioPlayer.m; sourceTree = "<group>"; };
+		5E8FD95E1D2688F600CF68CC /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = ReactNativeAudioToolkit/AppDelegate.h; sourceTree = "<group>"; };
+		5E8FD95F1D2688F600CF68CC /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = ReactNativeAudioToolkit/AppDelegate.m; sourceTree = "<group>"; };
+		5E8FD9601D2688F600CF68CC /* AudioPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AudioPlayer.h; path = ReactNativeAudioToolkit/AudioPlayer.h; sourceTree = "<group>"; };
+		5E8FD9611D2688F600CF68CC /* AudioPlayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AudioPlayer.m; path = ReactNativeAudioToolkit/AudioPlayer.m; sourceTree = "<group>"; };
+		5E8FD9621D2688F600CF68CC /* AudioRecorder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AudioRecorder.h; path = ReactNativeAudioToolkit/AudioRecorder.h; sourceTree = "<group>"; };
+		5E8FD9631D2688F600CF68CC /* AudioRecorder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AudioRecorder.m; path = ReactNativeAudioToolkit/AudioRecorder.m; sourceTree = "<group>"; };
+		5E8FD9641D2688F600CF68CC /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = ReactNativeAudioToolkit/Images.xcassets; sourceTree = "<group>"; };
+		5E8FD9651D2688F600CF68CC /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ReactNativeAudioToolkit/Info.plist; sourceTree = "<group>"; };
+		5E8FD9661D2688F600CF68CC /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = ReactNativeAudioToolkit/main.m; sourceTree = "<group>"; };
+		5E8FD96E1D2688FD00CF68CC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = ReactNativeAudioToolkit/Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
 		78C398B01ACF4ADC00677621 /* RCTLinking.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTLinking.xcodeproj; path = "../node_modules/react-native/Libraries/LinkingIOS/RCTLinking.xcodeproj"; sourceTree = "<group>"; };
 		832341B01AAA6A8300B99B32 /* RCTText.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTText.xcodeproj; path = "../node_modules/react-native/Libraries/Text/RCTText.xcodeproj"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -239,17 +240,13 @@
 		13B07FAE1A68108700A75B9A /* ReactNativeAudioToolkit */ = {
 			isa = PBXGroup;
 			children = (
-				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
-				5E669E741D22962A00C8A237 /* AudioRecorder.h */,
-				5E669E751D22962A00C8A237 /* AudioRecorder.m */,
-				5E669E811D22B7E100C8A237 /* AudioPlayer.h */,
-				5E669E821D22B7E100C8A237 /* AudioPlayer.m */,
-				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
-				13B07FB01A68108700A75B9A /* AppDelegate.m */,
-				13B07FB51A68108700A75B9A /* Images.xcassets */,
-				13B07FB61A68108700A75B9A /* Info.plist */,
-				13B07FB11A68108700A75B9A /* LaunchScreen.xib */,
-				13B07FB71A68108700A75B9A /* main.m */,
+				5E8FD95E1D2688F600CF68CC /* AppDelegate.h */,
+				5E8FD95F1D2688F600CF68CC /* AppDelegate.m */,
+				5E8FD9601D2688F600CF68CC /* AudioPlayer.h */,
+				5E8FD9611D2688F600CF68CC /* AudioPlayer.m */,
+				5E8FD9621D2688F600CF68CC /* AudioRecorder.h */,
+				5E8FD9631D2688F600CF68CC /* AudioRecorder.m */,
+				5E8FD9701D26890200CF68CC /* Supporting files */,
 			);
 			name = ReactNativeAudioToolkit;
 			sourceTree = "<group>";
@@ -260,6 +257,18 @@
 				146834041AC3E56700842450 /* libReact.a */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		5E8FD9701D26890200CF68CC /* Supporting files */ = {
+			isa = PBXGroup;
+			children = (
+				5E8FD9641D2688F600CF68CC /* Images.xcassets */,
+				5E8FD9651D2688F600CF68CC /* Info.plist */,
+				5E8FD9661D2688F600CF68CC /* main.m */,
+				5E8FD96D1D2688FD00CF68CC /* LaunchScreen.xib */,
+				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
+			);
+			name = "Supporting files";
 			sourceTree = "<group>";
 		};
 		78C398B11ACF4ADC00677621 /* Products */ = {
@@ -519,8 +528,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
-				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
+				5E8FD96B1D2688F600CF68CC /* Info.plist in Resources */,
+				5E8FD96F1D2688FD00CF68CC /* LaunchScreen.xib in Resources */,
+				5E8FD96A1D2688F600CF68CC /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -556,10 +566,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5E669E761D22962A00C8A237 /* AudioRecorder.m in Sources */,
-				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
-				13B07FC11A68108700A75B9A /* main.m in Sources */,
-				5E669E831D22B7E100C8A237 /* AudioPlayer.m in Sources */,
+				5E8FD9671D2688F600CF68CC /* AppDelegate.m in Sources */,
+				5E8FD9681D2688F600CF68CC /* AudioPlayer.m in Sources */,
+				5E8FD96C1D2688F600CF68CC /* main.m in Sources */,
+				5E8FD9691D2688F600CF68CC /* AudioRecorder.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -574,13 +584,12 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		13B07FB11A68108700A75B9A /* LaunchScreen.xib */ = {
+		5E8FD96D1D2688FD00CF68CC /* LaunchScreen.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				13B07FB21A68108700A75B9A /* Base */,
+				5E8FD96E1D2688FD00CF68CC /* Base */,
 			);
 			name = LaunchScreen.xib;
-			path = AwesomeProject;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -626,7 +635,7 @@
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"$(SRCROOT)/../node_modules/react-native/React/**",
 				);
-				INFOPLIST_FILE = AwesomeProject/Info.plist;
+				INFOPLIST_FILE = "$(SRCROOT)/ReactNativeAudioToolkit/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = (
 					"-ObjC",
@@ -647,7 +656,7 @@
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"$(SRCROOT)/../node_modules/react-native/React/**",
 				);
-				INFOPLIST_FILE = AwesomeProject/Info.plist;
+				INFOPLIST_FILE = "$(SRCROOT)/ReactNativeAudioToolkit/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = (
 					"-ObjC",
