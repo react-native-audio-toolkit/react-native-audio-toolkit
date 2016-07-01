@@ -111,10 +111,31 @@ react-native run-android
 
 Then start clicking the buttons, it should be quite simple.
 
+Media methods
+-------------
+
+### RCTAudioPlayer methods
+
+Method name                  | Description
+-----------------------------|------------------------
+`play(path)`                 | Start playback of file in `path`
+`playLocal(filename)`        | Start playback of `filename` in app data directory
+`stop()`                     | Stop playback
+`pause()`                    | Pause playback
+
+### RCTAudioRecorder methods
+
+Method name                  | Description
+-----------------------------|------------------------
+`record(path)`               | Start recording to file in `path`
+`recordLocal(filename)`      | Start recording to `filename` in app data directory
+`stop()`                     | Stop recording
+`pause()`                    | Pause recording
+
 Media events
 ------------
 
-The project aims to follows
+The project aims to follow
 [HTML5 \<audio\> tag](https://developer.mozilla.org/en/docs/Web/Guide/Events/Media_events)
 conventions as close as possible, however because React Native events are global,
 the events are prefixed with `RCTAudioPlayer` and `RCTAudioRecorder` accordingly:
