@@ -10,6 +10,8 @@ How to get this stuff running?
 
 ### Example app
 
+Expecting you have the React Native development environment in place:
+
 #### [Android](ExampleApp/index.android.js)
 
 ```
