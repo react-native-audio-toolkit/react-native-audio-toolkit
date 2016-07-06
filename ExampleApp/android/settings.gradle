@@ -1,0 +1,6 @@
+rootProject.name = 'ExampleApp'
+
+include ':app'
+
+include ':react-native-audio-toolkit'
+project(':react-native-audio-toolkit').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-audio-toolkit/android/lib')

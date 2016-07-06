@@ -16,7 +16,7 @@ import {
 
 let audioFilename = 'test.mp4';
 
-class AudioTest extends Component {
+class ExampleApp extends Component {
 
   state = {
     recording: false,
@@ -52,10 +52,10 @@ class AudioTest extends Component {
 
   _stop() {
     if (this.state.recording) {
-      RCTAudioRecorder.stopRecording();
+      RCTAudioRecorder.stop();
       this.setState({recording: false});
     } else if (this.state.playing) {
-      RCTAudioPlayer.stopPlayback();
+      RCTAudioPlayer.stop();
       this.setState({playing: false});
     }
   }
@@ -65,7 +65,7 @@ class AudioTest extends Component {
       this._stop();
     }
 
-    RCTAudioRecorder.startRecordingToFilename(audioFilename);
+    RCTAudioRecorder.recordLocal(audioFilename);
     this.setState({recording: true});
   }
 
@@ -74,7 +74,7 @@ class AudioTest extends Component {
       this._stop();
     }
 
-    RCTAudioPlayer.playAudioWithFilename(audioFilename);
+    RCTAudioPlayer.playLocal(audioFilename);
     this.setState({playing: true});
   }
 
@@ -126,4 +126,4 @@ var styles = StyleSheet.create({
   }
 });
 
-AppRegistry.registerComponent('AudioTest', () => AudioTest);
+AppRegistry.registerComponent('ExampleApp', () => ExampleApp);

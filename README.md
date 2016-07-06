@@ -8,6 +8,30 @@ implemented.
 How to get this stuff running?
 ------------------------------
 
+### Example app
+
+#### [Android](ExampleApp/index.android.js)
+
+```
+cd ExampleApp
+npm install
+npm start
+
+# In a separate terminal, run:
+adb reverse tcp:8081 tcp:8081
+react-native run-android
+```
+
+#### [iOS](ExampleApp/index.ios.js)
+
+```
+TODO
+```
+
+Then start clicking the buttons, it should be quite simple.
+
+### Including the library in your project
+
 Expecting you have the React Native development environment in place, are
 starting with a React Native hello world project and have managed to run it on
 an actual Android/iOS device:
@@ -85,31 +109,6 @@ an actual Android/iOS device:
 
 TODO
 
-
-### Example app
-
-[index.android.js](examples/index.android.js)
-
-`index.ios.js`
-
-```
-TODO
-```
-
-#### `index.js`
-
-```
-TODO
-```
-
-### Run the app
-
-```
-adb reverse tcp:8081 tcp:8081
-react-native run-android
-```
-
-Then start clicking the buttons, it should be quite simple.
 
 Media methods
 -------------
