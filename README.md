@@ -40,7 +40,7 @@ an actual Android/iOS device:
     }
     ```
 
-3. Register the module in `android/app/src/main/java/com/<project>/MainActivity.java`
+3. Register the module in `android/app/src/main/java/com/<project>/MainApplication.java`
 
     ```
     package com.<project>;
