@@ -13,6 +13,4 @@
 
 @interface AudioPlayer : NSObject <RCTBridgeModule>
 
-
-
 @end
