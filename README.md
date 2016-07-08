@@ -27,7 +27,13 @@ react-native run-android
 #### [iOS](ExampleApp/index.ios.js)
 
 ```
-TODO
+cd ExampleApp
+npm install
+
+1. Open the ExampleApp project in Xcode
+2. Right click Libraries, click Add Files to "ExampleApp"
+3. Select ios/react-native-audio-toolkit/ReactNativeAudioToolkit.xcodeproj
+4. Select your project from the Project Navigator, click on the Build Phases tab. Expand Link Binary With Libraries. Click the plus and add lib*.a under Workspace.
 ```
 
 Then start clicking the buttons, it should be quite simple.
