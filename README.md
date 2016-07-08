@@ -1,5 +1,7 @@
 ![banner](/banner.png)
 
+[![npm version](https://badge.fury.io/js/react-native-audio-toolkit.svg)](https://badge.fury.io/js/react-native-audio-toolkit)
+
 This is a cross-platform audio library for React Native. Both audio playback
 and recording is supported, but for now only very basic functionality has been
 implemented.
