@@ -1,4 +1,4 @@
-package com.exampleapp;
+package com.futurice.exampleapp;
 
 import android.app.Application;
 import android.util.Log;

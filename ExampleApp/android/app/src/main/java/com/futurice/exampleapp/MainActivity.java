@@ -1,4 +1,4 @@
-package com.exampleapp;
+package com.futurice.exampleapp;
 
 import com.facebook.react.ReactActivity;
 

@@ -133,8 +133,8 @@ Method name                  | Description
 `play(path)`                 | Start playback of file in `path`
 `playLocal(filename)`        | Start playback of `filename` in app data directory
 `stop()`                     | Stop playback
-`pause()`                    | Pause playback
-`resume()`                   | Resume playback
+`pause()`                    | Pause playback (not implemented)
+`resume()`                   | Resume playback (not implemented)
 
 ### RCTAudioRecorder methods
 
@@ -143,8 +143,8 @@ Method name                  | Description
 `record(path)`               | Start recording to file in `path`
 `recordLocal(filename)`      | Start recording to `filename` in app data directory
 `stop()`                     | Stop recording
-`pause()`                    | Pause recording
-`resume()`                   | Resume recording
+`pause()`                    | Pause recording (not implemented)
+`resume()`                   | Resume recording (not implemented)
 
 Media events
 ------------
