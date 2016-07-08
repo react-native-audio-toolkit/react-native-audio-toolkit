@@ -110,15 +110,13 @@ an actual Android/iOS device:
     TODO: Android 6.0 permissions model once supported by React Native:
     https://facebook.github.io/react-native/docs/known-issues.html#android-m-permissions
 
-
 ### iOS
 
 1. Right click `Libraries`, click `Add Files to "ExampleApp"`
-2. Select `ios/react-native-audio-toolkit/ReactNativeAudioToolkit.xcodeproj`
-3. Select `ExampleApp` from the Project Navigator, click on the `Build Phases` tab.
+2. Select `node_modules/react-native-audio-toolkit/ios/ReactNativeAudioToolkit/ReactNativeAudioToolkit.xcodeproj`
+3. Select your app from the Project Navigator, click on the `Build Phases` tab.
    Expand `Link Binary With Libraries`. Click the plus and add
    `libReactNativeAudioToolkit.a` from under Workspace.
-
 
 Media methods
 -------------
