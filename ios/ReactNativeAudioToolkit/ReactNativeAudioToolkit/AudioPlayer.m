@@ -3,8 +3,9 @@
 //  ReactNativeAudioToolkit
 //
 //  Created by Oskar Vuola on 28/06/16.
-//  Copyright © 2016 Facebook. All rights reserved.
+//  Copyright (c) 2016 Futurice.
 //
+//  Licensed under the MIT license. For more information, see LICENSE.
 
 #import "AudioPlayer.h"
 #import "RCTEventDispatcher.h"
