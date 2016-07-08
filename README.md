@@ -16,7 +16,7 @@ Expecting you have the React Native development environment in place:
 
 ```
 cd ExampleApp
-npm install
+npm install         # make sure you do this inside ExampleApp/
 npm start
 
 # In a separate terminal, run:
@@ -28,12 +28,11 @@ react-native run-android
 
 ```
 cd ExampleApp
-npm install
+npm install         # make sure you do this inside ExampleApp/
 
-1. Open the ExampleApp project in Xcode
-2. Right click Libraries, click Add Files to "ExampleApp"
-3. Select ios/react-native-audio-toolkit/ReactNativeAudioToolkit.xcodeproj
-4. Select your project from the Project Navigator, click on the Build Phases tab. Expand Link Binary With Libraries. Click the plus and add lib*.a under Workspace.
+Then:
+1. Open ExampleApp/ios/ExampleApp.xcodeproj in Xcode
+2. Click on the run button
 ```
 
 Then start clicking the buttons, it should be quite simple.
@@ -116,6 +115,12 @@ an actual Android/iOS device:
 ### iOS
 
 TODO
+
+1. Right click Libraries, click Add Files to "ExampleApp"
+2. Select ios/react-native-audio-toolkit/ReactNativeAudioToolkit.xcodeproj
+3. Select ExampleApp from the Project Navigator, click on the Build Phases tab.
+   Expand Link Binary With Libraries. Click the plus and add
+   libReactNativeAudioToolkit.a from under Workspace.
 
 
 Media methods
