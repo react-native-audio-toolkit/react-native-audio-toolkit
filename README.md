@@ -1,5 +1,4 @@
-react-native-audio-toolkit
-==========================
+![banner](/banner.png)
 
 This is a cross-platform audio library for React Native. Both audio playback
 and recording is supported, but for now only very basic functionality has been
@@ -114,13 +113,11 @@ an actual Android/iOS device:
 
 ### iOS
 
-TODO
-
-1. Right click Libraries, click Add Files to "ExampleApp"
-2. Select ios/react-native-audio-toolkit/ReactNativeAudioToolkit.xcodeproj
-3. Select ExampleApp from the Project Navigator, click on the Build Phases tab.
-   Expand Link Binary With Libraries. Click the plus and add
-   libReactNativeAudioToolkit.a from under Workspace.
+1. Right click `Libraries`, click `Add Files to "ExampleApp"`
+2. Select `ios/react-native-audio-toolkit/ReactNativeAudioToolkit.xcodeproj`
+3. Select `ExampleApp` from the Project Navigator, click on the `Build Phases` tab.
+   Expand `Link Binary With Libraries`. Click the plus and add
+   `libReactNativeAudioToolkit.a` from under Workspace.
 
 
 Media methods
@@ -181,5 +178,5 @@ Event name                   | Description
 License
 -------
 
-All Java code here licensed under MIT license, see LICENSE file. Some of the
+All Android and iOS code here licensed under MIT license, see LICENSE file. Some of the
 files are from React Native templates and are licensed accordingly.
