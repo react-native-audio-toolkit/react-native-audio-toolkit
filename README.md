@@ -125,13 +125,81 @@ Media methods
 
 ### RCTAudioPlayer methods
 
-Method name                  | Description
------------------------------|------------------------
-`play(path)`                 | Start playback of file in `path`
-`playLocal(filename)`        | Start playback of `filename` in app data directory
-`stop()`                     | Stop playback
-`pause()`                    | Pause playback (not implemented)
-`resume()`                   | Resume playback (not implemented)
+* `prepare(String path, Function callback, Object ?playbackOptions)`
+
+    Prepare playback of song in `path`.
+
+    Callback is called with `null` as first parameter when song is ready for
+    playback with `play()`. If there was an error, the callback is called
+    with a String explaining the reason as first parameter.
+
+    playbackOptions fields:
+    {
+        // Treat path as local filename in app data directory
+        local: Boolean (default: false)
+
+        // (Android only) Keep device awake while playing media (NOTE: requires WAKE_LOCK permission)
+        partialWakeLock: Boolean (default: false)
+
+        // Initial volume. The scale is 0.0 (silence) - 1.0 (full volume).
+        volume: Number (default: 1.0)
+
+        // (iOS only) Enable speed factor adjustment
+        enableRate: boolean (default: false)
+
+        // Adjust speed factor of playback
+        speed: float (default: 1.0)
+
+        // (Android only) Adjust pitch factor of playback
+        pitch: float (default: 1.0)
+    }
+
+* `play(String ?path, Function ?callback, Object ?playbackOptions)`
+
+    Start playback.
+
+    If `path` is given, prepare and then immediately play song from `path`.
+    If `path` is not given, play prepared/paused song. (throws error if no song
+    prepared)
+
+    If callback is given, it is called when playback has started.
+
+    playbackOptions are same as in `prepare()`
+
+* `stop(Boolean destroy)`
+
+    Stop playback.
+
+    If destroy is true, clears all media resources from memory. In this case a
+    new song must be loaded with prepare() or play() before the RCTAudioPlayer
+    can be used again.
+
+* `pause()`
+
+    Pauses playback. Playback can be resumed by calling `play()` with no
+    parameters.
+
+* `getDuration(Function callback)`
+
+    Get duration of prepared/playing media in milliseconds. callback is called
+    with result as first parameter. If no duration is available (for example
+    live streams), -1 is returned.
+
+* `seekTo(Number pos, Function ?callback)`
+
+    Seek in currently playing media. `pos` is the offset from the start.
+
+    If callback is given, it is called when the seek operation completes.
+
+* `setLooping(boolean loop)`
+
+    Enable/disable repeat
+
+* `setVolume(Number left, Number right)`
+
+    Set volume of left/right audio channels.
+
+    The scale is from 0.0 (silence) to 1.0 (full volume).
 
 ### RCTAudioRecorder methods
 
