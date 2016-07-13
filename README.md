@@ -138,6 +138,11 @@ Media methods
         // Treat path as local filename in app data directory
         local: Boolean (default: false)
 
+        // (Android only) Treat path as an Android resource ID. Include your assets in
+        // android/app/src/main/res/raw/sound.ext, then call prepare() with
+        // `sound` as path (without the filename extension).
+        resource: Boolean (default: false)
+
         // (Android only) Keep device awake while playing media (NOTE: requires WAKE_LOCK permission)
         partialWakeLock: Boolean (default: false)
 

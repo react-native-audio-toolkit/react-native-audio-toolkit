@@ -69,13 +69,14 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     }
 
     @ReactMethod
+    // TODO: deprecated
     public void playLocal(String filename) {
         String path = Environment.getExternalStorageDirectory().getAbsolutePath();
         if (filename == null) {
             emitError("RCTAudioPlayer:error", "No filename provided");
         } else {
             path += "/" + filename;
-            play(path);
+            play(path, null, null);
         }
     }
 
@@ -95,46 +96,57 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     }
 
     @ReactMethod
-    public void prepare(String path, Callback callback, ReadableMap options) {
-        if (mPlayer == null) {
-            initPlayer();
+    public boolean prepare(String path, Callback callback, ReadableMap options) {
+        if (path != null && !path.isEmpty()) {
+            destroy_mPlayer();
         }
 
         try {
-            if (options.getBoolean("local")) {
+            if (options.hasKey("resource") && options.getBoolean("resource")) {
+                int res = this.context.getResources().getIdentifier(path, "raw", this.context.getPackageName());
+                mPlayer = MediaPlayer.create(this.context, res);
+                mPlayer.setOnErrorListener(this);
+                mPlayer.setOnInfoListener(this);
+                mPlayer.setOnCompletionListener(this);
+            } else if (mPlayer == null) {
+                initPlayer();
+                mPlayer.setDataSource(path);
+                mPlayer.prepare();
+            }
+
+            if (options.hasKey("local") && options.getBoolean("local")) {
                 path = Environment.getExternalStorageDirectory().getAbsolutePath()
                     + "/" + path;
             }
 
-            if (options.getBoolean("partialWakeLock")) {
+            if (options.hasKey("partialWakeLock") && options.getBoolean("partialWakeLock")) {
                 mPlayer.setWakeMode(this.context, PowerManager.PARTIAL_WAKE_LOCK);
             }
 
-            if (!options.isNull("volume")) {
+            if (options.hasKey("volume") && !options.isNull("volume")) {
                 double vol = options.getDouble("volume");
                 mPlayer.setVolume((float) vol, (float) vol);
             }
 
-            if (!options.isNull("speed") || !options.isNull("pitch")) {
+            if (options.hasKey("speed") || options.hasKey("pitch")) {
                 PlaybackParams params = new PlaybackParams();
 
-                if (!options.isNull("speed")) {
+                if (options.hasKey("speed") && !options.isNull("speed")) {
                     params.setSpeed((float) options.getDouble("speed"));
                 }
 
-                if (!options.isNull("pitch")) {
-                    params.setPitch((float) options.getDouble("speed"));
+                if (options.hasKey("pitch") && !options.isNull("pitch")) {
+                    params.setPitch((float) options.getDouble("pitch"));
                 }
 
                 mPlayer.setPlaybackParams(params);
             }
 
-            mPlayer.setDataSource(path);
-            mPlayer.prepare();
-
             if (callback != null) {
                 callback.invoke((String) null);
             }
+
+            return true;
         } catch (Exception e) {
             if (callback != null) {
                 callback.invoke(e.toString());
@@ -143,24 +155,31 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             }
 
             destroy_mPlayer();
-            return;
+            return false;
         }
     }
 
     @ReactMethod
-    public void play(String path) {
+    public void play(String path, Callback callback, ReadableMap options) {
         if (mPlayer == null) {
             initPlayer();
-        }
-
-        if (path != null && !path.isEmpty()) {
-            prepare(path, null, null);
+        } else if (path != null && !path.isEmpty()) {
+            destroy_mPlayer();
         }
 
         try {
-            mPlayer.start();
+            boolean prepareSuccess;
+            // Prepare media first if path was provided
+            if (path != null && !path.isEmpty()) {
+                prepareSuccess = prepare(path, null, options);
+            } else {
+                prepareSuccess = true;
+            }
 
-            emitEvent("RCTAudioPlayer:playing", "Playback started");
+            if (prepareSuccess) {
+                mPlayer.start();
+                emitEvent("RCTAudioPlayer:playing", "Playback started");
+            }
         } catch (Exception e) {
             emitError("RCTAudioPlayer:error", e.toString());
             destroy_mPlayer();
