@@ -125,7 +125,7 @@ Media methods
 
 ### RCTAudioPlayer methods
 
-* `prepare(String path, Function callback, Object ?playbackOptions)`
+* `prepare(String path, Object ?playbackOptions, Function callback)`
 
     Prepare playback of song in `path`.
 
@@ -159,7 +159,7 @@ Media methods
         pitch: float (default: 1.0)
     }
 
-* `play(String ?path, Function ?callback, Object ?playbackOptions)`
+* `play(String ?path, Object ?playbackOptions, Function ?callback)`
 
     Start playback.
 

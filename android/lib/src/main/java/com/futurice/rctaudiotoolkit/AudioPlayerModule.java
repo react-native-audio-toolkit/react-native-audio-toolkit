@@ -63,6 +63,13 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         mPlayer = null;
     }
 
+    /*
+    public Map<String, Object> getConstants() {
+        final Map<String, Object> constants = new HashMap<>();
+        constants.put("PATH_BUNDLE", 
+    }
+    */
+
     @Override
     public String getName() {
         return "RCTAudioPlayer";
@@ -96,7 +103,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     }
 
     @ReactMethod
-    public boolean prepare(String path, Callback callback, ReadableMap options) {
+    public boolean prepare(String path, ReadableMap options, Callback callback) {
         if (path != null && !path.isEmpty()) {
             destroy_mPlayer();
         }
@@ -160,7 +167,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     }
 
     @ReactMethod
-    public void play(String path, Callback callback, ReadableMap options) {
+    public void play(String path, ReadableMap options, Callback callback) {
         if (mPlayer == null) {
             initPlayer();
         } else if (path != null && !path.isEmpty()) {
@@ -171,7 +178,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             boolean prepareSuccess;
             // Prepare media first if path was provided
             if (path != null && !path.isEmpty()) {
-                prepareSuccess = prepare(path, null, options);
+                prepareSuccess = prepare(path, options, null);
             } else {
                 prepareSuccess = true;
             }

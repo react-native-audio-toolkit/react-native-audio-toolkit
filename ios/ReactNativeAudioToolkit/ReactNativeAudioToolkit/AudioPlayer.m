@@ -9,11 +9,11 @@
 
 #import "AudioPlayer.h"
 #import "RCTEventDispatcher.h"
+#import "RCTUtils.h"
 
 @interface AudioPlayer () <AVAudioPlayerDelegate>
 
 @property (nonatomic, strong) AVAudioPlayer *player;
-@property (nonatomic, strong) NSURL *playbackPath;
 
 @end
 
@@ -24,17 +24,21 @@
 #pragma mark React exposed methods
 
 RCT_EXPORT_MODULE();
-
+/*
 RCT_EXPORT_METHOD(playLocal:(NSString *)filename) {
   NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
   NSString *documentsDirectory = [paths objectAtIndex:0];
   
   NSString *filePath = [NSString stringWithFormat:@"%@/%@", documentsDirectory, filename];
   [self playAudioWithURL:[NSURL URLWithString:filePath]];
+}*/
+
+RCT_EXPORT_METHOD(prepare:(NSString *)path) {
+  [self prepareWithURL:[NSURL URLWithString:path]];
 }
 
-RCT_EXPORT_METHOD(play:(NSString *)path) {
-  [self playAudioWithURL:[NSURL URLWithString:path]];
+RCT_EXPORT_METHOD(play:(NSString *)path obj:(NSDictionary* _Nullable)playbackOptions cb:(RCTResponseSenderBlock)callback) {
+  [self playAudioWithURL:path];
 }
 
 RCT_EXPORT_METHOD(stop) {
@@ -52,7 +56,7 @@ RCT_EXPORT_METHOD(pause) {
   if (_player.isPlaying) {
     [_player pause];
     [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioPlayer:resume"
-                                                    body:@{}];
+                                                    body:@{@"status": @"Playback paused"}];
 
   } else {
     NSString *errorDescription = [NSString stringWithFormat:@"Cannot pause when no audio playing."];
@@ -79,14 +83,25 @@ RCT_EXPORT_METHOD(resume) {
 
 #pragma mark Audio
 
-- (void)playAudioWithURL:(NSURL *)url {
+- (void)prepareWithURL:(NSURL *)url {
+    if (url == nil) {
+        NSString *errorDescription = [NSString stringWithFormat:@"Path to file was malformed."];
+        [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioPlayer:error"
+                                                        body:@{@"error": errorDescription}];
+        return;
+    }
+    
+    
+}
+
+- (void)playAudioWithURL:(NSString *)url {
   if (url == nil) {
     NSString *errorDescription = [NSString stringWithFormat:@"Path to file was malformed."];
     [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioPlayer:error"
                                                     body:@{@"error": errorDescription}];
     return;
   }
-  _playbackPath = url;
+    
   // Set session active
   AVAudioSession *audioSession = [AVAudioSession sharedInstance];
   NSError *error = nil;
@@ -107,11 +122,15 @@ RCT_EXPORT_METHOD(resume) {
 
     return;
   }
-  
-  _player = [[AVAudioPlayer alloc] initWithContentsOfURL:url error:&error];
-  
+    
+    url = [NSString stringWithFormat:@"%@/%@", [[NSBundle mainBundle] bundlePath], url];
+
+  NSLog(url);
+  _player = [[AVAudioPlayer alloc] initWithContentsOfURL:[NSURL fileURLWithPath:url] error:&error];
+
   if (error) {
     NSString *errorDescription = [NSString stringWithFormat:@"Player initialization failed: %@", [error description]];
+      NSLog(errorDescription);
     [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioPlayer:error"
                                                     body:@{@"error": errorDescription}];
 
@@ -121,7 +140,7 @@ RCT_EXPORT_METHOD(resume) {
   [_player play];
   
   [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioPlayer:playing"
-                                                  body:@{@"path": [_playbackPath absoluteString]}];
+                                                  body:@{@"status": @"Playback started"}];
 
 }
 
@@ -139,7 +158,7 @@ RCT_EXPORT_METHOD(resume) {
 
   NSLog (@"RCTAudioPlayer: Playing finished, successful: %d", flag);
   [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioPlayer:ended"
-                                                  body:@{@"path": [_playbackPath absoluteString]}];
+                                                  body:@{@"status": @"Finished playback"}];
   
   AVAudioSession *audioSession = [AVAudioSession sharedInstance];
   NSError *error = nil;
