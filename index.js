@@ -44,6 +44,9 @@ class Player {
 
     this._state = states.INITIALIZING;
     RCTAudioPlayer.init(this._playerId, this._path, (err) => {
+      console.log('there:');
+      console.log(err);
+
       if (err) {
         return callback(err);
       }

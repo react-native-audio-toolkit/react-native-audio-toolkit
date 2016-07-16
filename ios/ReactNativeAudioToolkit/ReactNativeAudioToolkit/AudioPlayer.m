@@ -17,7 +17,24 @@
 
 @end
 
-@implementation AudioPlayer
+@implementation AudioPlayer {
+    NSMutableDictionary* _playerPool;
+}
+
+-(NSMutableDictionary*) playerPool {
+  if (!_playerPool) {
+    _playerPool = [NSMutableDictionary new];
+  }
+  return _playerPool;
+}
+
+-(AVAudioPlayer*) playerForKey:(nonnull NSNumber*)key {
+  return [[self playerPool] objectForKey:key];
+}
+
+-(NSNumber*) keyForPlayer:(nonnull AVAudioPlayer*)player {
+  return [[[self playerPool] allKeysForObject:player] firstObject];
+}
 
 @synthesize bridge = _bridge;
 
@@ -33,12 +50,81 @@ RCT_EXPORT_METHOD(playLocal:(NSString *)filename) {
   [self playAudioWithURL:[NSURL URLWithString:filePath]];
 }*/
 
-RCT_EXPORT_METHOD(prepare:(NSString *)path) {
-  [self prepareWithURL:[NSURL URLWithString:path]];
+-(NSDictionary*) errObjWithCode:(NSInteger)code
+             withMessage:(NSString*)message {
+    NSDictionary *err = @{
+      @"code": [NSNumber numberWithInt:code],
+      @"message": message,
+      @"stackTrace": [NSThread callStackSymbols]
+    };
+
+    return err;
+ }
+
+RCT_EXPORT_METHOD(init:(nonnull NSNumber*)playerId withPath:(NSString* _Nullable)path withCallback:(RCTResponseSenderBlock)callback) {
+  if ([path length] == 0) {
+    NSDictionary* dict = [self errObjWithCode:-1 withMessage:@"Provided path was empty"];
+    callback(@[dict]);
+  }
+
+  path = [NSString stringWithFormat:@"%@/%@", [[NSBundle mainBundle] bundlePath], path];
+
+  NSError* error;
+  AVAudioPlayer* player = [[AVAudioPlayer alloc]
+                           initWithContentsOfURL:[NSURL fileURLWithPath:[path stringByRemovingPercentEncoding]]
+                           error:&error];
+
+  if (player) {
+    player.delegate = self;
+    [[self playerPool] setObject:player forKey:playerId];
+
+    callback(@[[NSNull null]]);
+  } else {
+    callback(@[RCTJSErrorFromNSError(error)]);
+  }
 }
 
-RCT_EXPORT_METHOD(play:(NSString *)path obj:(NSDictionary* _Nullable)playbackOptions cb:(RCTResponseSenderBlock)callback) {
+RCT_EXPORT_METHOD(destroy:(nonnull NSNumber*)playerId) {
+  AVAudioPlayer* player = [self playerForKey:playerId]; if (player) {
+    [player stop];
+    [[self playerPool] removeObjectForKey:playerId];
+  }
+}
+
+RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId withCallback:(RCTResponseSenderBlock)callback) {
+  AVAudioPlayer* player = [self playerForKey:playerId];
+
+  if (!player) {
+    NSDictionary* dict = [self errObjWithCode:-1 withMessage:@"playerId TODO not found."];
+    callback(@[dict]);
+    return;
+  }
+
+  [player prepareToPlay];
+
+  callback(@[[NSNull null], @{@"duration": @(player.duration),
+                            @"position": @(player.currentTime * 1000)}]);
+}
+
+RCT_EXPORT_METHOD(play:(NSString *)path withPos:(nonnull NSNumber*)position withCallback:(RCTResponseSenderBlock)callback) {
   [self playAudioWithURL:path];
+}
+
+RCT_EXPORT_METHOD(set:(nonnull NSNumber*)playerId withOpts:(NSDictionary*)options withCallback:(RCTResponseSenderBlock)callback) {
+  AVAudioPlayer* player = [self playerForKey:playerId];
+
+  if (!player) {
+    NSDictionary* dict = [self errObjWithCode:-1 withMessage:@"playerId TODO not found."];
+    callback(@[dict]);
+    return;
+  }
+
+  float volume = [[options objectForKey:@"volume"] floatValue];
+  if (volume) {
+      [player setVolume:volume];
+  }
+
+  callback(@[[NSNull null]]);
 }
 
 RCT_EXPORT_METHOD(stop) {

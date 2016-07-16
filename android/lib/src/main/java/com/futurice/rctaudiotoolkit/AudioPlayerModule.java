@@ -171,7 +171,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     }
 
     @ReactMethod
-    public void destroyPlayer(Integer playerId) {
+    public void destroy(Integer playerId) {
         MediaPlayer player = this.playerPool.get(playerId);
 
         if (player != null) {
@@ -212,7 +212,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         }
 
         // Release old player if exists
-        destroyPlayer(playerId);
+        destroy(playerId);
 
         Uri uri = uriFromPath(path);
 
@@ -338,7 +338,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         try {
             player.stop();
             if (this.playerAutoDestroy.get(playerId)) {
-                destroyPlayer(playerId);
+                destroy(playerId);
             }
             callback.invoke();
         } catch (Exception e) {
@@ -365,7 +365,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         Integer playerId = getPlayerId(player);
 
         if (this.playerAutoDestroy.get(playerId)) {
-            destroyPlayer(playerId);
+            destroy(playerId);
         }
     }
 
@@ -374,7 +374,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         emitError("RCTAudioPlayer:error", "Error during playback - what: " + what + " extra: " + extra);
 
         Integer playerId = getPlayerId(player);
-        destroyPlayer(playerId);
+        destroy(playerId);
         return true; // don't call onCompletion listener afterwards
     }
 
