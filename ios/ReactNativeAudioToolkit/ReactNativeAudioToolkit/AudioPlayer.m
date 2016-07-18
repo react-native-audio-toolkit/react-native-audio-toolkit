@@ -91,7 +91,7 @@ RCT_EXPORT_METHOD(destroy:(nonnull NSNumber*)playerId) {
   }
 }
 
-RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId withCallback:(RCTResponseSenderBlock)callback) {
+RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId withPos:(nonnull NSNumber*)position withCallback:(RCTResponseSenderBlock)callback) {
   AVAudioPlayer* player = [self playerForKey:playerId];
 
   if (!player) {
@@ -100,14 +100,29 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId withCallback:(RCTResponseS
     return;
   }
 
+  if (position != -1) {
+    [player pause];
+    [player setCurrentTime:[position doubleValue]];
+  }
+
   [player prepareToPlay];
 
   callback(@[[NSNull null], @{@"duration": @(player.duration),
                             @"position": @(player.currentTime * 1000)}]);
 }
 
-RCT_EXPORT_METHOD(play:(NSString *)path withPos:(nonnull NSNumber*)position withCallback:(RCTResponseSenderBlock)callback) {
-  [self playAudioWithURL:path];
+RCT_EXPORT_METHOD(play:(nonnull NSNumber*)playerId withCallback:(RCTResponseSenderBlock)callback) {
+  AVAudioPlayer* player = [self playerForKey:playerId];
+
+  if (!player) {
+    NSDictionary* dict = [self errObjWithCode:-1 withMessage:@"playerId TODO not found."];
+    callback(@[dict]);
+    return;
+  }
+
+  [player play];
+  callback(@[[NSNull null], @{@"duration": @(player.duration),
+                            @"position": @(player.currentTime * 1000)}]);
 }
 
 RCT_EXPORT_METHOD(set:(nonnull NSNumber*)playerId withOpts:(NSDictionary*)options withCallback:(RCTResponseSenderBlock)callback) {

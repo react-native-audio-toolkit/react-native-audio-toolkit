@@ -30,11 +30,12 @@ import java.util.Map.Entry;
 import java.util.Objects;
 
 public class AudioPlayerModule extends ReactContextBaseJavaModule implements MediaPlayer.OnInfoListener,
-        MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {
+        MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnSeekCompleteListener {
     private static final String LOG_TAG = "AudioPlayerModule";
 
     Map<Integer, MediaPlayer> playerPool = new HashMap<>();
     Map<Integer, Boolean> playerAutoDestroy = new HashMap<>();
+    Map<Integer, Callback> playerSeekCallback = new HashMap<>();
 
     private ReactApplicationContext context;
 
@@ -178,8 +179,40 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             player.release();
             this.playerPool.remove(playerId);
             this.playerAutoDestroy.remove(playerId);
+            this.playerSeekCallback.remove(playerId);
             emitEvent("RCTAudioPlayer:info", "Destroyed player: " + playerId);
         }
+    }
+
+    @ReactMethod
+    public void seek(Integer playerId, Integer position, Callback callback) {
+        MediaPlayer player = this.playerPool.get(playerId);
+        if (player == null) {
+            callback.invoke(errObj(-1, "playerId " + playerId + " not found."));
+            return;
+        }
+
+        if (position != -1) {
+            Callback oldCallback = this.playerSeekCallback.get(playerId);
+
+            if (oldCallback != null) {
+                oldCallback.invoke(errObj(-1, "new seek operation before old one completed"));
+                this.playerSeekCallback.remove(playerId);
+            }
+
+            this.playerSeekCallback.put(playerId, callback);
+            player.seekTo(position);
+        }
+    }
+
+    private WritableMap getInfo(MediaPlayer player) {
+        WritableMap info = Arguments.createMap();
+
+        info.putDouble("duration", player.getDuration());
+        info.putDouble("position", player.getCurrentPosition());
+        info.putDouble("audioSessionId", player.getAudioSessionId());
+
+        return info;
     }
 
     @ReactMethod
@@ -193,12 +226,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         try {
             player.prepare();
 
-            WritableMap info = Arguments.createMap();
-            info.putDouble("duration", player.getDuration());
-            info.putDouble("position", player.getCurrentPosition());
-            info.putDouble("audioSessionId", player.getAudioSessionId());
-
-            callback.invoke(null, info);
+            callback.invoke(null, getInfo(player));
         } catch (IOException e) {
             callback.invoke(errObj(-1, e.toString()));
         }
@@ -238,6 +266,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         player.setOnErrorListener(this);
         player.setOnInfoListener(this);
         player.setOnCompletionListener(this);
+        player.setOnSeekCompleteListener(this);
 
         this.playerPool.put(playerId, player);
         this.playerAutoDestroy.put(playerId, true);
@@ -287,7 +316,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     }
 
     @ReactMethod
-    public void play(Integer playerId, Integer position, Callback callback) {
+    public void play(Integer playerId, Callback callback) {
         MediaPlayer player = this.playerPool.get(playerId);
         if (player == null) {
             callback.invoke(errObj(-1, "playerId " + playerId + "not found."));
@@ -296,16 +325,8 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
 
         try {
             player.start();
-            if (position != -1) {
-                player.seekTo(position);
-            }
 
-            WritableMap info = Arguments.createMap();
-            info.putDouble("duration", player.getDuration());
-            info.putDouble("position", player.getCurrentPosition());
-            info.putDouble("audioSessionId", player.getAudioSessionId());
-
-            callback.invoke(null, info);
+            callback.invoke(null, getInfo(player));
         } catch (Exception e) {
             callback.invoke(errObj(-1, e.toString()));
         }
@@ -356,6 +377,19 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         }
 
         return null;
+    }
+
+    @Override
+    public void onSeekComplete(MediaPlayer player) {
+        emitEvent("RCTAudioPlayer:ended", "Finished playback");
+
+        Integer playerId = getPlayerId(player);
+        Callback callback = this.playerSeekCallback.get(playerId);
+
+        if (callback != null) {
+            callback.invoke(null, getInfo(player));
+            this.playerSeekCallback.remove(playerId);
+        }
     }
 
     @Override

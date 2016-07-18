@@ -2,6 +2,7 @@
 
 import { NativeModules } from 'react-native';
 import { _ } from 'lodash';
+import * as async from 'async';
 
 var RCTAudioPlayer = NativeModules.AudioPlayer;
 var RCTAudioRecorder = NativeModules.AudioRecorder;
@@ -9,6 +10,7 @@ var RCTAudioRecorder = NativeModules.AudioRecorder;
 var playerId = 0;
 
 var states = {
+  ERROR: -1,
   IDLE: 0,
   INITIALIZING: 1,
   INITIALIZED: 2,
@@ -37,89 +39,111 @@ class Player {
     this._lastSync = -1;
   }
 
+  _storeInfo(info) {
+    this._duration = info.duration;
+    this._position = info.position;
+    this._lastSync = Date.now();
+  }
+
+  _updateState(err, state, results) {
+    this._state = err ? states.ERROR : state;
+
+    if (err || !results) {
+      return;
+    }
+
+    // Use last truthy value from results array as new media info
+    let info = _.last(_.filter(results, _.identity));
+    this._storeInfo(info);
+  }
+
   init(callback = _.noop) {
     if (this._state != states.IDLE) {
       this._reset();
     }
 
-    this._state = states.INITIALIZING;
-    RCTAudioPlayer.init(this._playerId, this._path, (err) => {
-      console.log('there:');
-      console.log(err);
+    this._updateState(null, states.INITIALIZING);
 
-      if (err) {
-        return callback(err);
+    async.series([
+      // Initialize the player
+      (next) => {
+        RCTAudioPlayer.init(this._playerId, this._path, next);
+      },
+
+      // Set initial values for player options
+      (next) => {
+        RCTAudioPlayer.set(this._playerId, {
+          volume: this._volume,
+          pan: this._pan,
+          wakeLock: this._wakeLock,
+          autoDestroy: this._autoDestroy
+        }, next);
       }
+    ],
 
-      RCTAudioPlayer.set(this._playerId, {
-        volume: this._volume,
-        pan: this._pan,
-        wakeLock: this._wakeLock,
-        autoDestroy: this._autoDestroy
-      }, (err) => {
-        if (err) {
-          return callback(err);
-        }
-
-        this._state = states.INITIALIZED;
-        callback();
-      });
+    (err, results) => {
+      _updateState(err, states.INITIALIZED);
+      callback(err);
     });
   }
 
-  prepare(callback = _.noop) {
+  prepare(position = -1, callback = _.noop) {
+    if (typeof position === 'function') {
+      callback = position;
+      position = -1;
+    }
+
+    let tasks = [];
+
     // Initialize player if not initialized yet
     if (this._state < states.INITIALIZED) {
-      this.init((err) => {
-        if (err) {
-          return callback(err);
-        }
+      tasks.push(this.init.bind(this));
+    }
 
-        this.prepare(callback);
-      });
-    } else {
-      this._state = states.PREPARING;
-      RCTAudioPlayer.prepare(this._playerId, (err, info) => {
-        if (err) {
-          return callback(err);
-        }
-
-        this._duration = info.duration;
-        this._position = info.position;
-        this._lastSync = Date.now();
-
-        this._state = states.PREPARED;
-        callback();
+    // Prepare player if not prepared yet
+    if (this._state < states.PREPARED) {
+      tasks.push((next) => {
+        RCTAudioPlayer.prepare(this._playerId, next);
       });
     }
+
+    // Seek to position if given
+    if (position != -1) {
+      tasks.push((next) => {
+        RCTAudioPlayer.seek(this._playerId, position, next);
+      });
+    }
+
+    async.series(tasks, (err, results) => {
+      this._updateState(err, states.PREPARED, results);
+      callback(err);
+    });
 
     return this;
   }
 
   play(position = 0, callback = _.noop) {
-    // Prepare player if not prepared yet
-    if (this._state < states.PREPARED) {
-      this.prepare((err) => {
-        if (err) {
-          return callback(err);
-        }
-
-        this.play(position, callback);
-      });
-    } else {
-      RCTAudioPlayer.play(this._playerId, position, (err, info) => {
-        if (err) {
-          return callback(err);
-        }
-
-        this._state = states.PLAYING;
-        this._duration = info.duration;
-        this._position = info.position;
-        this._lastSync = Date.now();
-
-        callback();
-      });
+    if (typeof position === 'function') {
+      callback = position;
+      position = 0;
     }
+
+    async.series([
+      // Make sure player is prepared
+      (next) => {
+        this.prepare(position, next);
+      },
+
+      // Start playback
+      (next) => {
+        RCTAudioPlayer.play(this._playerId, next);
+      }
+    ],
+
+    (err, results) => {
+      this._updateState(err, states.PLAYING, results);
+      callback(err);
+    });
 
     return this;
   }
@@ -130,23 +154,17 @@ class Player {
 
   pause(callback = _.noop) {
     RCTAudioPlayer.pause(this._playerId, (err) => {
-      if (err) {
-        return callback(err);
-      }
-
-      this._state = states.PAUSED;
+      this._updateState(err, states.PAUSED);
+      callback(err);
     });
     return this;
   }
 
   stop(callback = _.noop) {
     RCTAudioPlayer.stop(this._playerId, (err) => {
-      if (err) {
-        return callback(err);
-      }
-
-      this._state = states.INITIALIZED;
+      this._updateState(err, states.INITIALIZED);
       this._position = -1;
+      callback(err);
     });
     return this;
   }
@@ -189,7 +207,7 @@ class Player {
   }
 
   get currentTime() {
-    var pos = -1;
+    let pos = -1;
 
     if (this._position < 0) {
       return -1;
