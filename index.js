@@ -59,7 +59,7 @@ class Player {
 
   init(callback = _.noop) {
     if (this._state != states.IDLE) {
-      this._reset();
+      this.destroy();
     }
 
     this._updateState(null, states.INITIALIZING);
