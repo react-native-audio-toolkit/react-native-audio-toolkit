@@ -69,20 +69,22 @@ class Player extends EventEmitter {
   }
 
   _handleEvent(event, data) {
-    console.log('event:');
-    console.log(event);
-    console.log(data);
-
     switch (event) {
       case 'progress':
+        console.log(data);
         break;
       case 'seeked':
+        console.log(data);
         break;
       case 'ended':
+        console.log(data);
         break;
       case 'info':
+        console.log(data);
         break;
       case 'error':
+        console.log(data);
+        this._reset();
         break;
     }
 
