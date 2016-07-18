@@ -30,7 +30,8 @@ import java.util.Map.Entry;
 import java.util.Objects;
 
 public class AudioPlayerModule extends ReactContextBaseJavaModule implements MediaPlayer.OnInfoListener,
-        MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnSeekCompleteListener {
+        MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnSeekCompleteListener,
+        MediaPlayer.OnBufferingUpdateListener {
     private static final String LOG_TAG = "AudioPlayerModule";
 
     Map<Integer, MediaPlayer> playerPool = new HashMap<>();
@@ -44,34 +45,18 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         this.context = reactContext;
     }
 
-    private void emitError(String event, String s) {
-        Log.e(LOG_TAG, event + ": " + s);
+    private void emitEvent(Integer playerId, String event, WritableMap data) {
+        //Log.d(LOG_TAG, "player " + playerId + ": " + event + ": " + s);
         WritableMap payload = new WritableNativeMap();
-        payload.putString(event, s);
+        payload.putString("event", event);
+        payload.putMap("data", data);
 
         this.context
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                .emit(event, payload);
+                .emit("RCTAudioPlayerEvent:" + playerId, payload);
     }
 
-    private void emitEvent(String event, String s) {
-        Log.d(LOG_TAG, event + ": " + s);
-        WritableMap payload = new WritableNativeMap();
-        payload.putString(event, s);
-
-        this.context
-                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                .emit(event, payload);
-    }
-
-    /*
-    public Map<String, Object> getConstants() {
-        final Map<String, Object> constants = new HashMap<>();
-        constants.put("PATH_BUNDLE", 
-    }
-    */
-
-    private WritableMap errObj(final Integer code, final String message) {
+    private WritableMap errObj(final String code, final String message) {
         WritableMap err = Arguments.createMap();
 
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
@@ -81,7 +66,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             stackTraceString += e.toString() + "\n";
         }
 
-        err.putInt("code", code);
+        err.putString("err", code);
         err.putString("message", message);
         err.putString("stackTrace", stackTraceString);
 
@@ -180,7 +165,11 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             this.playerPool.remove(playerId);
             this.playerAutoDestroy.remove(playerId);
             this.playerSeekCallback.remove(playerId);
-            emitEvent("RCTAudioPlayer:info", "Destroyed player: " + playerId);
+
+            WritableMap data = new WritableNativeMap();
+            data.putString("message", "Destroyed player");
+
+            emitEvent(playerId, "info", data);
         }
     }
 
@@ -188,7 +177,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     public void seek(Integer playerId, Integer position, Callback callback) {
         MediaPlayer player = this.playerPool.get(playerId);
         if (player == null) {
-            callback.invoke(errObj(-1, "playerId " + playerId + " not found."));
+            callback.invoke(errObj("notfound", "playerId " + playerId + " not found."));
             return;
         }
 
@@ -196,7 +185,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             Callback oldCallback = this.playerSeekCallback.get(playerId);
 
             if (oldCallback != null) {
-                oldCallback.invoke(errObj(-1, "new seek operation before old one completed"));
+                oldCallback.invoke(errObj("oldcallback", "new seek operation before old one completed"));
                 this.playerSeekCallback.remove(playerId);
             }
 
@@ -219,7 +208,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     public void prepare(Integer playerId, Callback callback) {
         MediaPlayer player = this.playerPool.get(playerId);
         if (player == null) {
-            callback.invoke(errObj(-1, "playerId " + playerId + " not found."));
+            callback.invoke(errObj("notfound", "playerId " + playerId + " not found."));
             return;
         }
 
@@ -228,14 +217,14 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
 
             callback.invoke(null, getInfo(player));
         } catch (IOException e) {
-            callback.invoke(errObj(-1, e.toString()));
+            callback.invoke(errObj("prepare", e.toString()));
         }
     }
 
     @ReactMethod
     public void init(Integer playerId, String path, Callback callback) {
         if (path == null || path.isEmpty()) {
-            callback.invoke(errObj(-1, "Provided path was empty"));
+            callback.invoke(errObj("nopath", "Provided path was empty"));
             return;
         }
 
@@ -259,7 +248,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         try {
             player.setDataSource(this.context, uri);
         } catch (IOException e) {
-            callback.invoke(errObj(-1, e.toString()));
+            callback.invoke(errObj("ioexception", e.toString()));
             return;
         }
 
@@ -278,7 +267,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     public void set(Integer playerId, ReadableMap options, Callback callback) {
         MediaPlayer player = this.playerPool.get(playerId);
         if (player == null) {
-            callback.invoke(errObj(-1, "playerId " + playerId + " not found."));
+            callback.invoke(errObj("notfound", "playerId " + playerId + " not found."));
             return;
         }
 
@@ -319,7 +308,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     public void play(Integer playerId, Callback callback) {
         MediaPlayer player = this.playerPool.get(playerId);
         if (player == null) {
-            callback.invoke(errObj(-1, "playerId " + playerId + "not found."));
+            callback.invoke(errObj("notfound", "playerId " + playerId + "not found."));
             return;
         }
 
@@ -328,7 +317,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
 
             callback.invoke(null, getInfo(player));
         } catch (Exception e) {
-            callback.invoke(errObj(-1, e.toString()));
+            callback.invoke(errObj("playback", e.toString()));
         }
     }
 
@@ -336,7 +325,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     public void pause(Integer playerId, Callback callback) {
         MediaPlayer player = this.playerPool.get(playerId);
         if (player == null) {
-            callback.invoke(errObj(-1, "playerId " + playerId + "not found."));
+            callback.invoke(errObj("notfound", "playerId " + playerId + "not found."));
             return;
         }
 
@@ -344,7 +333,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             player.pause();
             callback.invoke();
         } catch (Exception e) {
-            callback.invoke(errObj(-1, e.toString()));
+            callback.invoke(errObj("pause", e.toString()));
         }
     }
 
@@ -352,7 +341,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     public void stop(Integer playerId, Callback callback) {
         MediaPlayer player = this.playerPool.get(playerId);
         if (player == null) {
-            callback.invoke(errObj(-1, "playerId " + playerId + "not found."));
+            callback.invoke(errObj("notfound", "playerId " + playerId + "not found."));
             return;
         }
 
@@ -363,8 +352,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             }
             callback.invoke();
         } catch (Exception e) {
-            callback.invoke(errObj(-1, e.toString()));
-            emitError("RCTAudioPlayer:error", e.toString());
+            callback.invoke(errObj("stop", e.toString()));
         }
     }
 
@@ -380,23 +368,39 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     }
 
     @Override
-    public void onSeekComplete(MediaPlayer player) {
-        emitEvent("RCTAudioPlayer:ended", "Finished playback");
-
+    public void onBufferingUpdate(MediaPlayer player, int percent) {
         Integer playerId = getPlayerId(player);
-        Callback callback = this.playerSeekCallback.get(playerId);
 
+        WritableMap data = new WritableNativeMap();
+        data.putString("message", "Status update for media stream buffering");
+        data.putInt("percent", percent);
+        emitEvent(playerId, "progress", data);
+    }
+
+    @Override
+    public void onSeekComplete(MediaPlayer player) {
+        Integer playerId = getPlayerId(player);
+
+        // Invoke seek callback
+        Callback callback = this.playerSeekCallback.get(playerId);
         if (callback != null) {
             callback.invoke(null, getInfo(player));
             this.playerSeekCallback.remove(playerId);
         }
+
+        // Emit "seeked" event
+        WritableMap data = new WritableNativeMap();
+        data.putString("message", "Seek operation completed");
+        emitEvent(playerId, "seeked", data);
     }
 
     @Override
     public void onCompletion(MediaPlayer player) {
-        emitEvent("RCTAudioPlayer:ended", "Finished playback");
-
         Integer playerId = getPlayerId(player);
+
+        WritableMap data = new WritableNativeMap();
+        data.putString("message", "Playback completed");
+        emitEvent(playerId, "ended", data);
 
         if (this.playerAutoDestroy.get(playerId)) {
             destroy(playerId);
@@ -405,17 +409,36 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
 
     @Override
     public boolean onError(MediaPlayer player, int what, int extra) {
-        emitError("RCTAudioPlayer:error", "Error during playback - what: " + what + " extra: " + extra);
-
         Integer playerId = getPlayerId(player);
+
+        WritableMap err = new WritableNativeMap();
+        err.putInt("what", what);
+        err.putInt("extra", extra);
+
+        WritableMap data = new WritableNativeMap();
+        data.putMap("err", err);
+        data.putString("message", "Android MediaPlayer error");
+
+        emitEvent(playerId, "error", data);
+
         destroy(playerId);
         return true; // don't call onCompletion listener afterwards
     }
 
     @Override
     public boolean onInfo(MediaPlayer player, int what, int extra) {
-        // TODO: what to do with this
-        emitEvent("RCTAudioPlayer:info", "Info during playback - what: " + what + " extra: " + extra);
+        Integer playerId = getPlayerId(player);
+
+        WritableMap info = new WritableNativeMap();
+        info.putInt("what", what);
+        info.putInt("extra", extra);
+
+        WritableMap data = new WritableNativeMap();
+        data.putMap("info", info);
+        data.putString("message", "Android MediaPlayer info");
+
+        emitEvent(playerId, "info", info);
+
         return false;
     }
 }

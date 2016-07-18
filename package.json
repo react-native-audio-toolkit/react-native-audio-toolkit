@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "async": "^2.0.0",
+    "eventemitter3": "^1.2.0",
     "lodash": "^4.13.1"
   }
 }

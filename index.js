@@ -1,8 +1,13 @@
 'use strict';
 
-import { NativeModules } from 'react-native';
-import { _ } from 'lodash';
-import * as async from 'async';
+import {
+  NativeModules,
+  DeviceEventEmitter
+} from 'react-native';
+
+import _ from 'lodash';
+import async from 'async';
+import EventEmitter from 'eventemitter3';
 
 var RCTAudioPlayer = NativeModules.AudioPlayer;
 var RCTAudioRecorder = NativeModules.AudioRecorder;
@@ -20,12 +25,18 @@ var states = {
   PAUSED: 6
 };
 
-class Player {
+class Player extends EventEmitter {
   constructor(path) {
+    super();
+
     this._path = path;
 
     this._playerId = playerId++;
     this._reset();
+
+    DeviceEventEmitter.addListener('RCTAudioPlayerEvent:' + this._playerId, (payload: Event) => {
+      this._handleEvent(payload.event, payload.data);
+    });
   }
 
   _reset() {
@@ -55,6 +66,27 @@ class Player {
     // Use last truthy value from results array as new media info
     let info = _.last(_.filter(results, _.identity));
     this._storeInfo(info);
+  }
+
+  _handleEvent(event, data) {
+    console.log('event:');
+    console.log(event);
+    console.log(data);
+
+    switch (event) {
+      case 'progress':
+        break;
+      case 'seeked':
+        break;
+      case 'ended':
+        break;
+      case 'info':
+        break;
+      case 'error':
+        break;
+    }
+
+    this.emit(event, data);
   }
 
   init(callback = _.noop) {
@@ -97,7 +129,9 @@ class Player {
 
     // Initialize player if not initialized yet
     if (this._state < states.INITIALIZED) {
-      tasks.push(this.init.bind(this));
+      tasks.push((next) => {
+        this.init(next);
+      });
     }
 
     // Prepare player if not prepared yet
