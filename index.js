@@ -82,7 +82,7 @@ class Player {
     ],
 
     (err, results) => {
-      _updateState(err, states.INITIALIZED);
+      this._updateState(err, states.INITIALIZED);
       callback(err);
     });
   }
