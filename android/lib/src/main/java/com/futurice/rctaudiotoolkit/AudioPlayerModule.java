@@ -140,7 +140,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             return;
         }
 
-        if (position != -1) {
+        if (position >= 0) {
             Callback oldCallback = this.playerSeekCallback.get(playerId);
 
             if (oldCallback != null) {
