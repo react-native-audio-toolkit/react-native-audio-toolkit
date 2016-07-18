@@ -81,47 +81,6 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         return "RCTAudioPlayer";
     }
 
-    /*
-    @ReactMethod
-    // TODO: deprecated
-    public void playLocal(String filename) {
-        String path = Environment.getExternalStorageDirectory().getAbsolutePath();
-        if (filename == null) {
-            emitError("RCTAudioPlayer:error", "No filename provided");
-        } else {
-            path += "/" + filename;
-            play(path, null, null);
-        }
-    }
-    */
-
-    /*
-    @ReactMethod
-    public void getResourceUri(String name, Callback callback) {
-        int resId = this.context.getResources().getIdentifier(name, "raw", this.context.getPackageName());
-
-        Uri uri = Uri.parse("android.resource://" + this.context.getPackageName() + "/" + resId);
-        callback.invoke(uri.toString());
-    }
-    */
-
-    /**
-     * Get URI for a path on external storage.
-     *
-     * If extPath is empty, return URI for external storage directory.
-     */
-    /*
-    @ReactMethod
-    public void getExternalStorageUri(String extPath, Callback callback) {
-        String completePath = Environment.getExternalStorageDirectory() +
-            ((extPath == null || extPath.isEmpty()) ? "" : ("/" + extPath));
-
-        File file = new File(completePath);
-        Uri uri = Uri.fromFile(file);
-        callback.invoke(uri.toString());
-    }
-    */
-
     private Uri uriFromPath(String path) {
         File file = null;
 
