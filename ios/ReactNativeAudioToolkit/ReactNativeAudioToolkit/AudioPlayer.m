@@ -70,15 +70,21 @@ RCT_EXPORT_METHOD(init:(nonnull NSNumber*)playerId withPath:(NSString* _Nullable
     callback(@[dict]);
   }
 
-  path = [NSString stringWithFormat:@"%@/%@", [[NSBundle mainBundle] bundlePath], path];
+  NSURL *url;
 
-  //NSString *urlString = @"https://fruitiex.org/files/rosanna_128kbit.mp3";
-  //NSURL *url = [NSURL URLWithString:[urlString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+  NSString* mainBundle = [NSString stringWithFormat:@"%@/%@", [[NSBundle mainBundle] bundlePath], path];
+  BOOL isDir;
+  NSFileManager* fm = [[NSFileManager alloc] init];
+  if ([fm fileExistsAtPath:mainBundle isDirectory:isDir]) {
+      url = [NSURL fileURLWithPath:mainBundle];
+  } else {
+      url = [NSURL URLWithString:[path stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+  }
 
   NSError* error;
   AVPlayer* player = [[AVPlayer alloc]
-                           //initWithURL:url];
-                           initWithURL:[NSURL fileURLWithPath:[path stringByRemovingPercentEncoding]]];
+                           initWithURL:url];
+                           //initWithURL:[NSURL fileURLWithPath:[path stringByRemovingPercentEncoding]]];
                            //error:&error];
 
                            //initWithContentsOfURL:
@@ -124,7 +130,7 @@ RCT_EXPORT_METHOD(seek:(nonnull NSNumber*)playerId withPos:(nonnull NSNumber*)po
   }
 
   if (position >= 0) {
-    [player.currentItem seekToTime:CMTimeMakeWithSeconds([position doubleValue], 60000)];
+    [player.currentItem seekToTime:CMTimeMakeWithSeconds([position doubleValue] / 1000, 60000)];
     //[player prepareToPlay];
   }
 
