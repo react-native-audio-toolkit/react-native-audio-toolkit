@@ -45,6 +45,11 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         this.context = reactContext;
     }
 
+    @Override
+    public String getName() {
+        return "RCTAudioPlayer";
+    }
+
     private void emitEvent(Integer playerId, String event, WritableMap data) {
         //Log.d(LOG_TAG, "player " + playerId + ": " + event + ": " + s);
         WritableMap payload = new WritableNativeMap();
@@ -74,11 +79,6 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         Log.d(LOG_TAG, stackTraceString);
 
         return err;
-    }
-
-    @Override
-    public String getName() {
-        return "RCTAudioPlayer";
     }
 
     private Uri uriFromPath(String path) {
