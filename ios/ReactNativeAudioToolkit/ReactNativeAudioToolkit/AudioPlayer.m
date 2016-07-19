@@ -39,10 +39,10 @@
   return [[[self playerPool] allKeysForObject:player] firstObject];
 }
 
--(NSDictionary*) errObjWithCode:(NSInteger)code
-             withMessage:(NSString*)message {
+-(NSDictionary*) errObjWithCode:(NSString*)code
+                    withMessage:(NSString*)message {
     NSDictionary *err = @{
-      @"code": [NSNumber numberWithInt:code],
+      @"code": code,
       @"message": message,
       @"stackTrace": [NSThread callStackSymbols]
     };
@@ -55,18 +55,10 @@
 #pragma mark React exposed methods
 
 RCT_EXPORT_MODULE();
-/*
-RCT_EXPORT_METHOD(playLocal:(NSString *)filename) {
-  NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-  NSString *documentsDirectory = [paths objectAtIndex:0];
-  
-  NSString *filePath = [NSString stringWithFormat:@"%@/%@", documentsDirectory, filename];
-  [self playAudioWithURL:[NSURL URLWithString:filePath]];
-}*/
 
 RCT_EXPORT_METHOD(init:(nonnull NSNumber*)playerId withPath:(NSString* _Nullable)path withCallback:(RCTResponseSenderBlock)callback) {
   if ([path length] == 0) {
-    NSDictionary* dict = [self errObjWithCode:-1 withMessage:@"Provided path was empty"];
+    NSDictionary* dict = [self errObjWithCode:@"nopath" withMessage:@"Provided path was empty"];
     callback(@[dict]);
   }
 
@@ -108,23 +100,26 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId withCallback:(RCTResponseS
   AVPlayer* player = [self playerForKey:playerId];
 
   if (!player) {
-    NSDictionary* dict = [self errObjWithCode:-1 withMessage:@"playerId TODO not found."];
+    NSDictionary* dict = [self errObjWithCode:@"notfound"
+                                  withMessage:[NSString stringWithFormat:@"playerId %d not found.", playerId]];
     callback(@[dict]);
     return;
   }
 
-  // TODO
-  //[player prerollAItRate:0.0 completionHandler:&(BOOL finished) {];
+  [player cancelPendingPrerolls];
 
-  callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration)),
-                            @"position": @(CMTimeGetSeconds(player.currentTime) * 1000)}]);
+  [player prerollAtRate:0.0 completionHandler:^(BOOL finished) {
+      callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration)),
+                                @"position": @(CMTimeGetSeconds(player.currentTime) * 1000)}]);
+  }];
 }
 
 RCT_EXPORT_METHOD(seek:(nonnull NSNumber*)playerId withPos:(nonnull NSNumber*)position withCallback:(RCTResponseSenderBlock)callback) {
   AVPlayer* player = [self playerForKey:playerId];
 
   if (!player) {
-    NSDictionary* dict = [self errObjWithCode:-1 withMessage:@"playerId TODO not found."];
+    NSDictionary* dict = [self errObjWithCode:@"notfound"
+                                  withMessage:[NSString stringWithFormat:@"playerId %d not found.", playerId]];
     callback(@[dict]);
     return;
   }
@@ -157,7 +152,8 @@ RCT_EXPORT_METHOD(play:(nonnull NSNumber*)playerId withCallback:(RCTResponseSend
   AVPlayer* player = [self playerForKey:playerId];
 
   if (!player) {
-    NSDictionary* dict = [self errObjWithCode:-1 withMessage:@"playerId TODO not found."];
+    NSDictionary* dict = [self errObjWithCode:@"notfound"
+                                  withMessage:[NSString stringWithFormat:@"playerId %d not found.", playerId]];
     callback(@[dict]);
     return;
   }
@@ -171,7 +167,8 @@ RCT_EXPORT_METHOD(set:(nonnull NSNumber*)playerId withOpts:(NSDictionary*)option
   AVPlayer* player = [self playerForKey:playerId];
 
   if (!player) {
-    NSDictionary* dict = [self errObjWithCode:-1 withMessage:@"playerId TODO not found."];
+    NSDictionary* dict = [self errObjWithCode:@"notfound"
+                                  withMessage:[NSString stringWithFormat:@"playerId %d not found.", playerId]];
     callback(@[dict]);
     return;
   }
@@ -188,7 +185,8 @@ RCT_EXPORT_METHOD(stop:(nonnull NSNumber*)playerId withCallback:(RCTResponseSend
   AVPlayer* player = [self playerForKey:playerId];
 
   if (!player) {
-    NSDictionary* dict = [self errObjWithCode:-1 withMessage:@"playerId TODO not found."];
+    NSDictionary* dict = [self errObjWithCode:@"notfound"
+                                  withMessage:[NSString stringWithFormat:@"playerId %d not found.", playerId]];
     callback(@[dict]);
     return;
   }
@@ -203,7 +201,8 @@ RCT_EXPORT_METHOD(pause:(nonnull NSNumber*)playerId withCallback:(RCTResponseSen
   AVPlayer* player = [self playerForKey:playerId];
 
   if (!player) {
-    NSDictionary* dict = [self errObjWithCode:-1 withMessage:@"playerId TODO not found."];
+    NSDictionary* dict = [self errObjWithCode:@"notfound"
+                                  withMessage:[NSString stringWithFormat:@"playerId %d not found.", playerId]];
     callback(@[dict]);
     return;
   }
@@ -217,7 +216,8 @@ RCT_EXPORT_METHOD(resume:(nonnull NSNumber*)playerId withCallback:(RCTResponseSe
   AVPlayer* player = [self playerForKey:playerId];
 
   if (!player) {
-    NSDictionary* dict = [self errObjWithCode:-1 withMessage:@"playerId TODO not found."];
+    NSDictionary* dict = [self errObjWithCode:@"notfound"
+                                  withMessage:[NSString stringWithFormat:@"playerId %d not found.", playerId]];
     callback(@[dict]);
     return;
   }
@@ -227,39 +227,34 @@ RCT_EXPORT_METHOD(resume:(nonnull NSNumber*)playerId withCallback:(RCTResponseSe
   callback(@[[NSNull null]]);
 }
 
-
-
-
-/*
 //#pragma mark Audio
 #pragma mark Audio Delegates
 
-- (void)audioPlayerDidFinishPlaying:(AVPlayer *)player
+- (void)playerItemDidReachEnd:(AVPlayer *)player
                        successfully:(BOOL)flag {
-  
-  _player = nil;
+
+  NSNumber* playerId = [self keyForPlayer:player];
 
   NSLog (@"RCTAudioPlayer: Playing finished, successful: %d", flag);
   [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioPlayer:ended"
                                                   body:@{@"status": @"Finished playback"}];
-  
+
   AVAudioSession *audioSession = [AVAudioSession sharedInstance];
   NSError *error = nil;
   [audioSession setActive:NO error:&error];
-  
+
   if (error) {
     NSLog (@"RCTAudioPlayer: Could not deactivate current audio session. Error: %@", error);
     [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioPlayer:error"
                                                     body:@{@"error": [error description]}];
     return;
   }
-
-
 }
+/*
 
 - (void)audioPlayerDecodeErrorDidOccur:(AVPlayer *)player
                                  error:(NSError *)error {
-  
+
   NSString *errorDescription = [NSString stringWithFormat:@"Decoding error during playback: %@", [error description]];
   [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioPlayer:error"
                                                   body:@{@"error": errorDescription}];
