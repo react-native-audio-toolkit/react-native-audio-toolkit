@@ -20,9 +20,16 @@
 
 //@end
 
-@implementation AudioPlayer {
-    NSMutableDictionary* _playerPool;
-}
+@interface AudioPlayer ()
+
+@property (nonatomic, strong) NSMutableDictionary* _playerPool;
+
+@end
+
+@implementation AudioPlayer
+
+@synthesize bridge = _bridge;
+
 
 -(NSMutableDictionary*) playerPool {
   if (!_playerPool) {
@@ -48,9 +55,7 @@
     };
 
     return err;
- }
-
-@synthesize bridge = _bridge;
+}
 
 #pragma mark React exposed methods
 
