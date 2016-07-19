@@ -8,21 +8,17 @@
 //  Licensed under the MIT license. For more information, see LICENSE.
 
 #import "AudioPlayer.h"
+#import "Helpers.h"
 #import "RCTEventDispatcher.h"
 #import "RCTUtils.h"
 #import <AVFoundation/AVPlayer.h>
 #import <AVFoundation/AVPlayerItem.h>
 #import <AVFoundation/AVAsset.h>
 
-//@interface AudioPlayer () <AVPlayerDelegate>
-
-//@property (nonatomic, strong) AVPlayer *player;
-
-//@end
 
 @interface AudioPlayer ()
 
-@property (nonatomic, strong) NSMutableDictionary* _playerPool;
+@property (nonatomic, strong) NSMutableDictionary *playerPool;
 
 @end
 
@@ -39,23 +35,13 @@
 }
 
 -(AVPlayer*) playerForKey:(nonnull NSNumber*)key {
-  return [[self playerPool] objectForKey:key];
+  return [_playerPool objectForKey:key];
 }
 
 -(NSNumber*) keyForPlayer:(nonnull AVPlayer*)player {
-  return [[[self playerPool] allKeysForObject:player] firstObject];
+  return [[_playerPool allKeysForObject:player] firstObject];
 }
 
--(NSDictionary*) errObjWithCode:(NSString*)code
-                    withMessage:(NSString*)message {
-    NSDictionary *err = @{
-      @"code": code,
-      @"message": message,
-      @"stackTrace": [NSThread callStackSymbols]
-    };
-
-    return err;
-}
 
 #pragma mark React exposed methods
 
@@ -63,8 +49,9 @@ RCT_EXPORT_MODULE();
 
 RCT_EXPORT_METHOD(init:(nonnull NSNumber*)playerId withPath:(NSString* _Nullable)path withCallback:(RCTResponseSenderBlock)callback) {
   if ([path length] == 0) {
-    NSDictionary* dict = [self errObjWithCode:@"nopath" withMessage:@"Provided path was empty"];
-    callback(@[dict]);
+    NSDictionary* dict = [Helpers errObjWithCode:@"nopath" withMessage:@"Provided path was empty"];
+      callback(@[dict]);
+      return;
   }
 
   NSURL *url;
@@ -86,7 +73,7 @@ RCT_EXPORT_METHOD(init:(nonnull NSNumber*)playerId withPath:(NSString* _Nullable
 
                            //initWithContentsOfURL:
   if (player) {
-    [[self playerPool] setObject:player forKey:playerId];
+    [_playerPool setObject:player forKey:playerId];
 
     callback(@[[NSNull null]]);
   } else {
@@ -97,7 +84,7 @@ RCT_EXPORT_METHOD(init:(nonnull NSNumber*)playerId withPath:(NSString* _Nullable
 RCT_EXPORT_METHOD(destroy:(nonnull NSNumber*)playerId) {
   AVPlayer* player = [self playerForKey:playerId]; if (player) {
     [player pause];
-    [[self playerPool] removeObjectForKey:playerId];
+    [_playerPool removeObjectForKey:playerId];
   }
 }
 
@@ -105,7 +92,7 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId withCallback:(RCTResponseS
   AVPlayer* player = [self playerForKey:playerId];
 
   if (!player) {
-    NSDictionary* dict = [self errObjWithCode:@"notfound"
+    NSDictionary* dict = [Helpers errObjWithCode:@"notfound"
                                   withMessage:[NSString stringWithFormat:@"playerId %d not found.", playerId]];
     callback(@[dict]);
     return;
@@ -123,7 +110,7 @@ RCT_EXPORT_METHOD(seek:(nonnull NSNumber*)playerId withPos:(nonnull NSNumber*)po
   AVPlayer* player = [self playerForKey:playerId];
 
   if (!player) {
-    NSDictionary* dict = [self errObjWithCode:@"notfound"
+    NSDictionary* dict = [Helpers errObjWithCode:@"notfound"
                                   withMessage:[NSString stringWithFormat:@"playerId %d not found.", playerId]];
     callback(@[dict]);
     return;
@@ -157,7 +144,7 @@ RCT_EXPORT_METHOD(play:(nonnull NSNumber*)playerId withCallback:(RCTResponseSend
   AVPlayer* player = [self playerForKey:playerId];
 
   if (!player) {
-    NSDictionary* dict = [self errObjWithCode:@"notfound"
+    NSDictionary* dict = [Helpers errObjWithCode:@"notfound"
                                   withMessage:[NSString stringWithFormat:@"playerId %d not found.", playerId]];
     callback(@[dict]);
     return;
@@ -172,7 +159,7 @@ RCT_EXPORT_METHOD(set:(nonnull NSNumber*)playerId withOpts:(NSDictionary*)option
   AVPlayer* player = [self playerForKey:playerId];
 
   if (!player) {
-    NSDictionary* dict = [self errObjWithCode:@"notfound"
+    NSDictionary* dict = [Helpers errObjWithCode:@"notfound"
                                   withMessage:[NSString stringWithFormat:@"playerId %d not found.", playerId]];
     callback(@[dict]);
     return;
@@ -190,7 +177,7 @@ RCT_EXPORT_METHOD(stop:(nonnull NSNumber*)playerId withCallback:(RCTResponseSend
   AVPlayer* player = [self playerForKey:playerId];
 
   if (!player) {
-    NSDictionary* dict = [self errObjWithCode:@"notfound"
+    NSDictionary* dict = [Helpers errObjWithCode:@"notfound"
                                   withMessage:[NSString stringWithFormat:@"playerId %d not found.", playerId]];
     callback(@[dict]);
     return;
@@ -206,7 +193,7 @@ RCT_EXPORT_METHOD(pause:(nonnull NSNumber*)playerId withCallback:(RCTResponseSen
   AVPlayer* player = [self playerForKey:playerId];
 
   if (!player) {
-    NSDictionary* dict = [self errObjWithCode:@"notfound"
+    NSDictionary* dict = [Helpers errObjWithCode:@"notfound"
                                   withMessage:[NSString stringWithFormat:@"playerId %d not found.", playerId]];
     callback(@[dict]);
     return;
@@ -221,7 +208,7 @@ RCT_EXPORT_METHOD(resume:(nonnull NSNumber*)playerId withCallback:(RCTResponseSe
   AVPlayer* player = [self playerForKey:playerId];
 
   if (!player) {
-    NSDictionary* dict = [self errObjWithCode:@"notfound"
+    NSDictionary* dict = [Helpers errObjWithCode:@"notfound"
                                   withMessage:[NSString stringWithFormat:@"playerId %d not found.", playerId]];
     callback(@[dict]);
     return;

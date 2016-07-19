@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5E05F28D1D3E538600A0D09A /* Helpers.m in Sources */ = {isa = PBXBuildFile; fileRef = 5E05F28C1D3E538600A0D09A /* Helpers.m */; };
 		5E8FD9931D269F9900CF68CC /* AudioPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 5E8FD9901D269F9900CF68CC /* AudioPlayer.m */; };
 		5E8FD9941D269F9900CF68CC /* AudioRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 5E8FD9921D269F9900CF68CC /* AudioRecorder.m */; };
 /* End PBXBuildFile section */
@@ -24,6 +25,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5E05F28B1D3E538600A0D09A /* Helpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Helpers.h; sourceTree = "<group>"; };
+		5E05F28C1D3E538600A0D09A /* Helpers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Helpers.m; sourceTree = "<group>"; };
 		5E8FD9831D269F5D00CF68CC /* libReactNativeAudioToolkit.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libReactNativeAudioToolkit.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		5E8FD98F1D269F9900CF68CC /* AudioPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AudioPlayer.h; sourceTree = "<group>"; };
 		5E8FD9901D269F9900CF68CC /* AudioPlayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AudioPlayer.m; sourceTree = "<group>"; };
@@ -65,6 +68,8 @@
 				5E8FD9901D269F9900CF68CC /* AudioPlayer.m */,
 				5E8FD9911D269F9900CF68CC /* AudioRecorder.h */,
 				5E8FD9921D269F9900CF68CC /* AudioRecorder.m */,
+				5E05F28B1D3E538600A0D09A /* Helpers.h */,
+				5E05F28C1D3E538600A0D09A /* Helpers.m */,
 			);
 			path = ReactNativeAudioToolkit;
 			sourceTree = "<group>";
@@ -125,6 +130,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5E05F28D1D3E538600A0D09A /* Helpers.m in Sources */,
 				5E8FD9931D269F9900CF68CC /* AudioPlayer.m in Sources */,
 				5E8FD9941D269F9900CF68CC /* AudioRecorder.m in Sources */,
 			);
