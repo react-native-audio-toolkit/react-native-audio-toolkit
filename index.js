@@ -13,6 +13,7 @@ var RCTAudioPlayer = NativeModules.AudioPlayer;
 var RCTAudioRecorder = NativeModules.AudioRecorder;
 
 var playerId = 0;
+var recorderId = 0;
 
 var states = {
   ERROR: -1,
@@ -22,9 +23,154 @@ var states = {
   PREPARING: 3,
   PREPARED: 4,
   PLAYING: 5,
+  RECORDING: 5,
   PAUSED: 6
 };
 
+
+class Recorder extends EventEmitter {
+  constructor(path, options = {}) {
+    super();
+
+    this._path = path;
+    this._options = options;
+
+    this._recorderId = recorderId++;
+    this._reset();
+
+    DeviceEventEmitter.addListener('RCTAudioRecorderEvent:' + this._recorderId, (payload: Event) => {
+      this._handleEvent(payload.event, payload.data);
+    });
+  }
+
+  _reset() {
+    this._state = states.IDLE;
+    this._volume = 1.0;
+    this._autoDestroy = true;
+    this._duration = -1;
+    this._position = -1;
+    this._lastSync = -1;
+  }
+
+  _handleEvent(event, data) {
+    switch (event) {
+      case 'progress':
+        console.log(data);
+        break;
+      case 'seeked':
+        console.log(data);
+        break;
+      case 'ended':
+        console.log(data);
+        break;
+      case 'info':
+        console.log(data);
+        break;
+      case 'error':
+        console.log(data);
+        this._reset();
+        //this.emit('error', data);
+        break;
+    }
+
+    this.emit(event, data);
+  }
+
+  init(callback = _.noop) {
+    if (this._state != states.IDLE) {
+      this.destroy();
+    }
+
+    this._updateState(null, states.INITIALIZING);
+
+    async.series([
+      // Initialize the recorder
+      (next) => {
+        RCTAudioRecorder.init(this._recorderId, this._path, this._options, next);
+      },
+
+      // Set initial values for player options
+      (next) => {
+        RCTAudioRecorder.set(this._recorderId, {
+          volume: this._volume,
+          autoDestroy: this._autoDestroy
+        }, next);
+      }
+    ],
+
+    (err, results) => {
+      this._updateState(err, states.INITIALIZED);
+      callback(err);
+    });
+  }
+
+  prepare(callback = _.noop) {
+    let tasks = [];
+
+    // Initialize recorder if not initialized yet
+    if (this._state < states.INITIALIZED) {
+      tasks.push((next) => {
+        this.init(next);
+      });
+    }
+
+    // Prepare recorder if not prepared yet
+    if (this._state < states.PREPARED) {
+      tasks.push((next) => {
+        RCTAudioRecorder.prepare(this._recorderId, next);
+      });
+    }
+
+    async.series(tasks, (err, results) => {
+      this._updateState(err, states.PREPARED, results);
+      callback(err);
+    });
+
+    return this;
+  }
+
+  record(callback = _.noop) {
+    async.series([
+      // Make sure recorder is prepared
+      (next) => {
+        this.prepare(next);
+      },
+
+      // Start recording
+      (next) => {
+        RCTAudioRecorder.record(this._recorderId, next);
+      }
+    ],
+
+    (err, results) => {
+      this._updateState(err, states.RECORDING, results);
+      callback(err);
+    });
+
+    return this;
+  }
+
+  stop(callback = _.noop) {
+    RCTAudioRecorder.stop(this._recorderId, (err) => {
+      this._updateState(err, states.INITIALIZED);
+      this._position = -1;
+      callback(err);
+    });
+    return this;
+  }
+
+  destroy(callback = _.noop) {
+    this._reset();
+    RCTAudioRecorder.destroy(this._recorderId);
+  }
+}
+
+/**
+ * Represents a media player
+ * @constructor 
+ * @param
+ *
+ */
 class Player extends EventEmitter {
   constructor(path) {
     super();
@@ -85,6 +231,7 @@ class Player extends EventEmitter {
       case 'error':
         console.log(data);
         this._reset();
+        //this.emit('error', data);
         break;
     }
 
@@ -267,4 +414,4 @@ class Player extends EventEmitter {
   }
 }
 
-export { Player };
+export { Player, Recorder };
