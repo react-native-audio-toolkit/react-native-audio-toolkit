@@ -19,9 +19,9 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
         MediaRecorder.OnErrorListener {
     private static final String LOG_TAG = "AudioRecorderModule";
 
-    private String outputPath;
+    Map<Integer, MediaRecorder> recorderPool = new HashMap<>();
+    Map<Integer, Boolean> recorderAutoDestroy = new HashMap<>();
 
-    private MediaRecorder mRecorder = null;
     private ReactApplicationContext context;
 
     public AudioRecorderModule(ReactApplicationContext reactContext) {
@@ -29,25 +29,111 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
         this.context = reactContext;
     }
 
-    private void emitError(String event, String s) {
-        Log.e(LOG_TAG, event + ": " + s);
+    @Override
+    public String getName() {
+        return "RCTAudioRecorder";
+    }
+
+    private void emitEvent(Integer playerId, String event, WritableMap data) {
+        //Log.d(LOG_TAG, "player " + playerId + ": " + event + ": " + s);
         WritableMap payload = new WritableNativeMap();
-        payload.putString(event, s);
+        payload.putString("event", event);
+        payload.putMap("data", data);
 
         this.context
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                .emit(event, payload);
+                .emit("RCTAudioRecorderEvent:" + playerId, payload);
     }
 
-    private void emitEvent(String event, String s) {
-        Log.d(LOG_TAG, event + ": " + s);
-        WritableMap payload = new WritableNativeMap();
-        payload.putString(event, s);
+    private WritableMap errObj(final String code, final String message) {
+        WritableMap err = Arguments.createMap();
 
-        this.context
-                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                .emit(event, payload);
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        String stackTraceString = "";
+
+        for (StackTraceElement e : stackTrace) {
+            stackTraceString += e.toString() + "\n";
+        }
+
+        err.putString("err", code);
+        err.putString("message", message);
+        err.putString("stackTrace", stackTraceString);
+
+        Log.e(LOG_TAG, message);
+        Log.d(LOG_TAG, stackTraceString);
+
+        return err;
     }
+
+    private int formatFromPath(String path) {
+        String ext = path.substring(path.lastIndexOf('.'));
+
+        switch (ext) {
+            case ".aac":
+                return MediaRecorder.OutputFormat.AAC_ADTS;
+            case ".mp4":
+                return MediaRecorder.OutputFormat.MPEG_4;
+            case ".webm":
+            case ".ogg":
+                return MediaRecorder.OutputFormat.WEBM;
+            case ".amr":
+                return MediaRecorder.OutputFormat.AMR_WB;
+            default:
+                return MediaRecorder.OutputFormat.DEFAULT;
+        }
+    }
+
+    private int encoderFromPath(String path) {
+        String ext = path.substring(path.lastIndexOf('.'));
+
+        switch (ext) {
+            case ".aac":
+            case ".mp4":
+                return MediaRecorder.AudioEncoder.HE_AAC;
+            case ".webm":
+            case ".ogg":
+                return MediaRecorder.AudioEncoder.VORBIS;
+            case ".amr":
+                return MediaRecorder.AudioEncoder.AMR_WB;
+            default:
+                return MediaRecorder.AudioEncoder.DEFAULT;
+        }
+    }
+
+    private Uri uriFromPath(String path) {
+        File file = null;
+
+        // Try finding file in Android "raw" resources
+        String fileNameWithoutExt;
+        if (path.lastIndexOf('.') != -1) {
+            fileNameWithoutExt = path.substring(0, path.lastIndexOf('.'));
+        } else {
+            fileNameWithoutExt = path;
+        }
+
+        int resId = this.context.getResources().getIdentifier(fileNameWithoutExt,
+            "raw", this.context.getPackageName());
+        if (resId != 0) {
+            return Uri.parse("android.resource://" + this.context.getPackageName() + "/" + resId);
+        }
+
+        // Try finding file on sdcard
+        String extPath = Environment.getExternalStorageDirectory() + "/" + path;
+        file = new File(extPath);
+        if (file.exists()) {
+            return Uri.fromFile(file);
+        }
+
+        // Try finding file by full path
+        file = new File(path);
+        if (file.exists()) {
+            return Uri.fromFile(file);
+        }
+
+        // Otherwise pass whole path string as URI and hope for the best
+        return Uri.parse(path);
+    }
+
 
     private void destroy_mRecorder() {
         if (mRecorder == null) {
@@ -58,11 +144,6 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements M
         mRecorder.reset();
         mRecorder.release();
         mRecorder = null;
-    }
-
-    @Override
-    public String getName() {
-        return "RCTAudioRecorder";
     }
 
     @ReactMethod
