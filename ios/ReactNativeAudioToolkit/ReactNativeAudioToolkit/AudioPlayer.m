@@ -129,13 +129,28 @@ RCT_EXPORT_METHOD(seek:(nonnull NSNumber*)playerId withPos:(nonnull NSNumber*)po
     return;
   }
 
-  if (position >= 0) {
-    [player.currentItem seekToTime:CMTimeMakeWithSeconds([position doubleValue] / 1000, 60000)];
-    //[player prepareToPlay];
-  }
+  [player cancelPendingPrerolls];
 
-  callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration)),
-                            @"position": @(CMTimeGetSeconds(player.currentTime) * 1000)}]);
+  if (position >= 0) {
+    NSLog(@"%d", position);
+    if (position == 0) {
+        [player.currentItem
+            seekToTime:kCMTimeZero
+            toleranceBefore:kCMTimeZero // for precise positioning
+            toleranceAfter:kCMTimeZero
+            completionHandler:^(BOOL finished) {
+                callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration)),
+                                            @"position": @(CMTimeGetSeconds(player.currentTime) * 1000)}]);
+        }];
+    } else {
+        [player.currentItem
+            seekToTime:CMTimeMakeWithSeconds([position doubleValue] / 1000, 60000)
+            completionHandler:^(BOOL finished) {
+                callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration)),
+                                            @"position": @(CMTimeGetSeconds(player.currentTime) * 1000)}]);
+        }];
+    }
+  }
 }
 
 RCT_EXPORT_METHOD(play:(nonnull NSNumber*)playerId withCallback:(RCTResponseSenderBlock)callback) {
