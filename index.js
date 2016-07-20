@@ -45,11 +45,14 @@ class Recorder extends EventEmitter {
 
   _reset() {
     this._state = states.IDLE;
-    this._volume = 1.0;
     this._autoDestroy = true;
     this._duration = -1;
     this._position = -1;
     this._lastSync = -1;
+  }
+
+  _updateState(err, state) {
+    this._state = err ? states.ERROR : state;
   }
 
   _handleEvent(event, data) {
@@ -81,24 +84,13 @@ class Recorder extends EventEmitter {
       this.destroy();
     }
 
+    console.log(this);
+    console.log(this._updateState);
+
     this._updateState(null, states.INITIALIZING);
 
-    async.series([
-      // Initialize the recorder
-      (next) => {
-        RCTAudioRecorder.init(this._recorderId, this._path, this._options, next);
-      },
-
-      // Set initial values for player options
-      (next) => {
-        RCTAudioRecorder.set(this._recorderId, {
-          volume: this._volume,
-          autoDestroy: this._autoDestroy
-        }, next);
-      }
-    ],
-
-    (err, results) => {
+    // Initialize the recorder
+    RCTAudioRecorder.init(this._recorderId, this._path, this._options, (err) => {
       this._updateState(err, states.INITIALIZED);
       callback(err);
     });
@@ -151,11 +143,15 @@ class Recorder extends EventEmitter {
   }
 
   stop(callback = _.noop) {
-    RCTAudioRecorder.stop(this._recorderId, (err) => {
-      this._updateState(err, states.INITIALIZED);
-      this._position = -1;
-      callback(err);
-    });
+    if (this._state >= states.RECORDING) {
+      RCTAudioRecorder.stop(this._recorderId, (err) => {
+        this._updateState(err, states.IDLE);
+        this._position = -1;
+        callback(err);
+      });
+    } else {
+      setTimeout(callback, 0);
+    }
     return this;
   }
 

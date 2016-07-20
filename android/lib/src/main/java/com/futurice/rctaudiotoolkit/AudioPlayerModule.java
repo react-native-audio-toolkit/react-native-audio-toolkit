@@ -9,6 +9,7 @@ import android.os.PowerManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.net.Uri;
+import android.content.ContextWrapper;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -83,9 +84,10 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
 
     private Uri uriFromPath(String path) {
         File file = null;
+        String fileNameWithoutExt;
+        String extPath;
 
         // Try finding file in Android "raw" resources
-        String fileNameWithoutExt;
         if (path.lastIndexOf('.') != -1) {
             fileNameWithoutExt = path.substring(0, path.lastIndexOf('.'));
         } else {
@@ -98,8 +100,15 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             return Uri.parse("android.resource://" + this.context.getPackageName() + "/" + resId);
         }
 
+        // Try finding file in app data directory
+        extPath = new ContextWrapper(this.context).getFilesDir() + "/" + path;
+        file = new File(extPath);
+        if (file.exists()) {
+            return Uri.fromFile(file);
+        }
+
         // Try finding file on sdcard
-        String extPath = Environment.getExternalStorageDirectory() + "/" + path;
+        extPath = Environment.getExternalStorageDirectory() + "/" + path;
         file = new File(extPath);
         if (file.exists()) {
             return Uri.fromFile(file);
@@ -164,23 +173,6 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     }
 
     @ReactMethod
-    public void prepare(Integer playerId, Callback callback) {
-        MediaPlayer player = this.playerPool.get(playerId);
-        if (player == null) {
-            callback.invoke(errObj("notfound", "playerId " + playerId + " not found."));
-            return;
-        }
-
-        try {
-            player.prepare();
-
-            callback.invoke(null, getInfo(player));
-        } catch (IOException e) {
-            callback.invoke(errObj("prepare", e.toString()));
-        }
-    }
-
-    @ReactMethod
     public void init(Integer playerId, String path, Callback callback) {
         if (path == null || path.isEmpty()) {
             callback.invoke(errObj("nopath", "Provided path was empty"));
@@ -205,6 +197,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         */
 
         try {
+            Log.d(LOG_TAG, uri.getPath());
             player.setDataSource(this.context, uri);
         } catch (IOException e) {
             callback.invoke(errObj("ioexception", e.toString()));
@@ -220,6 +213,23 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         this.playerAutoDestroy.put(playerId, true);
 
         callback.invoke();
+    }
+
+    @ReactMethod
+    public void prepare(Integer playerId, Callback callback) {
+        MediaPlayer player = this.playerPool.get(playerId);
+        if (player == null) {
+            callback.invoke(errObj("notfound", "playerId " + playerId + " not found."));
+            return;
+        }
+
+        try {
+            player.prepare();
+
+            callback.invoke(null, getInfo(player));
+        } catch (IOException e) {
+            callback.invoke(errObj("prepare", e.toString()));
+        }
     }
 
     @ReactMethod
@@ -370,6 +380,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     public boolean onError(MediaPlayer player, int what, int extra) {
         Integer playerId = getPlayerId(player);
 
+        // TODO: translate these codes into english
         WritableMap err = new WritableNativeMap();
         err.putInt("what", what);
         err.putInt("extra", extra);
@@ -388,6 +399,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     public boolean onInfo(MediaPlayer player, int what, int extra) {
         Integer playerId = getPlayerId(player);
 
+        // TODO: translate these codes into english
         WritableMap info = new WritableNativeMap();
         info.putInt("what", what);
         info.putInt("extra", extra);
@@ -396,7 +408,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         data.putMap("info", info);
         data.putString("message", "Android MediaPlayer info");
 
-        emitEvent(playerId, "info", info);
+        emitEvent(playerId, "info", data);
 
         return false;
     }
