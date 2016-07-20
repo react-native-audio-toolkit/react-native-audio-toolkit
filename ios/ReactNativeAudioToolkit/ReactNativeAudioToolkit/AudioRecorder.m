@@ -70,7 +70,7 @@ RCT_EXPORT_METHOD(init:(nonnull NSNumber *)recorderId withPath:(NSString * _Null
     }
     
     // Set audio session active
-    [audioSession setActive:YES error:&error]b;
+    [audioSession setActive:YES error:&error];
     if (error) {
         NSDictionary* dict = [Helpers errObjWithCode:@"initfail" withMessage:@"Could not set audio session active"];
         callback(@[dict]);
@@ -97,7 +97,7 @@ RCT_EXPORT_METHOD(init:(nonnull NSNumber *)recorderId withPath:(NSString * _Null
         return;
         
         return;
-    } else if (!_recorder) {
+    } else if (!recorder) {
         NSDictionary* dict = [Helpers errObjWithCode:@"initfail" withMessage:@"Failed to initialize recorder"];
         callback(@[dict]);
         
@@ -154,7 +154,7 @@ RCT_EXPORT_METHOD(stop:(NSNumber *)recorderId withCallback:(RCTResponseSenderBlo
 RCT_EXPORT_METHOD(destroy:(NSNumber *)recorderId withCallback:(RCTResponseSenderBlock)callback) {
     AVAudioRecorder *recorder = [_recorderPool objectForKey:recorderId];
     if (recorder) {
-        [_playerPool removeObjectForKey:recorderId];
+        [_recorderPool removeObjectForKey:recorderId];
     } else {
         NSDictionary* dict = [Helpers errObjWithCode:@"notfound" withMessage:@"Recorder with that id was not found"];
         callback(@[dict]);
