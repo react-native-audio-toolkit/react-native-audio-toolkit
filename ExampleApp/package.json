@@ -8,6 +8,7 @@
   "dependencies": {
     "react": "15.2.0",
     "react-native": "0.29.0",
-    "react-native-audio-toolkit": "file:../"
+    "react-native-audio-toolkit": "file:../",
+    "react-native-button": "^1.6.0"
   }
 }
