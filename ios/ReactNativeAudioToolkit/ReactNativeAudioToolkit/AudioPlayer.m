@@ -317,7 +317,7 @@ RCT_EXPORT_METHOD(resume:(nonnull NSNumber*)playerId withCallback:(RCTResponseSe
     }
     NSString *eventName = [NSString stringWithFormat:@"RCTAudioPlayer:%@", playerId];
 
-    [self.bridge.eventDispatcher sendDeviceEventWithName:eventName
+    [self.bridge.eventDispatcher sendAppEventWithName:eventName
                                                     body:@{@"event": @"ended",
                                                            @"data" : [NSNull null]
                                                            }];

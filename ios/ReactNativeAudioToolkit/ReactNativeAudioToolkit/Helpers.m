@@ -65,8 +65,8 @@
     [recordSettings setValue:format forKey:AVFormatIDKey];
     [recordSettings setValue:sampleRate forKey:AVSampleRateKey];
     [recordSettings setValue:channels forKey:AVNumberOfChannelsKey];
-    [recordSettings setValue:bitRate forKey:AVEncoderBitRateKey];
-    [recordSettings setValue:quality forKey:AVEncoderAudioQualityKey];
+    //[recordSettings setValue:bitRate forKey:AVEncoderBitRateKey];
+    //[recordSettings setValue:quality forKey:AVEncoderAudioQualityKey];
     
     [recordSettings setValue :[NSNumber numberWithInt:16] forKey:AVLinearPCMBitDepthKey];
     [recordSettings setValue :[NSNumber numberWithBool:NO] forKey:AVLinearPCMIsBigEndianKey];

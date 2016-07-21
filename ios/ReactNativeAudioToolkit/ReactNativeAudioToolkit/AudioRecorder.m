@@ -9,6 +9,7 @@
 
 #import "AudioRecorder.h"
 #import "RCTEventDispatcher.h"
+//#import "RCTEventEmitter"
 #import "Helpers.h"
 
 @import AVFoundation;
@@ -49,25 +50,6 @@
 
 RCT_EXPORT_MODULE();
 
-
-
-- (void)prepare:(nonnull NSNumber *)recorderId withCallback:(RCTResponseSenderBlock)callback {
-    AVAudioRecorder *recorder = [[self recorderPool] objectForKey:recorderId];
-    if (recorder) {
-        BOOL success = [recorder prepareToRecord];
-        if (!success) {
-            [self destroyRecorderWithId:recorderId];
-            NSDictionary* dict = [Helpers errObjWithCode:@"preparefail" withMessage:@"Failed to prepare recorder"];
-            callback(@[dict]);
-            return;
-        }
-    } else {
-        NSDictionary* dict = [Helpers errObjWithCode:@"notfound" withMessage:@"Recorder with that id was not found"];
-        callback(@[dict]);
-        return;
-    }
-    callback(@[[NSNull null]]);
-}
 
 RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)recorderId withPath:(NSString * _Nullable)path withOptions:(NSDictionary *)options withCallback:(RCTResponseSenderBlock)callback) {
     if ([path length] == 0) {
@@ -126,7 +108,15 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)recorderId withPath:(NSString * _N
     recorder.delegate = self;
     [[self recorderPool] setObject:recorder forKey:recorderId];
     
-    [self prepare:recorderId withCallback:callback];
+    BOOL success = [recorder prepareToRecord];
+    if (!success) {
+        [self destroyRecorderWithId:recorderId];
+        NSDictionary* dict = [Helpers errObjWithCode:@"preparefail" withMessage:@"Failed to prepare recorder"];
+        callback(@[dict]);
+        return;
+    }
+    
+    callback(@[[NSNull null]]);
 }
 
 RCT_EXPORT_METHOD(record:(nonnull NSNumber *)recorderId withCallback:(RCTResponseSenderBlock)callback) {
@@ -164,31 +154,36 @@ RCT_EXPORT_METHOD(destroy:(nonnull NSNumber *)recorderId withCallback:(RCTRespon
 
 #pragma mark - Delegate methods
 - (void)audioRecorderDidFinishRecording:(AVAudioRecorder *) aRecorder successfully:(BOOL)flag {
-    NSNumber *recordId = [self keyForRecorder:aRecorder];
-    [[self recorderPool] removeObjectForKey:recordId];
-    NSLog (@"RCTAudioRecorder: Recording finished, successful: %d", flag);
-    NSString *eventName = [NSString stringWithFormat:@"RCTAudioRecorder:%@", recordId];
-    [self.bridge.eventDispatcher sendDeviceEventWithName:eventName
-                                                    body:@{@"event" : @"ended",
-                                                           @"data" : [NSNull null]
-                                                           }];
+    if ([[_recorderPool allValues] containsObject:aRecorder]) {
+        NSNumber *recordId = [self keyForRecorder:aRecorder];
+        [[self recorderPool] removeObjectForKey:recordId];
+        NSLog (@"RCTAudioRecorder: Recording finished, successful: %d", flag);
+        NSString *eventName = [NSString stringWithFormat:@"RCTAudioRecorder:%@", recordId];
+        [self.bridge.eventDispatcher sendAppEventWithName:eventName
+                                                        body:@{@"event" : @"ended",
+                                                               @"data" : [NSNull null]
+                                                               }];
+    }
   
 }
 
 - (void)destroyRecorderWithId:(NSNumber *)recorderId {
-    AVAudioRecorder *recorder = [[self recorderPool] objectForKey:recorderId];
-    [recorder stop];
-    if (recorder) {
-        [[self recorderPool] removeObjectForKey:recorderId];
+    if ([[[self recorderPool] allKeys] containsObject:recorderId]) {
+        AVAudioRecorder *recorder = [[self recorderPool] objectForKey:recorderId];
+        [recorder stop];
+        if (recorder) {
+            [[self recorderPool] removeObjectForKey:recorderId];
+        }
     }
 }
 
 - (void)audioRecorderEncodeErrorDidOccur:(AVAudioRecorder *)recorder
                                    error:(NSError *)error {
     NSNumber *recordId = [self keyForRecorder:recorder];
+    
     [self destroyRecorderWithId:recordId];
     NSString *eventName = [NSString stringWithFormat:@"RCTAudioRecorder:%@", recordId];
-    [self.bridge.eventDispatcher sendDeviceEventWithName:eventName
+    [self.bridge.eventDispatcher sendAppEventWithName:eventName
                                                body:@{@"event": @"error",
                                                       @"data" : [error description]
                                                       }];
