@@ -21,22 +21,21 @@ class AppContainer extends React.Component {
     this.state = {
       playPauseButton: 'Preparing...',
       recordButton: 'Preparing...',
-      buttonDisabled: true
+
+      stopButtonDisabled: true,
+      playButtonDisabled: true,
+      recordButtonDisabled: true
     };
 
     console.log('mount');
 
-    this.player = null;
-
-    this.recorder = new Recorder(filename, {
-      autoDestroy: false
-    }).prepare(() => {
-      this._updateState();
-    });
   }
 
   componentWillMount() {
-    // TODO should we initialize player/recorder here instead?
+    this.player = null;
+    this.recorder = null;
+
+    this._reloadRecorder();
   }
 
   componentWillUnmount() {
@@ -45,19 +44,18 @@ class AppContainer extends React.Component {
   }
 
   _updateState(err) {
-    console.log('player.state: ' + (this.player ? this.player.state : -1) + ' ' + (this.recorder ? this.recorder.state : -1));
-
     this.setState({
-      stopButtonDisabled: !this.player || (this.player.state !== MediaStates.PLAYING && this.player.state !== MediaStates.PAUSED),
-      playPauseButton: (this.player && this.player.state === MediaStates.PLAYING) ? 'Pause' : 'Play',
-      playButtonDisabled: !this.player || (this.player.state < MediaStates.PREPARED || this.recorder.state === MediaStates.RECORDING),
-      recordButton: this.recorder.state === MediaStates.RECORDING ? 'Stop' : 'Record',
-      recordButtonDisabled: this.recorder.state < MediaStates.PREPARED,
+      playPauseButton: (this.player && this.player.isPlaying) ? 'Pause' : 'Play',
+      recordButton: this.recorder && this.recorder.isRecording ? 'Stop' : 'Record',
+
+      stopButtonDisabled: !this.player || (!this.player.isPlaying && !this.player.isPaused),
+      playButtonDisabled: !this.player || !this.player.canPlay || this.recorder.isRecording,
+      recordButtonDisabled: !this.recorder || (this.player && (this.player.isPlaying || this.player.isPaused))
     });
   }
 
   _playPause() {
-    this.player.playPause(() => {
+    this.player.playPause((err, playing) => {
       this._updateState();
     });
   }
@@ -86,20 +84,31 @@ class AppContainer extends React.Component {
       this._updateState();
     });
 
+    this._updateState();
+
     this.player.on('ended', () => {
       this._updateState();
     });
   }
 
+  _reloadRecorder() {
+    if (this.recorder) {
+      this.recorder.destroy();
+    }
+
+    this.recorder = new Recorder(filename);
+    this._updateState();
+  }
+
   _toggleRecord() {
-    this.recorder.toggleRecord(() => {
-      console.log('state1 was ' + this.recorder.state);
-      if (this.recorder.state !== MediaStates.RECORDING) {
-        console.log('stopped');
-        console.log('state2 was ' + this.recorder.state);
-        setTimeout(() => {
-          this._reloadPlayer();
-        }, 1000);
+    if (this.player) {
+      this.player.destroy();
+    }
+
+    this.recorder.toggleRecord((err, stopped) => {
+      if (stopped) {
+        this._reloadPlayer();
+        this._reloadRecorder();
       }
 
       this._updateState();
