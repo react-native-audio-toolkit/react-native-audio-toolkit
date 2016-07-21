@@ -30,9 +30,6 @@
     
     if (error) {
         NSLog (@"RCTAudioRecorder: Could not deactivate current audio session. Error: %@", error);
-        // Send event
-        [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:error"
-                                                        body:@{@"error": [error description]}];
         return;
     }
 
@@ -175,10 +172,14 @@ RCT_EXPORT_METHOD(destroy:(nonnull NSNumber *)recorderId) {
 
 #pragma mark - Delegate methods
 - (void)audioRecorderDidFinishRecording:(AVAudioRecorder *) aRecorder successfully:(BOOL)flag {
-    [[self recorderPool] removeObjectForKey:[self keyForRecorder:aRecorder]];
+    NSNumber *recordId = [self keyForRecorder:aRecorder];
+    [[self recorderPool] removeObjectForKey:recordId];
     NSLog (@"RCTAudioRecorder: Recording finished, successful: %d", flag);
-    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:ended"
-                                                 body:@{}];
+    NSString *eventName = [NSString stringWithFormat:@"RCTAudioRecorder:%@", recordId];
+    [self.bridge.eventDispatcher sendDeviceEventWithName:eventName
+                                                    body:@{@"event" : @"ended",
+                                                           @"data" : [NSNull null]
+                                                           }];
   
 }
 
@@ -192,9 +193,13 @@ RCT_EXPORT_METHOD(destroy:(nonnull NSNumber *)recorderId) {
 
 - (void)audioRecorderEncodeErrorDidOccur:(AVAudioRecorder *)recorder
                                    error:(NSError *)error {
-    [self destroyRecorderWithId:[self keyForRecorder:recorder]];
-    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:error"
-                                               body:@{@"error": [error description]}];
+    NSNumber *recordId = [self keyForRecorder:recorder];
+    [self destroyRecorderWithId:recordId];
+    NSString *eventName = [NSString stringWithFormat:@"RCTAudioRecorder:%@", recordId];
+    [self.bridge.eventDispatcher sendDeviceEventWithName:eventName
+                                               body:@{@"event": @"error",
+                                                      @"data" : [error description]
+                                                      }];
 }
 
 @end

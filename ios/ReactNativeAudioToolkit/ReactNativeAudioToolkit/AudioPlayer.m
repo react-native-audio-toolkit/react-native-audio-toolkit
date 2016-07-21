@@ -314,9 +314,12 @@ RCT_EXPORT_METHOD(resume:(nonnull NSNumber*)playerId withCallback:(RCTResponseSe
         [self destroyPlayerWithId:playerId];
         player = nil;
     }
-    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioPlayer:ended"
-                                                    body:@{@"status": @"Finished playback",
-                                                           @"id" : playerId}];
+    NSString *eventName = [NSString stringWithFormat:@"RCTAudioPlayer:%@", playerId];
+
+    [self.bridge.eventDispatcher sendDeviceEventWithName:eventName
+                                                    body:@{@"event": @"ended",
+                                                           @"data" : [NSNull null]
+                                                           }];
 }
 
 - (void)destroyPlayerWithId:(NSNumber *)playerId {

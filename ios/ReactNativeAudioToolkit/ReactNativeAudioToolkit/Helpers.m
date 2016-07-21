@@ -14,7 +14,7 @@
                     withMessage:(NSString*)message {
     
     NSDictionary *err = @{
-                          @"code": code,
+                          @"err": code,
                           @"message": message,
                           @"stackTrace": [NSThread callStackSymbols]
                           };
