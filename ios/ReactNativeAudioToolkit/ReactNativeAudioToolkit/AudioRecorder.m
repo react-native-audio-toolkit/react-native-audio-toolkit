@@ -38,25 +38,57 @@
 
 }
 
+- (NSMutableDictionary *) recorderPool {
+    if (!_recorderPool) {
+        _recorderPool = [NSMutableDictionary new];
+    }
+    return _recorderPool;
+}
+
+-(NSNumber *) keyForRecorder:(nonnull AVAudioRecorder*)recorder {
+    return [[_recorderPool allKeysForObject:recorder] firstObject];
+}
+
 #pragma mark - React exposed functions
 
 RCT_EXPORT_MODULE();
 
-RCT_EXPORT_METHOD(init:(nonnull NSNumber *)recorderId withPath:(NSString * _Nullable)path withOptions:(NSDictionary *)options withCallback:(RCTResponseSenderBlock)callback) {
+
+
+- (void)prepare:(nonnull NSNumber *)recorderId withCallback:(RCTResponseSenderBlock)callback {
+    AVAudioRecorder *recorder = [[self recorderPool] objectForKey:recorderId];
+    if (recorder) {
+        BOOL success = [recorder prepareToRecord];
+        if (!success) {
+            [self destroyRecorderWithId:recorderId];
+            NSDictionary* dict = [Helpers errObjWithCode:@"preparefail" withMessage:@"Failed to prepare recorder"];
+            callback(@[dict]);
+            return;
+        }
+    } else {
+        NSDictionary* dict = [Helpers errObjWithCode:@"notfound" withMessage:@"Recorder with that id was not found"];
+        callback(@[dict]);
+        return;
+    }
+    callback(@[[NSNull null]]);
+}
+
+RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)recorderId withPath:(NSString * _Nullable)path withOptions:(NSDictionary *)options withCallback:(RCTResponseSenderBlock)callback) {
     if ([path length] == 0) {
         NSDictionary* dict = [Helpers errObjWithCode:@"nopath" withMessage:@"Provided path was empty"];
         callback(@[dict]);
         return;
-    } else if ([_recorderPool valueForKey:recorderId]) {
+    } else if ([[self recorderPool] objectForKey:recorderId]) {
         NSDictionary* dict = [Helpers errObjWithCode:@"invalidid" withMessage:@"Recorder with that id already exists"];
         callback(@[dict]);
+        return;
     }
     
     NSURL *url;
     
     NSString *bundlePath = [NSString stringWithFormat:@"%@/%@", [[NSBundle mainBundle] bundlePath], path];
     
-    url = [NSURL URLWithString:[path stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+    url = [NSURL URLWithString:[bundlePath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
     
     // Initialize audio session
     AVAudioSession *audioSession = [AVAudioSession sharedInstance];
@@ -104,76 +136,64 @@ RCT_EXPORT_METHOD(init:(nonnull NSNumber *)recorderId withPath:(NSString * _Null
         return;
     }
     recorder.delegate = self;
-    [_recorderPool setObject:recorder forKey:recorderId];
-    callback(@[[NSNull null]]);
+    [[self recorderPool] setObject:recorder forKey:recorderId];
+    
+    [self prepare:recorderId withCallback:callback];
 }
 
-RCT_EXPORT_METHOD(set:(NSNumber *)recorderId withOptions:(NSDictionary *)options withCallback:(RCTResponseSenderBlock)callback) {
-    callback(@[[NSNull null]]);
-}
-
-RCT_EXPORT_METHOD(prepare:(NSNumber *)recorderId withCallback:(RCTResponseSenderBlock)callback) {
-    AVAudioRecorder *recorder = [_recorderPool objectForKey:recorderId];
-    if (recorder) {
-        if (![recorder prepareToRecord]) {
-            NSDictionary* dict = [Helpers errObjWithCode:@"preparefail" withMessage:@"Failed to prepare recorder"];
-            callback(@[dict]);
-        }
-    } else {
-        NSDictionary* dict = [Helpers errObjWithCode:@"notfound" withMessage:@"Recorder with that id was not found"];
-        callback(@[dict]);
-    }
-    callback(@[[NSNull null]]);
-}
-
-RCT_EXPORT_METHOD(record:(NSNumber *)recorderId withCallback:(RCTResponseSenderBlock)callback) {
-    AVAudioRecorder *recorder = [_recorderPool objectForKey:recorderId];
+RCT_EXPORT_METHOD(record:(nonnull NSNumber *)recorderId withCallback:(RCTResponseSenderBlock)callback) {
+    AVAudioRecorder *recorder = [[self recorderPool] objectForKey:recorderId];
     if (recorder) {
         if (![recorder record]) {
             NSDictionary* dict = [Helpers errObjWithCode:@"preparefail" withMessage:@"Failed to start recorder"];
             callback(@[dict]);
+            return;
         }
     } else {
         NSDictionary* dict = [Helpers errObjWithCode:@"notfound" withMessage:@"Recorder with that id was not found"];
         callback(@[dict]);
+        return;
     }
     callback(@[[NSNull null]]);
 }
 
-RCT_EXPORT_METHOD(stop:(NSNumber *)recorderId withCallback:(RCTResponseSenderBlock)callback) {
-    AVAudioRecorder *recorder = [_recorderPool objectForKey:recorderId];
+RCT_EXPORT_METHOD(stop:(nonnull NSNumber *)recorderId withCallback:(RCTResponseSenderBlock)callback) {
+    AVAudioRecorder *recorder = [[self recorderPool] objectForKey:recorderId];
     if (recorder) {
         [recorder stop];
     } else {
         NSDictionary* dict = [Helpers errObjWithCode:@"notfound" withMessage:@"Recorder with that id was not found"];
         callback(@[dict]);
+        return;
     }
     callback(@[[NSNull null]]);
 }
 
-RCT_EXPORT_METHOD(destroy:(NSNumber *)recorderId withCallback:(RCTResponseSenderBlock)callback) {
-    AVAudioRecorder *recorder = [_recorderPool objectForKey:recorderId];
-    if (recorder) {
-        [_recorderPool removeObjectForKey:recorderId];
-    } else {
-        NSDictionary* dict = [Helpers errObjWithCode:@"notfound" withMessage:@"Recorder with that id was not found"];
-        callback(@[dict]);
-    }
-    callback(@[[NSNull null]]);
-
+RCT_EXPORT_METHOD(destroy:(nonnull NSNumber *)recorderId) {
+    [self destroyRecorderWithId:recorderId];
 }
 
 #pragma mark - Delegate methods
 - (void)audioRecorderDidFinishRecording:(AVAudioRecorder *) aRecorder successfully:(BOOL)flag {
-  NSLog (@"RCTAudioRecorder: Recording finished, successful: %d", flag);
-  [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:ended"
+    [[self recorderPool] removeObjectForKey:[self keyForRecorder:aRecorder]];
+    NSLog (@"RCTAudioRecorder: Recording finished, successful: %d", flag);
+    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:ended"
                                                  body:@{}];
   
 }
 
+- (void)destroyRecorderWithId:(NSNumber *)recorderId {
+    AVAudioRecorder *recorder = [[self recorderPool] objectForKey:recorderId];
+    [recorder stop];
+    if (recorder) {
+        [[self recorderPool] removeObjectForKey:recorderId];
+    }
+}
+
 - (void)audioRecorderEncodeErrorDidOccur:(AVAudioRecorder *)recorder
                                    error:(NSError *)error {
-  [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:error"
+    [self destroyRecorderWithId:[self keyForRecorder:recorder]];
+    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:error"
                                                body:@{@"error": [error description]}];
 }
 
