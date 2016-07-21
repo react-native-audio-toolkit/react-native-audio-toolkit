@@ -15,21 +15,29 @@ var RCTAudioRecorder = NativeModules.AudioRecorder;
 var playerId = 0;
 var recorderId = 0;
 
-var states = {
+var MediaStates = {
   ERROR: -1,
   IDLE: 0,
-  INITIALIZING: 1,
-  INITIALIZED: 2,
-  PREPARING: 3,
-  PREPARED: 4,
-  PLAYING: 5,
-  RECORDING: 5,
-  PAUSED: 6
+  //INITIALIZING: 1,
+  //INITIALIZED: 2,
+  PREPARING: 1,
+  PREPARED: 2,
+  SEEKING: 3,
+  PLAYING: 4,
+  RECORDING: 4,
+  PAUSED: 5
 };
 
+var defaultRecorderOptions = {
+  autoDestroy: true
+};
+
+var defaultPlayerOptions = {
+  autoDestroy: true
+};
 
 class Recorder extends EventEmitter {
-  constructor(path, options = {}) {
+  constructor(path, options = defaultRecorderOptions) {
     super();
 
     this._path = path;
@@ -44,33 +52,29 @@ class Recorder extends EventEmitter {
   }
 
   _reset() {
-    this._state = states.IDLE;
-    this._autoDestroy = true;
+    this._state = MediaStates.IDLE;
     this._duration = -1;
     this._position = -1;
     this._lastSync = -1;
   }
 
   _updateState(err, state) {
-    this._state = err ? states.ERROR : state;
+    this._state = err ? MediaStates.ERROR : state;
   }
 
   _handleEvent(event, data) {
+    console.log('event: ' + event + ', data: ' + JSON.stringify(data));
     switch (event) {
       case 'progress':
-        console.log(data);
         break;
       case 'seeked':
-        console.log(data);
         break;
       case 'ended':
-        console.log(data);
+        this._state = Math.min(this._state, MediaStates.INITIALIZED);
         break;
       case 'info':
-        console.log(data);
         break;
       case 'error':
-        console.log(data);
         this._reset();
         //this.emit('error', data);
         break;
@@ -79,42 +83,12 @@ class Recorder extends EventEmitter {
     this.emit(event, data);
   }
 
-  init(callback = _.noop) {
-    if (this._state != states.IDLE) {
-      this.destroy();
-    }
-
-    console.log(this);
-    console.log(this._updateState);
-
-    this._updateState(null, states.INITIALIZING);
-
-    // Initialize the recorder
-    RCTAudioRecorder.init(this._recorderId, this._path, this._options, (err) => {
-      this._updateState(err, states.INITIALIZED);
-      callback(err);
-    });
-  }
-
   prepare(callback = _.noop) {
-    let tasks = [];
+    this._updateState(null, MediaStates.PREPARING);
 
-    // Initialize recorder if not initialized yet
-    if (this._state < states.INITIALIZED) {
-      tasks.push((next) => {
-        this.init(next);
-      });
-    }
-
-    // Prepare recorder if not prepared yet
-    if (this._state < states.PREPARED) {
-      tasks.push((next) => {
-        RCTAudioRecorder.prepare(this._recorderId, next);
-      });
-    }
-
-    async.series(tasks, (err, results) => {
-      this._updateState(err, states.PREPARED, results);
+    // Prepare recorder
+    RCTAudioRecorder.prepare(this._recorderId, this._path, this._options, (err) => {
+      this._updateState(err, MediaStates.PREPARED);
       callback(err);
     });
 
@@ -122,20 +96,22 @@ class Recorder extends EventEmitter {
   }
 
   record(callback = _.noop) {
-    async.series([
-      // Make sure recorder is prepared
-      (next) => {
+    let tasks = [];
+
+    // Make sure recorder is prepared
+    if (this._state === MediaStates.IDLE) {
+      tasks.push((next) => {
         this.prepare(next);
-      },
+      });
+    }
 
-      // Start recording
-      (next) => {
+    // Start recording
+    tasks.push((next) => {
         RCTAudioRecorder.record(this._recorderId, next);
-      }
-    ],
+    });
 
-    (err, results) => {
-      this._updateState(err, states.RECORDING, results);
+    async.series(tasks, (err) => {
+      this._updateState(err, MediaStates.RECORDING);
       callback(err);
     });
 
@@ -143,21 +119,34 @@ class Recorder extends EventEmitter {
   }
 
   stop(callback = _.noop) {
-    if (this._state >= states.RECORDING) {
+    if (this._state >= MediaStates.RECORDING) {
       RCTAudioRecorder.stop(this._recorderId, (err) => {
-        this._updateState(err, states.IDLE);
-        this._position = -1;
         callback(err);
       });
     } else {
       setTimeout(callback, 0);
     }
+
+    return this;
+  }
+
+  toggleRecord(callback = _.noop) {
+    if (this._state === MediaStates.RECORDING) {
+      this.stop(callback);
+    } else {
+      this.record(callback);
+    }
+
     return this;
   }
 
   destroy(callback = _.noop) {
     this._reset();
-    RCTAudioRecorder.destroy(this._recorderId);
+    RCTAudioRecorder.destroy(this._recorderId, callback);
+  }
+
+  get state() {
+    return this._state;
   }
 }
 
@@ -168,10 +157,11 @@ class Recorder extends EventEmitter {
  *
  */
 class Player extends EventEmitter {
-  constructor(path) {
+  constructor(path, options = defaultPlayerOptions) {
     super();
 
     this._path = path;
+    this._options = options;
 
     this._playerId = playerId++;
     this._reset();
@@ -182,24 +172,26 @@ class Player extends EventEmitter {
   }
 
   _reset() {
-    this._state = states.IDLE;
+    this._state = MediaStates.IDLE;
     this._volume = 1.0;
     this._pan = 0.0;
     this._wakeLock = false;
-    this._autoDestroy = true;
     this._duration = -1;
     this._position = -1;
     this._lastSync = -1;
   }
 
-  _storeInfo(info) {
+  _storeInfo(info = {
+    duration: -1,
+    position: -1
+  }) {
     this._duration = info.duration;
     this._position = info.position;
     this._lastSync = Date.now();
   }
 
   _updateState(err, state, results) {
-    this._state = err ? states.ERROR : state;
+    this._state = err ? MediaStates.ERROR : state;
 
     if (err || !results) {
       return;
@@ -211,21 +203,18 @@ class Player extends EventEmitter {
   }
 
   _handleEvent(event, data) {
+    console.log('event: ' + event + ', data: ' + JSON.stringify(data));
     switch (event) {
       case 'progress':
-        console.log(data);
         break;
       case 'seeked':
-        console.log(data);
         break;
       case 'ended':
-        console.log(data);
+        this._updateState(null, MediaStates.PREPARED);
         break;
       case 'info':
-        console.log(data);
         break;
       case 'error':
-        console.log(data);
         this._reset();
         //this.emit('error', data);
         break;
@@ -234,123 +223,88 @@ class Player extends EventEmitter {
     this.emit(event, data);
   }
 
-  init(callback = _.noop) {
-    if (this._state != states.IDLE) {
-      this.destroy();
-    }
-
-    this._updateState(null, states.INITIALIZING);
-
-    async.series([
-      // Initialize the player
-      (next) => {
-        RCTAudioPlayer.init(this._playerId, this._path, next);
-      },
-
-      // Set initial values for player options
-      (next) => {
-        RCTAudioPlayer.set(this._playerId, {
-          volume: this._volume,
-          pan: this._pan,
-          wakeLock: this._wakeLock,
-          autoDestroy: this._autoDestroy
-        }, next);
-      }
-    ],
-
-    (err, results) => {
-      this._updateState(err, states.INITIALIZED);
-      callback(err);
-    });
-  }
-
-  prepare(position = -1, callback = _.noop) {
-    if (typeof position === 'function') {
-      callback = position;
-      position = -1;
-    }
+  prepare(callback = _.noop) {
+    this._updateState(null, MediaStates.PREPARING);
 
     let tasks = [];
 
-    // Initialize player if not initialized yet
-    if (this._state < states.INITIALIZED) {
-      tasks.push((next) => {
-        this.init(next);
-      });
-    }
+    // Prepare player
+    tasks.push((next) => {
+      RCTAudioPlayer.prepare(this._playerId, this._path, this._options, next);
+    });
 
-    // Prepare player if not prepared yet
-    if (this._state < states.PREPARED) {
-      tasks.push((next) => {
-        RCTAudioPlayer.prepare(this._playerId, next);
-      });
-    }
-
-    // Seek to position if given
-    if (position != -1) {
-      tasks.push((next) => {
-        RCTAudioPlayer.seek(this._playerId, position, next);
-      });
-    }
+    // Set initial values for player options
+    tasks.push((next) => {
+      RCTAudioPlayer.set(this._playerId, {
+        volume: this._volume,
+        pan: this._pan,
+        wakeLock: this._wakeLock,
+      }, next);
+    });
 
     async.series(tasks, (err, results) => {
-      this._updateState(err, states.PREPARED, results);
+      this._updateState(err, MediaStates.PREPARED, results);
       callback(err);
     });
 
     return this;
   }
 
-  play(position = 0, callback = _.noop) {
-    if (typeof position === 'function') {
-      callback = position;
-      position = 0;
+  play(callback = _.noop) {
+    let tasks = [];
+
+    // Make sure player is prepared
+    if(this._state === MediaStates.IDLE) {
+      tasks.push((next) => {
+        this.prepare(next);
+      });
     }
 
-    async.series([
-      // Make sure player is prepared
-      (next) => {
-        this.prepare(position, next);
-      },
+    // Start playback
+    tasks.push((next) => {
+      RCTAudioPlayer.play(this._playerId, next);
+    });
 
-      // Start playback
-      (next) => {
-        RCTAudioPlayer.play(this._playerId, next);
-      }
-    ],
-
-    (err, results) => {
-      this._updateState(err, states.PLAYING, results);
+    async.series(tasks, (err, results) => {
+      this._updateState(err, MediaStates.PLAYING, results);
       callback(err);
     });
 
     return this;
-  }
-
-  resume(callback = _.noop) {
-    this.play(-1, callback);
   }
 
   pause(callback = _.noop) {
     RCTAudioPlayer.pause(this._playerId, (err) => {
-      this._updateState(err, states.PAUSED);
+      this._updateState(err, MediaStates.PAUSED);
       callback(err);
     });
+
+    return this;
+  }
+
+  playPause(callback = _.noop) {
+    if (this._state === MediaStates.PLAYING) {
+      this.pause(callback);
+    } else {
+      this.play(callback);
+    }
+
     return this;
   }
 
   stop(callback = _.noop) {
-    RCTAudioPlayer.stop(this._playerId, (err) => {
-      this._updateState(err, states.INITIALIZED);
+    RCTAudioPlayer.stop(this._playerId, (err, results) => {
+      this._updateState(err, MediaStates.PREPARED, results);
       this._position = -1;
       callback(err);
     });
+
     return this;
   }
 
   destroy(callback = _.noop) {
     this._reset();
-    RCTAudioPlayer.destroy(this._playerId);
+    RCTAudioPlayer.destroy(this._playerId, callback);
   }
 
   get volume() {
@@ -360,7 +314,7 @@ class Player extends EventEmitter {
   set volume(volume) {
     this._volume = volume;
 
-    if (this._state >= states.INITIALIZED) {
+    if (this._state >= MediaStates.INITIALIZED) {
       RCTAudioPlayer.set(this._playerId, {'volume': this._volume}, _.noop);
     }
   }
@@ -368,16 +322,8 @@ class Player extends EventEmitter {
   set wakeLock(value) {
     this._wakeLock = value;
 
-    if (this._state >= states.INITIALIZED) {
+    if (this._state >= MediaStates.INITIALIZED) {
       RCTAudioPlayer.set(this._playerId, {'wakeLock': this._wakeLock}, _.noop);
-    }
-  }
-
-  set autoDestroy(value) {
-    this._autoDestroy = value;
-
-    if (this._state >= states.INITIALIZED) {
-      RCTAudioPlayer.set(this._playerId, {'autoDestroy': this._autoDestroy});
     }
   }
 
@@ -392,7 +338,7 @@ class Player extends EventEmitter {
       return -1;
     }
 
-    if (this._state === states.PLAYING) {
+    if (this._state === MediaStates.PLAYING) {
       pos = this._position + (Date.now() - this._lastSync);
       pos = Math.min(pos, this._duration);
 
@@ -408,6 +354,10 @@ class Player extends EventEmitter {
     // TODO: this always causes media to play even without user calling play()
     this.play(value * 1000);
   }
+
+  get state() {
+    return this._state;
+  }
 }
 
-export { Player, Recorder };
+export { Player, Recorder, MediaStates };

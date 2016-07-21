@@ -52,7 +52,6 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     }
 
     private void emitEvent(Integer playerId, String event, WritableMap data) {
-        //Log.d(LOG_TAG, "player " + playerId + ": " + event + ": " + s);
         WritableMap payload = new WritableNativeMap();
         payload.putString("event", event);
         payload.putMap("data", data);
@@ -125,7 +124,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     }
 
     @ReactMethod
-    public void destroy(Integer playerId) {
+    public void destroy(Integer playerId, Callback callback) {
         MediaPlayer player = this.playerPool.get(playerId);
 
         if (player != null) {
@@ -139,6 +138,14 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
 
             emitEvent(playerId, "info", data);
         }
+
+        if (callback != null) {
+            callback.invoke();
+        }
+    }
+
+    private void destroy(Integer playerId) {
+        this.destroy(playerId, null);
     }
 
     @ReactMethod
@@ -172,8 +179,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         return info;
     }
 
-    @ReactMethod
-    public void init(Integer playerId, String path, Callback callback) {
+    public void prepare(Integer playerId, String path, ReadableMap options, Callback callback) {
         if (path == null || path.isEmpty()) {
             callback.invoke(errObj("nopath", "Provided path was empty"));
             return;
@@ -210,24 +216,21 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         player.setOnSeekCompleteListener(this);
 
         this.playerPool.put(playerId, player);
-        this.playerAutoDestroy.put(playerId, true);
 
-        callback.invoke();
-    }
+        // Auto destroy player by default
+        boolean autoDestroy = true;
 
-    @ReactMethod
-    public void prepare(Integer playerId, Callback callback) {
-        MediaPlayer player = this.playerPool.get(playerId);
-        if (player == null) {
-            callback.invoke(errObj("notfound", "playerId " + playerId + " not found."));
-            return;
+        if (options.hasKey("autoDestroy")) {
+            autoDestroy = options.getBoolean("autoDestroy");
         }
+
+        this.playerAutoDestroy.put(playerId, autoDestroy);
 
         try {
             player.prepare();
 
             callback.invoke(null, getInfo(player));
-        } catch (IOException e) {
+        } catch (Exception e) {
             callback.invoke(errObj("prepare", e.toString()));
         }
     }
@@ -315,11 +318,24 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         }
 
         try {
-            player.stop();
+            player.pause();
             if (this.playerAutoDestroy.get(playerId)) {
+                Log.d(LOG_TAG, "stop(): Autodestroying player...");
                 destroy(playerId);
+                callback.invoke();
+            } else {
+                // "Fake" stopping on Android by pausing and seeking to 0 so
+                // that we remain in prepared state
+                Callback oldCallback = this.playerSeekCallback.get(playerId);
+
+                if (oldCallback != null) {
+                    oldCallback.invoke(errObj("oldcallback", "Playback stopped before seek operation could finish"));
+                    this.playerSeekCallback.remove(playerId);
+                }
+
+                this.playerSeekCallback.put(playerId, callback);
+                player.seekTo(0);
             }
-            callback.invoke();
         } catch (Exception e) {
             callback.invoke(errObj("stop", e.toString()));
         }
@@ -372,6 +388,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         emitEvent(playerId, "ended", data);
 
         if (this.playerAutoDestroy.get(playerId)) {
+            Log.d(LOG_TAG, "onCompletion(): Autodestroying player...");
             destroy(playerId);
         }
     }

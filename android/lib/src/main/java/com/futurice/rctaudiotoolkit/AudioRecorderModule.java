@@ -126,7 +126,8 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         if (URLUtil.isValidUrl(path)) {
             uri = Uri.parse(path);
         } else {
-            String extPath = new ContextWrapper(this.context).getFilesDir() + "/" + path;
+            //String extPath = new ContextWrapper(this.context).getFilesDir() + "/" + path;
+            String extPath = Environment.getExternalStorageDirectory() + "/" + path;
 
             File file = new File(extPath);
             uri = Uri.fromFile(file);
@@ -136,7 +137,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
     }
 
     @ReactMethod
-    public void destroy(Integer recorderId) {
+    public void destroy(Integer recorderId, Callback callback) {
         MediaRecorder recorder = this.recorderPool.get(recorderId);
 
         if (recorder != null) {
@@ -149,16 +150,25 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
 
             emitEvent(recorderId, "info", data);
         }
+
+        if (callback != null) {
+            callback.invoke();
+        }
+    }
+
+    private void destroy(Integer recorderId) {
+        this.destroy(recorderId, null);
     }
 
     @ReactMethod
-    public void init(Integer recorderId, String path, ReadableMap options, Callback callback) {
+    public void prepare(Integer recorderId, String path, ReadableMap options, Callback callback) {
         if (path == null || path.isEmpty()) {
             callback.invoke(errObj("nopath", "Provided path was empty"));
             return;
         }
 
         // Release old recorder if exists
+        Log.d(LOG_TAG, "Releasing old recorder...");
         destroy(recorderId);
 
         Uri uri = uriFromPath(path);
@@ -202,17 +212,6 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
 
         this.recorderAutoDestroy.put(recorderId, autoDestroy);
 
-        callback.invoke();
-    }
-
-    @ReactMethod
-    public void prepare(Integer recorderId, Callback callback) {
-        MediaRecorder recorder = this.recorderPool.get(recorderId);
-        if (recorder == null) {
-            callback.invoke(errObj("notfound", "recorderId " + recorderId + " not found."));
-            return;
-        }
-
         try {
             recorder.prepare();
 
@@ -250,6 +249,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         try {
             recorder.stop();
             if (this.recorderAutoDestroy.get(recorderId)) {
+                Log.d(LOG_TAG, "Autodestroying recorder...");
                 destroy(recorderId);
             }
             callback.invoke();
