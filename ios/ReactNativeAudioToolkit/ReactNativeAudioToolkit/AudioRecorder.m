@@ -157,8 +157,9 @@ RCT_EXPORT_METHOD(stop:(nonnull NSNumber *)recorderId withCallback:(RCTResponseS
     callback(@[[NSNull null]]);
 }
 
-RCT_EXPORT_METHOD(destroy:(nonnull NSNumber *)recorderId) {
+RCT_EXPORT_METHOD(destroy:(nonnull NSNumber *)recorderId withCallback:(RCTResponseSenderBlock)callback) {
     [self destroyRecorderWithId:recorderId];
+    callback(@[[NSNull null]]);
 }
 
 #pragma mark - Delegate methods
