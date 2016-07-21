@@ -10,7 +10,9 @@
 
 @interface Helpers : NSObject
 
-+(NSDictionary*) errObjWithCode:(NSString*)code
++(NSDictionary *) errObjWithCode:(NSString*)code
                     withMessage:(NSString*)message;
+
++(NSDictionary *)recorderSettingsFromOptions:(NSDictionary *)options;
 
 @end

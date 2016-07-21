@@ -32,7 +32,6 @@
         NSLog (@"RCTAudioRecorder: Could not deactivate current audio session. Error: %@", error);
         return;
     }
-
 }
 
 - (NSMutableDictionary *) recorderPool {
@@ -108,16 +107,8 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)recorderId withPath:(NSString * _N
     }
     
     // Settings for the recorder
-    NSMutableDictionary *recordSetting = [[NSMutableDictionary alloc] init];
+    NSDictionary *recordSetting = [Helpers recorderSettingsFromOptions:options];
     
-    [recordSetting setValue :[NSNumber numberWithInt:kAudioFormatMPEG4AAC] forKey:AVFormatIDKey];
-    [recordSetting setValue:[NSNumber numberWithFloat:44100.0] forKey:AVSampleRateKey];
-    [recordSetting setValue:[NSNumber numberWithInt: 2] forKey:AVNumberOfChannelsKey];
-    
-    [recordSetting setValue :[NSNumber numberWithInt:16] forKey:AVLinearPCMBitDepthKey];
-    [recordSetting setValue :[NSNumber numberWithBool:NO] forKey:AVLinearPCMIsBigEndianKey];
-    [recordSetting setValue :[NSNumber numberWithBool:NO] forKey:AVLinearPCMIsFloatKey];
-
     // Initialize a new recorder
     AVAudioRecorder *recorder = [[AVAudioRecorder alloc] initWithURL:url settings:recordSetting error:&error];
     if (error) {

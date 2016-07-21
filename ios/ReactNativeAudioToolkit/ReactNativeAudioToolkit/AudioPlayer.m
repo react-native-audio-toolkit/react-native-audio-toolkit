@@ -135,8 +135,16 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId
     ReactPlayer* player = [[ReactPlayer alloc]
                         initWithPlayerItem:item];
     
-    // If successful, add to player pool
+    // If successful, check options and add to player pool
     if (player && !error) {
+        
+        NSNumber *autoDestroy = [options objectForKey:@"autoDestroy"];
+        if (!autoDestroy) {
+            // Default to destroy automatically
+            autoDestroy = @1;
+        }
+        player.autoDestroy = [autoDestroy boolValue];
+
         [[self playerPool] setObject:player forKey:playerId];
     } else {
         callback(@[RCTJSErrorFromNSError(error)]);
@@ -245,13 +253,6 @@ RCT_EXPORT_METHOD(set:(nonnull NSNumber*)playerId withOpts:(NSDictionary*)option
     if (volume) {
         [player setVolume:volume];
     }
-    
-    NSNumber *autoDestroy = [options objectForKey:@"autoDestroy"];
-    if (!autoDestroy) {
-        // Default to destroy automatically
-        autoDestroy = @1;
-    }
-    player.autoDestroy = [autoDestroy boolValue];
     
     callback(@[[NSNull null]]);
 }
