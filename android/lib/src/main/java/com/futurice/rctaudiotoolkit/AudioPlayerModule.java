@@ -179,6 +179,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         return info;
     }
 
+    @ReactMethod
     public void prepare(Integer playerId, String path, ReadableMap options, Callback callback) {
         if (path == null || path.isEmpty()) {
             callback.invoke(errObj("nopath", "Provided path was empty"));

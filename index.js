@@ -16,6 +16,7 @@ var playerId = 0;
 var recorderId = 0;
 
 var MediaStates = {
+  DESTROYED: -2,
   ERROR: -1,
   IDLE: 0,
   //INITIALIZING: 1,
@@ -121,6 +122,7 @@ class Recorder extends EventEmitter {
   stop(callback = _.noop) {
     if (this._state >= MediaStates.RECORDING) {
       RCTAudioRecorder.stop(this._recorderId, (err) => {
+        this._updateState(err, MediaStates.DESTROYED);
         callback(err);
       });
     } else {
