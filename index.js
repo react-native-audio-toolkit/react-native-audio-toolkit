@@ -301,10 +301,10 @@ class Player extends EventEmitter {
     return this;
   }
 
-  play(position = 0, callback = _.noop) {
+  play(position = -1, callback = _.noop) {
     if (typeof position === 'function') {
       callback = position;
-      position = 0;
+      position = -1;
     }
 
     async.series([
@@ -325,10 +325,6 @@ class Player extends EventEmitter {
     });
 
     return this;
-  }
-
-  resume(callback = _.noop) {
-    this.play(-1, callback);
   }
 
   pause(callback = _.noop) {

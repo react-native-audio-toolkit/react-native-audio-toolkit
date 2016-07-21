@@ -12,45 +12,47 @@ import {
   MediaStates
 } from 'react-native-audio-toolkit';
 
+let filename = 'test.mp4';
+
 class AppContainer extends React.Component {
   constructor() {
     super();
 
     this.state = {
       playPauseButton: 'Preparing...',
+      recordButton: 'Preparing...',
       buttonDisabled: true
     };
 
     console.log('mount');
-    if (this.player) {
-      this.player.destroy();
-    }
 
-    this.player = new Player('https://fruitiex.org/files/rosanna_128kbit.mp3');
-    this.player.autoDestroy = false;
+    this.player = null;
 
-    console.log('preparing');
-    this.player.prepare(() => {
-      console.log('prepared');
+    this.recorder = new Recorder(filename, {
+      autoDestroy: false
+    }).prepare(() => {
       this._updateState();
     });
   }
 
   componentWillMount() {
+    // TODO should we initialize player/recorder here instead?
   }
 
   componentWillUnmount() {
     console.log('unmount');
-    if (this.player) {
-      this.player.destroy();
-      this.player = null;
-    }
+    // TODO
   }
 
   _updateState(err) {
+    console.log('player.state: ' + (this.player ? this.player.state : -1) + ' ' + (this.recorder ? this.recorder.state : -1));
+
     this.setState({
-      playPauseButton: this.player.state === MediaStates.PLAYING ? 'Pause' : 'Play',
-      buttonDisabled: this.player.state < MediaStates.INITIALIZED
+      stopButtonDisabled: !this.player || (this.player.state !== MediaStates.PLAYING && this.player.state !== MediaStates.PAUSED),
+      playPauseButton: (this.player && this.player.state === MediaStates.PLAYING) ? 'Pause' : 'Play',
+      playButtonDisabled: !this.player || (this.player.state < MediaStates.PREPARED || this.recorder.state === MediaStates.RECORDING),
+      recordButton: this.recorder.state === MediaStates.RECORDING ? 'Stop' : 'Record',
+      recordButtonDisabled: this.recorder.state < MediaStates.PREPARED,
     });
   }
 
@@ -66,6 +68,44 @@ class AppContainer extends React.Component {
     });
   }
 
+  _reloadPlayer() {
+    console.log('_reloadPlayer()');
+
+    if (this.player) {
+      this.player.destroy();
+    }
+
+    this.player = new Player(filename, {
+      autoDestroy: false
+    }).prepare((err) => {
+      if (err) {
+        console.log('error at _reloadPlayer():');
+        console.log(err);
+      }
+
+      this._updateState();
+    });
+
+    this.player.on('ended', () => {
+      this._updateState();
+    });
+  }
+
+  _toggleRecord() {
+    this.recorder.toggleRecord(() => {
+      console.log('state1 was ' + this.recorder.state);
+      if (this.recorder.state !== MediaStates.RECORDING) {
+        console.log('stopped');
+        console.log('state2 was ' + this.recorder.state);
+        setTimeout(() => {
+          this._reloadPlayer();
+        }, 1000);
+      }
+
+      this._updateState();
+    });
+  }
+
   render() {
     return (
       <View>
@@ -75,11 +115,21 @@ class AppContainer extends React.Component {
           </Text>
         </View>
         <View style={styles.buttonContainer}>
-          <Button disabled={this.state.buttonDisabled} style={styles.button} onPress={() => this._playPause()}>
+          <Button disabled={this.state.playButtonDisabled} style={styles.button} onPress={() => this._playPause()}>
             {this.state.playPauseButton}
           </Button>
-          <Button style={styles.button} onPress={() => this._stop()}>
+          <Button disabled={this.state.stopButtonDisabled} style={styles.button} onPress={() => this._stop()}>
             Stop
+          </Button>
+        </View>
+        <View>
+          <Text style={styles.title}>
+            Recording
+          </Text>
+        </View>
+        <View style={styles.buttonContainer}>
+          <Button disabled={this.state.recordButtonDisabled} style={styles.button} onPress={() => this._toggleRecord()}>
+            {this.state.recordButton}
           </Button>
         </View>
       </View>
