@@ -89,6 +89,7 @@
 
 RCT_EXPORT_MODULE();
 
+// This method initializes and prepares the player
 RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId
                   withPath:(NSString* _Nullable)path
                   withOptions:(NSDictionary *)options
@@ -182,8 +183,6 @@ RCT_EXPORT_METHOD(destroy:(nonnull NSNumber*)playerId withCallback:(RCTResponseS
 }
 
 RCT_EXPORT_METHOD(seek:(nonnull NSNumber*)playerId withPos:(nonnull NSNumber*)position withCallback:(RCTResponseSenderBlock)callback) {
-    //callback(@[[NSNull null]]);
-    //return;
     AVPlayer* player = [self playerForKey:playerId];
     
     if (!player) {

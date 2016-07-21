@@ -166,7 +166,6 @@ RCT_EXPORT_METHOD(stop:(nonnull NSNumber *)recorderId withCallback:(RCTResponseS
         callback(@[dict]);
         return;
     }
-    [self destroyRecorderWithId:recorderId];
     callback(@[[NSNull null]]);
 }
 
