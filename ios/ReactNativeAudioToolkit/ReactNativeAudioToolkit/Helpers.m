@@ -34,7 +34,7 @@
     // Assign default values if nil and map otherwise
     sampleRate = sampleRate ? sampleRate : @44100;
     channels = channels ? channels : @2;
-    bitRate = bitRate ? bitRate : @128;
+    bitRate = (bitRate ? bitRate : @128) * 1000;
     
     NSNumber *format = [NSNumber numberWithInt:kAudioFormatMPEG4AAC];
     if (formatString) {
@@ -65,7 +65,7 @@
     [recordSettings setValue:format forKey:AVFormatIDKey];
     [recordSettings setValue:sampleRate forKey:AVSampleRateKey];
     [recordSettings setValue:channels forKey:AVNumberOfChannelsKey];
-    //[recordSettings setValue:bitRate forKey:AVEncoderBitRateKey];
+    [recordSettings setValue:bitRate forKey:AVEncoderBitRateKey];
     //[recordSettings setValue:quality forKey:AVEncoderAudioQualityKey];
     
     [recordSettings setValue :[NSNumber numberWithInt:16] forKey:AVLinearPCMBitDepthKey];
