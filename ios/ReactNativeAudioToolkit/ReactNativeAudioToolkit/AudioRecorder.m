@@ -35,7 +35,7 @@
                                                         body:@{@"error": [error description]}];
         return;
     }
-    
+
 }
 
 -(NSMutableDictionary*) recorderPool {
@@ -96,7 +96,7 @@ RCT_EXPORT_METHOD(init:(nonnull NSNumber *)recorderId withPath:(NSString * _Null
     [recordSetting setValue :[NSNumber numberWithInt:16] forKey:AVLinearPCMBitDepthKey];
     [recordSetting setValue :[NSNumber numberWithBool:NO] forKey:AVLinearPCMIsBigEndianKey];
     [recordSetting setValue :[NSNumber numberWithBool:NO] forKey:AVLinearPCMIsFloatKey];
-    
+
     // Initialize a new recorder
     AVAudioRecorder *recorder = [[AVAudioRecorder alloc] initWithURL:url settings:recordSetting error:&error];
     if (error) {
@@ -174,16 +174,16 @@ RCT_EXPORT_METHOD(destroy:(nonnull NSNumber *)recorderId) {
 
 #pragma mark - Delegate methods
 - (void)audioRecorderDidFinishRecording:(AVAudioRecorder *) aRecorder successfully:(BOOL)flag {
-    NSLog (@"RCTAudioRecorder: Recording finished, successful: %d", flag);
-    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:ended"
-                                                    body:@{}];
-    
+  NSLog (@"RCTAudioRecorder: Recording finished, successful: %d", flag);
+  [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:ended"
+                                                 body:@{}];
+  
 }
 
 - (void)audioRecorderEncodeErrorDidOccur:(AVAudioRecorder *)recorder
                                    error:(NSError *)error {
-    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:error"
-                                                    body:@{@"error": [error description]}];
+  [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioRecorder:error"
+                                               body:@{@"error": [error description]}];
 }
 
 @end

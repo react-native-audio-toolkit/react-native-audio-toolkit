@@ -12,6 +12,7 @@
 #import "RCTEventDispatcher.h"
 #import "RCTUtils.h"
 #import "ReactPlayer.h"
+#import "ReactPlayerItem.h"
 #import <AVFoundation/AVPlayer.h>
 #import <AVFoundation/AVPlayerItem.h>
 #import <AVFoundation/AVAsset.h>
@@ -43,6 +44,13 @@
     return [[_playerPool allKeysForObject:player] firstObject];
 }
 
+- (void)dealloc {
+    for (ReactPlayer *player in [self playerPool]) {
+        NSNumber *playerId = [self keyForPlayer:player];
+        [self destroyPlayerWithId:playerId];
+    }
+    _playerPool = nil;
+}
 
 #pragma mark React exposed methods
 
@@ -67,37 +75,48 @@ RCT_EXPORT_METHOD(init:(nonnull NSNumber*)playerId withPath:(NSString* _Nullable
     }
     
     /*
-     NSString* mainBundle = [NSString stringWithFormat:@"%@/%@", [[NSBundle mainBundle] bundlePath], path];
-     BOOL isDir = NO;
-     NSFileManager* fm = [[NSFileManager alloc] init];
-     if ([fm fileExistsAtPath:mainBundle isDirectory:isDir]) {
-     url = [NSURL fileURLWithPath:mainBundle];
-     } else {
-     url = [NSURL URLWithString:path];
-     if (!url) {
-     NSDictionary* dict = [Helpers errObjWithCode:@"notfound" withMessage:@"No file found or invalid path"];
-     callback(@[dict]);
-     }
-     }
+    NSString* mainBundle = [NSString stringWithFormat:@"%@/%@", [[NSBundle mainBundle] bundlePath], path];
+    BOOL isDir = NO;
+    NSFileManager* fm = [[NSFileManager alloc] init];
+    if ([fm fileExistsAtPath:mainBundle isDirectory:isDir]) {
+        url = [NSURL fileURLWithPath:mainBundle];
+    } else {
+        url = [NSURL URLWithString:path];
+        if (!url) {
+            NSDictionary* dict = [Helpers errObjWithCode:@"notfound" withMessage:@"No file found or invalid path"];
+            callback(@[dict]);
+        }
+    }
      */
     
     AVURLAsset *asset = [AVURLAsset assetWithURL: url];
-    AVPlayerItem *item = [AVPlayerItem playerItemWithAsset: asset];
+    ReactPlayerItem *item = [ReactPlayerItem playerItemWithAsset: asset];
+    item.reactPlayerId = playerId;
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(itemDidFinishPlaying:)
+                                                 name:AVPlayerItemDidPlayToEndTimeNotification
+                                               object:item];
     
     NSError *error = nil;
     [[AVAudioSession sharedInstance] setCategory: AVAudioSessionCategoryPlayback error: &error];
     if (error) {
-        NSLog(@"ERROR");
+        NSDictionary* dict = [Helpers errObjWithCode:@"initfail"
+                                         withMessage:
+                              [NSString stringWithFormat:@"Failed to set audio session category.", playerId]];
+        callback(@[dict]);
+        return;
     }
     
     ReactPlayer* player = [[ReactPlayer alloc]
-                           initWithPlayerItem:item];
-    NSLog(@"DURATION: %f", asset.duration);
+                        initWithPlayerItem:item];
+    
+
     //initWithURL:[NSURL fileURLWithPath:[path stringByRemovingPercentEncoding]]];
     //error:&error];
     
     //initWithContentsOfURL:
-    if (player) {
+    if (player && !error) {
         [[self playerPool] setObject:player forKey:playerId];
         
         callback(@[[NSNull null]]);
@@ -107,10 +126,7 @@ RCT_EXPORT_METHOD(init:(nonnull NSNumber*)playerId withPath:(NSString* _Nullable
 }
 
 RCT_EXPORT_METHOD(destroy:(nonnull NSNumber*)playerId) {
-    AVPlayer* player = [self playerForKey:playerId]; if (player) {
-        [player pause];
-        [[self playerPool] removeObjectForKey:playerId];
-    }
+    [self destroyPlayerWithId:playerId];
 }
 
 RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId withCallback:(RCTResponseSenderBlock)callback) {
@@ -122,17 +138,21 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId withCallback:(RCTResponseS
         callback(@[dict]);
         return;
     }
-    
-    if (player.status != AVPlayerStatusReadyToPlay) {
-        player.callback = callback;
-        [player addObserver:self forKeyPath:@"status" options:0 context:nil];
-    } else if (player.status == AVPlayerStatusReadyToPlay) {
+    while (player.status == AVPlayerStatusUnknown) {
+        [NSThread sleepForTimeInterval:0.01f];
+    }
+    if (player.status == AVPlayerStatusReadyToPlay) {
         callback(@[[NSNull null]]);
     } else {
         NSDictionary* dict = [Helpers errObjWithCode:@"preparefail"
                                          withMessage:[NSString stringWithFormat:@"Preparing player failed"]];
-        callback(@[dict]);
         
+        if (player.autoDestroy) {
+            [self destroyPlayerWithId:playerId];
+        }
+        
+        callback(@[dict]);
+
     }
 }
 
@@ -188,7 +208,7 @@ RCT_EXPORT_METHOD(play:(nonnull NSNumber*)playerId withCallback:(RCTResponseSend
 }
 
 RCT_EXPORT_METHOD(set:(nonnull NSNumber*)playerId withOpts:(NSDictionary*)options withCallback:(RCTResponseSenderBlock)callback) {
-    AVPlayer* player = [self playerForKey:playerId];
+    ReactPlayer *player = [self playerForKey:playerId];
     
     if (!player) {
         NSDictionary* dict = [Helpers errObjWithCode:@"notfound"
@@ -202,11 +222,18 @@ RCT_EXPORT_METHOD(set:(nonnull NSNumber*)playerId withOpts:(NSDictionary*)option
         [player setVolume:volume];
     }
     
+    NSNumber *autoDestroy = [options objectForKey:@"autoDestroy"];
+    if (!autoDestroy) {
+        // Default to destroy automatically
+        autoDestroy = @1;
+    }
+    player.autoDestroy = [autoDestroy boolValue];
+    
     callback(@[[NSNull null]]);
 }
 
 RCT_EXPORT_METHOD(stop:(nonnull NSNumber*)playerId withCallback:(RCTResponseSenderBlock)callback) {
-    AVPlayer* player = [self playerForKey:playerId];
+    ReactPlayer* player = [self playerForKey:playerId];
     
     if (!player) {
         NSDictionary* dict = [Helpers errObjWithCode:@"notfound"
@@ -216,7 +243,11 @@ RCT_EXPORT_METHOD(stop:(nonnull NSNumber*)playerId withCallback:(RCTResponseSend
     }
     
     [player pause];
-    [player.currentItem seekToTime:CMTimeMakeWithSeconds(0.0, 60000)];
+    if (player.autoDestroy) {
+        [self destroyPlayerWithId:playerId];
+    } else {
+        [player.currentItem seekToTime:CMTimeMakeWithSeconds(0.0, 60000)];
+    }
     
     callback(@[[NSNull null]]);
 }
@@ -251,45 +282,25 @@ RCT_EXPORT_METHOD(resume:(nonnull NSNumber*)playerId withCallback:(RCTResponseSe
     callback(@[[NSNull null]]);
 }
 
-//#pragma mark Audio
-#pragma mark Audio Delegates
 
-- (void)playerItemDidReachEnd:(AVPlayer *)player
-                 successfully:(BOOL)flag {
-    
-    NSNumber* playerId = [self keyForPlayer:player];
-    
-    NSLog (@"RCTAudioPlayer: Playing finished, successful: %d", flag);
-    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioPlayer:ended"
-                                                    body:@{@"status": @"Finished playback"}];
-    
-    AVAudioSession *audioSession = [AVAudioSession sharedInstance];
-    NSError *error = nil;
-    [audioSession setActive:NO error:&error];
-    
-    if (error) {
-        NSLog (@"RCTAudioPlayer: Could not deactivate current audio session. Error: %@", error);
-        [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioPlayer:error"
-                                                        body:@{@"error": [error description]}];
-        return;
+-(void)itemDidFinishPlaying:(NSNotification *) notification {
+    NSNumber *playerId = ((ReactPlayerItem *)notification.object).reactPlayerId;
+    ReactPlayer *player = [self playerForKey:playerId];
+    if (player.autoDestroy) {
+        [self destroyPlayerWithId:playerId];
+        player = nil;
     }
+    [self.bridge.eventDispatcher sendDeviceEventWithName:@"RCTAudioPlayer:ended"
+                                                    body:@{@"status": @"Finished playback",
+                                                           @"id" : playerId}];
 }
 
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object
-                        change:(NSDictionary *)change context:(void *)context {
-    
-    // This is called when player is ready to play.
-    
-    if ([keyPath isEqualToString:@"status"]) {
-        ReactPlayer *player = (ReactPlayer *)object;
-        if (player.status == AVPlayerStatusReadyToPlay) {
-            player.callback(@[[NSNull null]]);
-        } else if (player.status == AVPlayerStatusFailed) {
-            NSDictionary* dict = [Helpers errObjWithCode:@"preparefail"
-                                             withMessage:[NSString stringWithFormat:@"Preparing recorder failed"]];
-            player.callback(@[dict]);
-        }
-        [player removeObserver:self forKeyPath:@"status"];
+- (void)destroyPlayerWithId:(NSNumber *)playerId {
+    ReactPlayer *player = [self playerForKey:playerId];
+    if (player) {
+        [player pause];
+        [[self playerPool] removeObjectForKey:playerId];
+
     }
 }
 /*
@@ -303,5 +314,3 @@ RCT_EXPORT_METHOD(resume:(nonnull NSNumber*)playerId withCallback:(RCTResponseSe
  }
  
  */
-
-@end

@@ -11,6 +11,6 @@
 
 @interface ReactPlayer : AVPlayer
 
-@property (readwrite) RCTResponseSenderBlock callback;
+@property (readwrite) BOOL autoDestroy;
 
 @end
