@@ -134,9 +134,13 @@ class Recorder extends EventEmitter {
 
   toggleRecord(callback = _.noop) {
     if (this._state === MediaStates.RECORDING) {
-      this.stop(callback);
+      this.stop((err) => {
+        callback(err, true);
+      });
     } else {
-      this.record(callback);
+      this.record((err) => {
+        callback(err, false);
+      });
     }
 
     return this;
@@ -149,6 +153,22 @@ class Recorder extends EventEmitter {
 
   get state() {
     return this._state;
+  }
+
+  get canRecord() {
+    return this._state >= MediaStates.PREPARED;
+  }
+
+  get canPrepare() {
+    return this._state == MediaStates.IDLE;
+  }
+
+  get isRecording() {
+    return this._state == MediaStates.RECORDING;
+  }
+
+  get isPrepared() {
+    return this._state == MediaStates.PREPARED;
   }
 }
 
@@ -286,9 +306,13 @@ class Player extends EventEmitter {
 
   playPause(callback = _.noop) {
     if (this._state === MediaStates.PLAYING) {
-      this.pause(callback);
+      this.pause((err) => {
+        callback(err, true);
+      });
     } else {
-      this.play(callback);
+      this.play((err) => {
+        callback(err, false);
+      });
     }
 
     return this;
@@ -359,6 +383,26 @@ class Player extends EventEmitter {
 
   get state() {
     return this._state;
+  }
+
+  get canPlay() {
+    return this._state >= MediaStates.PREPARED;
+  }
+
+  get canPrepare() {
+    return this._state == MediaStates.IDLE;
+  }
+
+  get isPlaying() {
+    return this._state == MediaStates.PLAYING;
+  }
+
+  get isPaused() {
+    return this._state == MediaStates.PAUSED;
+  }
+
+  get isPrepared() {
+    return this._state == MediaStates.PREPARED;
   }
 }
 
