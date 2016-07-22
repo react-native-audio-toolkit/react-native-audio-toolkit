@@ -187,13 +187,9 @@ class Player extends EventEmitter {
     this._looping = false;
   }
 
-  _storeInfo(info = {
-    duration: -1,
-    position: -1
-  }) {
-    console.log('got duration: ' + info.duration);
-    this._duration = info.duration / 1000;
-    this._position = info.position / 1000;
+  _storeInfo(info) {
+    this._duration = info.duration;
+    this._position = info.position;
     this._lastSync = Date.now();
   }
 
@@ -205,9 +201,7 @@ class Player extends EventEmitter {
     }
 
     // Use last truthy value from results array as new media info
-    console.log(results);
     let info = _.last(_.filter(results, _.identity));
-    console.log(info);
     this._storeInfo(info);
   }
 
@@ -219,6 +213,7 @@ class Player extends EventEmitter {
         break;
       case 'ended':
         this._updateState(null, MediaStates.PREPARED);
+        this._position = -1;
         break;
       case 'info':
         // TODO
@@ -323,17 +318,20 @@ class Player extends EventEmitter {
   }
 
   seek(position = 0, callback = _.noop) {
-    console.log('seek(' + position + ')');
-
     // Store old state, but not if it was already SEEKING
     if (this._state != MediaStates.SEEKING) {
       this._preSeekState = this._state;
     }
 
     this._updateState(null, MediaStates.SEEKING);
-    RCTAudioPlayer.seek(this._playerId, position * 1000, (err, results) => {
-      console.log(results);
-      this._updateState(null, this._preSeekState, results);
+    RCTAudioPlayer.seek(this._playerId, position, (err, results) => {
+      if (err) {
+        // Probably seek operation was cancelled
+        console.log(err);
+        return;
+      }
+
+      this._updateState(null, this._preSeekState, [results]);
       callback(err);
     });
   }
@@ -374,11 +372,9 @@ class Player extends EventEmitter {
       pos = this._position + (Date.now() - this._lastSync);
       pos = Math.min(pos, this._duration);
 
-      pos /= 1000;
-
       return pos;
     } else {
-      return this._position / 1000;
+      return this._position;
     }
   }
 

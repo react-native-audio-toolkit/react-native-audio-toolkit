@@ -61,7 +61,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
                 .emit("RCTAudioPlayerEvent:" + playerId, payload);
     }
 
-    private WritableMap errObj(final String code, final String message) {
+    private WritableMap errObj(final String code, final String message, final boolean enableLog) {
         WritableMap err = Arguments.createMap();
 
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
@@ -73,12 +73,18 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
 
         err.putString("err", code);
         err.putString("message", message);
-        err.putString("stackTrace", stackTraceString);
 
-        Log.e(LOG_TAG, message);
-        Log.d(LOG_TAG, stackTraceString);
+        if (enableLog) {
+            err.putString("stackTrace", stackTraceString);
+            Log.e(LOG_TAG, message);
+            Log.d(LOG_TAG, stackTraceString);
+        }
 
         return err;
+    }
+
+    private WritableMap errObj(final String code, final String message) {
+        return errObj(code, message, true);
     }
 
     private Uri uriFromPath(String path) {
@@ -160,7 +166,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             Callback oldCallback = this.playerSeekCallback.get(playerId);
 
             if (oldCallback != null) {
-                oldCallback.invoke(errObj("seekfail", "new seek operation before old one completed"));
+                oldCallback.invoke(errObj("seekfail", "new seek operation before old one completed", false));
                 this.playerSeekCallback.remove(playerId);
             }
 
