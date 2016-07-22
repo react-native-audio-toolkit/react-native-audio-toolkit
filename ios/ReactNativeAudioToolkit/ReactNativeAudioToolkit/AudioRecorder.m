@@ -158,7 +158,7 @@ RCT_EXPORT_METHOD(destroy:(nonnull NSNumber *)recorderId withCallback:(RCTRespon
         NSNumber *recordId = [self keyForRecorder:aRecorder];
         [[self recorderPool] removeObjectForKey:recordId];
         NSLog (@"RCTAudioRecorder: Recording finished, successful: %d", flag);
-        NSString *eventName = [NSString stringWithFormat:@"RCTAudioRecorder:%@", recordId];
+        NSString *eventName = [NSString stringWithFormat:@"RCTAudioRecorderEvent:%@", recordId];
         [self.bridge.eventDispatcher sendAppEventWithName:eventName
                                                         body:@{@"event" : @"ended",
                                                                @"data" : [NSNull null]
@@ -182,7 +182,7 @@ RCT_EXPORT_METHOD(destroy:(nonnull NSNumber *)recorderId withCallback:(RCTRespon
     NSNumber *recordId = [self keyForRecorder:recorder];
     
     [self destroyRecorderWithId:recordId];
-    NSString *eventName = [NSString stringWithFormat:@"RCTAudioRecorder:%@", recordId];
+    NSString *eventName = [NSString stringWithFormat:@"RCTAudioRecorderEvent:%@", recordId];
     [self.bridge.eventDispatcher sendAppEventWithName:eventName
                                                body:@{@"event": @"error",
                                                       @"data" : [error description]
