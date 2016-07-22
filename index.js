@@ -148,25 +148,11 @@ class Recorder extends EventEmitter {
     RCTAudioRecorder.destroy(this._recorderId, callback);
   }
 
-  get state() {
-    return this._state;
-  }
-
-  get canRecord() {
-    return this._state >= MediaStates.PREPARED;
-  }
-
-  get canPrepare() {
-    return this._state == MediaStates.IDLE;
-  }
-
-  get isRecording() {
-    return this._state == MediaStates.RECORDING;
-  }
-
-  get isPrepared() {
-    return this._state == MediaStates.PREPARED;
-  }
+  get state()       { return this._state;                          }
+  get canRecord()   { return this._state >= MediaStates.PREPARED;  }
+  get canPrepare()  { return this._state == MediaStates.IDLE;      }
+  get isRecording() { return this._state == MediaStates.RECORDING; }
+  get isPrepared()  { return this._state == MediaStates.PREPARED;  }
 }
 
 /**
@@ -378,29 +364,14 @@ class Player extends EventEmitter {
     this.play(value * 1000);
   }
 
-  get state() {
-    return this._state;
-  }
-
-  get canPlay() {
-    return this._state >= MediaStates.PREPARED;
-  }
-
-  get canPrepare() {
-    return this._state == MediaStates.IDLE;
-  }
-
-  get isPlaying() {
-    return this._state == MediaStates.PLAYING;
-  }
-
-  get isPaused() {
-    return this._state == MediaStates.PAUSED;
-  }
-
-  get isPrepared() {
-    return this._state == MediaStates.PREPARED;
-  }
+  get state()      { return this._state; }
+  get canPlay()    { return this._state >= MediaStates.PREPARED; }
+  get canStop()    { return this._state >= MediaStates.PLAYING;  }
+  get canPrepare() { return this._state == MediaStates.IDLE;     }
+  get isPlaying()  { return this._state == MediaStates.PLAYING;  }
+  get isStopped()  { return this._state <= MediaStates.PREPARED; }
+  get isPaused()   { return this._state == MediaStates.PAUSED;   }
+  get isPrepared() { return this._state == MediaStates.PREPARED; }
 }
 
 export { Player, Recorder, MediaStates };
