@@ -260,7 +260,7 @@ RCT_EXPORT_METHOD(set:(nonnull NSNumber*)playerId withOpts:(NSDictionary*)option
     
     NSNumber *looping = [options objectForKey:@"looping"];
     if (looping) {
-        [player setLooping:looping];
+        player.looping = [looping boolValue];
     }
     
     callback(@[[NSNull null]]);
@@ -330,13 +330,13 @@ RCT_EXPORT_METHOD(resume:(nonnull NSNumber*)playerId withCallback:(RCTResponseSe
     }
     if (player.looping) {
         [player play];
+    } else {
+        NSString *eventName = [NSString stringWithFormat:@"RCTAudioPlayerEvent:%@", playerId];
+        [self.bridge.eventDispatcher sendAppEventWithName:eventName
+                                                     body:@{@"event": @"ended",
+                                                            @"data" : [NSNull null]
+                                                            }];
     }
-    NSString *eventName = [NSString stringWithFormat:@"RCTAudioPlayerEvent:%@", playerId];
-
-    [self.bridge.eventDispatcher sendAppEventWithName:eventName
-                                                    body:@{@"event": @"ended",
-                                                           @"data" : [NSNull null]
-                                                           }];
 }
 
 - (void)destroyPlayerWithId:(NSNumber *)playerId {

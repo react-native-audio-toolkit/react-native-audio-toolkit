@@ -2,7 +2,8 @@ import React from 'react';
 import {
   Text,
   View,
-  StyleSheet
+  StyleSheet,
+  Switch
 } from 'react-native';
 import Button from 'react-native-button';
 
@@ -24,7 +25,9 @@ class AppContainer extends React.Component {
 
       stopButtonDisabled: true,
       playButtonDisabled: true,
-      recordButtonDisabled: true
+      recordButtonDisabled: true,
+
+      loopButtonStatus: false
     };
 
     console.log('mount');
@@ -50,7 +53,7 @@ class AppContainer extends React.Component {
 
       stopButtonDisabled:   !this.player   || !this.player.canStop,
       playButtonDisabled:   !this.player   || !this.player.canPlay || this.recorder.isRecording,
-      recordButtonDisabled: !this.recorder || (this.player         && !this.player.isStopped)
+      recordButtonDisabled: !this.recorder || (this.player         && !this.player.isStopped),
     });
   }
 
@@ -79,6 +82,8 @@ class AppContainer extends React.Component {
       if (err) {
         console.log('error at _reloadPlayer():');
         console.log(err);
+      } else {
+        this.player.looping = this.state.loopButtonStatus;
       }
 
       this._updateState();
@@ -121,6 +126,15 @@ class AppContainer extends React.Component {
     });
   }
 
+  _toggleLooping(value) {
+    this.setState({
+      loopButtonStatus: value
+    });
+    if (this.player) {
+      this.player.looping = value;
+    }
+  }
+
   render() {
     return (
       <View>
@@ -146,6 +160,11 @@ class AppContainer extends React.Component {
           <Button disabled={this.state.recordButtonDisabled} style={styles.button} onPress={() => this._toggleRecord()}>
             {this.state.recordButton}
           </Button>
+        </View>
+        <View>
+          <Switch
+          onValueChange={(value) => this._toggleLooping(value)}
+          value={this.state.loopButtonStatus} />
         </View>
       </View>
     );

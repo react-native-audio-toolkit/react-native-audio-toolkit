@@ -67,7 +67,7 @@ class Recorder extends EventEmitter {
     console.log('event: ' + event + ', data: ' + JSON.stringify(data));
     switch (event) {
       case 'ended':
-        this._state = Math.min(this._state, MediaStates.INITIALIZED);
+        this._state = Math.min(this._state, MediaStates.PREPARED);
         break;
       case 'info':
         // TODO
@@ -157,7 +157,7 @@ class Recorder extends EventEmitter {
 
 /**
  * Represents a media player
- * @constructor 
+ * @constructor
  * @param
  *
  */
@@ -184,6 +184,7 @@ class Player extends EventEmitter {
     this._duration = -1;
     this._position = -1;
     this._lastSync = -1;
+    this._looping = false;
   }
 
   _storeInfo(info = {
@@ -247,6 +248,7 @@ class Player extends EventEmitter {
         volume: this._volume,
         pan: this._pan,
         wakeLock: this._wakeLock,
+        looping: this._looping
       }, next);
     });
 
@@ -270,6 +272,7 @@ class Player extends EventEmitter {
 
     // Start playback
     tasks.push((next) => {
+
       RCTAudioPlayer.play(this._playerId, next);
     });
 
@@ -336,7 +339,7 @@ class Player extends EventEmitter {
   }
 
   _setIfInitialized(options, callback = _.noop) {
-    if (this._state >= MediaStates.INITIALIZED) {
+    if (this._state >= MediaStates.PREPARED) {
       RCTAudioPlayer.set(this._playerId, options, callback);
     }
   }
@@ -381,6 +384,7 @@ class Player extends EventEmitter {
 
   get volume() { return this._volume; }
   get duration() { return this._duration; }
+
 
   get state()      { return this._state; }
   get canPlay()    { return this._state >= MediaStates.PREPARED; }
