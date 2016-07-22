@@ -66,14 +66,11 @@ class Recorder extends EventEmitter {
   _handleEvent(event, data) {
     console.log('event: ' + event + ', data: ' + JSON.stringify(data));
     switch (event) {
-      case 'progress':
-        break;
-      case 'seeked':
-        break;
       case 'ended':
         this._state = Math.min(this._state, MediaStates.INITIALIZED);
         break;
       case 'info':
+        // TODO
         break;
       case 'error':
         this._reset();
@@ -151,25 +148,11 @@ class Recorder extends EventEmitter {
     RCTAudioRecorder.destroy(this._recorderId, callback);
   }
 
-  get state() {
-    return this._state;
-  }
-
-  get canRecord() {
-    return this._state >= MediaStates.PREPARED;
-  }
-
-  get canPrepare() {
-    return this._state == MediaStates.IDLE;
-  }
-
-  get isRecording() {
-    return this._state == MediaStates.RECORDING;
-  }
-
-  get isPrepared() {
-    return this._state == MediaStates.PREPARED;
-  }
+  get state()       { return this._state;                          }
+  get canRecord()   { return this._state >= MediaStates.PREPARED;  }
+  get canPrepare()  { return this._state == MediaStates.IDLE;      }
+  get isRecording() { return this._state == MediaStates.RECORDING; }
+  get isPrepared()  { return this._state == MediaStates.PREPARED;  }
 }
 
 /**
@@ -207,8 +190,9 @@ class Player extends EventEmitter {
     duration: -1,
     position: -1
   }) {
-    this._duration = info.duration;
-    this._position = info.position;
+    console.log('got duration: ' + info.duration);
+    this._duration = info.duration / 1000;
+    this._position = info.position / 1000;
     this._lastSync = Date.now();
   }
 
@@ -220,7 +204,9 @@ class Player extends EventEmitter {
     }
 
     // Use last truthy value from results array as new media info
+    console.log(results);
     let info = _.last(_.filter(results, _.identity));
+    console.log(info);
     this._storeInfo(info);
   }
 
@@ -228,13 +214,13 @@ class Player extends EventEmitter {
     console.log('event: ' + event + ', data: ' + JSON.stringify(data));
     switch (event) {
       case 'progress':
-        break;
-      case 'seeked':
+        // TODO
         break;
       case 'ended':
         this._updateState(null, MediaStates.PREPARED);
         break;
       case 'info':
+        // TODO
         break;
       case 'error':
         this._reset();
@@ -333,28 +319,45 @@ class Player extends EventEmitter {
     RCTAudioPlayer.destroy(this._playerId, callback);
   }
 
-  get volume() {
-    return this._volume;
+  seek(position = 0, callback = _.noop) {
+    console.log('seek(' + position + ')');
+
+    // Store old state, but not if it was already SEEKING
+    if (this._state != MediaStates.SEEKING) {
+      this._preSeekState = this._state;
+    }
+
+    this._updateState(null, MediaStates.SEEKING);
+    RCTAudioPlayer.seek(this._playerId, position * 1000, (err, results) => {
+      console.log(results);
+      this._updateState(null, this._preSeekState, results);
+      callback(err);
+    });
   }
 
-  set volume(volume) {
-    this._volume = volume;
-
+  _setIfInitialized(options, callback = _.noop) {
     if (this._state >= MediaStates.INITIALIZED) {
-      RCTAudioPlayer.set(this._playerId, {'volume': this._volume}, _.noop);
+      RCTAudioPlayer.set(this._playerId, options, callback);
     }
+  }
+
+  set volume(value) {
+    this._volume = value;
+    this._setIfInitialized({'volume': value});
+  }
+
+  set currentTime(value) {
+    this.seek(value);
   }
 
   set wakeLock(value) {
     this._wakeLock = value;
-
-    if (this._state >= MediaStates.INITIALIZED) {
-      RCTAudioPlayer.set(this._playerId, {'wakeLock': this._wakeLock}, _.noop);
-    }
+    this._setIfInitialized({'wakeLock': value});
   }
 
-  get duration() {
-    return this._duration;
+  set looping(value) {
+    this._looping = value;
+    this._setIfInitialized({'looping': value});
   }
 
   get currentTime() {
@@ -376,34 +379,17 @@ class Player extends EventEmitter {
     }
   }
 
-  set currentTime(value) {
-    // TODO: this always causes media to play even without user calling play()
-    this.play(value * 1000);
-  }
+  get volume() { return this._volume; }
+  get duration() { return this._duration; }
 
-  get state() {
-    return this._state;
-  }
-
-  get canPlay() {
-    return this._state >= MediaStates.PREPARED;
-  }
-
-  get canPrepare() {
-    return this._state == MediaStates.IDLE;
-  }
-
-  get isPlaying() {
-    return this._state == MediaStates.PLAYING;
-  }
-
-  get isPaused() {
-    return this._state == MediaStates.PAUSED;
-  }
-
-  get isPrepared() {
-    return this._state == MediaStates.PREPARED;
-  }
+  get state()      { return this._state; }
+  get canPlay()    { return this._state >= MediaStates.PREPARED; }
+  get canStop()    { return this._state >= MediaStates.PLAYING;  }
+  get canPrepare() { return this._state == MediaStates.IDLE;     }
+  get isPlaying()  { return this._state == MediaStates.PLAYING;  }
+  get isStopped()  { return this._state <= MediaStates.PREPARED; }
+  get isPaused()   { return this._state == MediaStates.PAUSED;   }
+  get isPrepared() { return this._state == MediaStates.PREPARED; }
 }
 
 export { Player, Recorder, MediaStates };

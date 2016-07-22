@@ -178,13 +178,14 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         //MediaRecorder recorder = MediaRecorder.create(this.context, uri, null, attributes);
         MediaRecorder recorder = new MediaRecorder();
 
-        Log.d(LOG_TAG, "" + formatFromPath(path));
-
         // TODO: allow configuring?
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
 
         int format = formatFromPath(path);
-        int encoder = formatFromPath(path);
+        int encoder = encoderFromPath(path);
+        int bitrate = 128000;
+        int channels = 2;
+        int sampleRate = 44100;
 
         if (options.hasKey("format")) {
             format = formatFromName(options.getString("format"));
@@ -192,9 +193,24 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         if (options.hasKey("encoder")) {
             encoder = encoderFromName(options.getString("encoder"));
         }
+        if (options.hasKey("bitrate")) {
+            bitrate = options.getInt("bitrate");
+        }
+        if (options.hasKey("channels")) {
+            channels = options.getInt("channels");
+        }
+        if (options.hasKey("sampleRate")) {
+            sampleRate = options.getInt("sampleRate");
+        }
 
         recorder.setOutputFormat(format);
         recorder.setAudioEncoder(encoder);
+        recorder.setAudioEncodingBitRate(bitrate);
+        recorder.setAudioChannels(channels);
+        recorder.setAudioSamplingRate(sampleRate);
+
+        Log.d(LOG_TAG, "Recorder using options: (format: " + format + ") (encoder: " + encoder + ") "
+                    + "(bitrate: " + bitrate + ") (channels: " + channels + ") (sampleRate: " + sampleRate + ")");
 
         recorder.setOutputFile(uri.getPath());
 

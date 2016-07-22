@@ -260,6 +260,11 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             player.setVolume((float) vol, (float) vol);
         }
 
+        if (options.hasKey("looping") && !options.isNull("looping")) {
+            boolean looping = options.getBoolean("looping");
+            player.setLooping(looping);
+        }
+
         if (options.hasKey("speed") || options.hasKey("pitch")) {
             PlaybackParams params = new PlaybackParams();
 

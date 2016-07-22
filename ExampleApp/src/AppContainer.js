@@ -45,12 +45,12 @@ class AppContainer extends React.Component {
 
   _updateState(err) {
     this.setState({
-      playPauseButton: (this.player && this.player.isPlaying) ? 'Pause' : 'Play',
-      recordButton: this.recorder && this.recorder.isRecording ? 'Stop' : 'Record',
+      playPauseButton:      this.player    && this.player.isPlaying     ? 'Pause' : 'Play',
+      recordButton:         this.recorder  && this.recorder.isRecording ? 'Stop' : 'Record',
 
-      stopButtonDisabled: !this.player || (!this.player.isPlaying && !this.player.isPaused),
-      playButtonDisabled: !this.player || !this.player.canPlay || this.recorder.isRecording,
-      recordButtonDisabled: !this.recorder || (this.player && (this.player.isPlaying || this.player.isPaused))
+      stopButtonDisabled:   !this.player   || !this.player.canStop,
+      playButtonDisabled:   !this.player   || !this.player.canPlay || this.recorder.isRecording,
+      recordButtonDisabled: !this.recorder || (this.player         && !this.player.isStopped)
     });
   }
 
@@ -96,7 +96,13 @@ class AppContainer extends React.Component {
       this.recorder.destroy();
     }
 
-    this.recorder = new Recorder(filename);
+    this.recorder = new Recorder(filename, {
+      bitrate: 256000,
+      channels: 2,
+      sampleRate: 44100,
+      //format: 'mp4', // autodetected
+      //encoder: 'aac', // autodetected
+    });
     this._updateState();
   }
 
