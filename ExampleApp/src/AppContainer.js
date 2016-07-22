@@ -97,7 +97,11 @@ class AppContainer extends React.Component {
     }
 
     this.recorder = new Recorder(filename, {
-      bitrate: 256000
+      bitrate: 256000,
+      channels: 2,
+      sampleRate: 44100,
+      //format: 'mp4', // autodetected
+      //encoder: 'aac', // autodetected
     });
     this._updateState();
   }
