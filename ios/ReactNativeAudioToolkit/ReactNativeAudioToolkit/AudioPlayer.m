@@ -96,7 +96,7 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId
                   withCallback:(RCTResponseSenderBlock)callback)
 {
     if ([path length] == 0) {
-        NSDictionary* dict = [Helpers errObjWithCode:@"nopath" withMessage:@"Provided path was empty"];
+        NSDictionary* dict = [Helpers errObjWithCode:@"invalidpath" withMessage:@"Provided path was empty"];
         callback(@[dict]);
         return;
     }
@@ -104,7 +104,7 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId
     // Try to find the correct file
     NSURL *url = [self findUrlForPath:path];
     if (!url) {
-        NSDictionary* dict = [Helpers errObjWithCode:@"notfound" withMessage:@"No file found at path"];
+        NSDictionary* dict = [Helpers errObjWithCode:@"invalidpath" withMessage:@"No file found at path"];
         callback(@[dict]);
         return;
     }
@@ -124,7 +124,7 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId
     NSError *error = nil;
     [[AVAudioSession sharedInstance] setCategory: AVAudioSessionCategoryPlayback error: &error];
     if (error) {
-        NSDictionary* dict = [Helpers errObjWithCode:@"initfail"
+        NSDictionary* dict = [Helpers errObjWithCode:@"preparefail"
                                          withMessage:
                               [NSString stringWithFormat:@"Failed to set audio session category for player %@.", playerId]];
         callback(@[dict]);

@@ -53,11 +53,11 @@ RCT_EXPORT_MODULE();
 
 RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)recorderId withPath:(NSString * _Nullable)path withOptions:(NSDictionary *)options withCallback:(RCTResponseSenderBlock)callback) {
     if ([path length] == 0) {
-        NSDictionary* dict = [Helpers errObjWithCode:@"nopath" withMessage:@"Provided path was empty"];
+        NSDictionary* dict = [Helpers errObjWithCode:@"invalidpath" withMessage:@"Provided path was empty"];
         callback(@[dict]);
         return;
     } else if ([[self recorderPool] objectForKey:recorderId]) {
-        NSDictionary* dict = [Helpers errObjWithCode:@"invalidid" withMessage:@"Recorder with that id already exists"];
+        NSDictionary* dict = [Helpers errObjWithCode:@"invalidpath" withMessage:@"Recorder with that id already exists"];
         callback(@[dict]);
         return;
     }
@@ -73,7 +73,7 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)recorderId withPath:(NSString * _N
     NSError *error = nil;
     [audioSession setCategory:AVAudioSessionCategoryRecord error:&error];
     if (error) {
-        NSDictionary* dict = [Helpers errObjWithCode:@"initfail" withMessage:@"Failed to set audio session category"];
+        NSDictionary* dict = [Helpers errObjWithCode:@"preparefail" withMessage:@"Failed to set audio session category"];
         callback(@[dict]);
         
         return;
@@ -82,7 +82,7 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)recorderId withPath:(NSString * _N
     // Set audio session active
     [audioSession setActive:YES error:&error];
     if (error) {
-        NSDictionary* dict = [Helpers errObjWithCode:@"initfail" withMessage:@"Could not set audio session active"];
+        NSDictionary* dict = [Helpers errObjWithCode:@"preparefail" withMessage:@"Could not set audio session active"];
         callback(@[dict]);
         
         return;
@@ -94,13 +94,13 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)recorderId withPath:(NSString * _N
     // Initialize a new recorder
     AVAudioRecorder *recorder = [[AVAudioRecorder alloc] initWithURL:url settings:recordSetting error:&error];
     if (error) {
-        NSDictionary* dict = [Helpers errObjWithCode:@"initfail" withMessage:@"Failed to initialize recorder"];
+        NSDictionary* dict = [Helpers errObjWithCode:@"preparefail" withMessage:@"Failed to initialize recorder"];
         callback(@[dict]);
         return;
         
         return;
     } else if (!recorder) {
-        NSDictionary* dict = [Helpers errObjWithCode:@"initfail" withMessage:@"Failed to initialize recorder"];
+        NSDictionary* dict = [Helpers errObjWithCode:@"preparefail" withMessage:@"Failed to initialize recorder"];
         callback(@[dict]);
         
         return;
@@ -111,7 +111,8 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)recorderId withPath:(NSString * _N
     BOOL success = [recorder prepareToRecord];
     if (!success) {
         [self destroyRecorderWithId:recorderId];
-        NSDictionary* dict = [Helpers errObjWithCode:@"preparefail" withMessage:@"Failed to prepare recorder"];
+        NSDictionary* dict = [Helpers errObjWithCode:@"preparefail" withMessage:@"Failed to prepare recorder. Settings\
+                              are probably wrong."];
         callback(@[dict]);
         return;
     }
@@ -123,7 +124,7 @@ RCT_EXPORT_METHOD(record:(nonnull NSNumber *)recorderId withCallback:(RCTRespons
     AVAudioRecorder *recorder = [[self recorderPool] objectForKey:recorderId];
     if (recorder) {
         if (![recorder record]) {
-            NSDictionary* dict = [Helpers errObjWithCode:@"preparefail" withMessage:@"Failed to start recorder"];
+            NSDictionary* dict = [Helpers errObjWithCode:@"startfail" withMessage:@"Failed to start recorder"];
             callback(@[dict]);
             return;
         }
@@ -156,23 +157,21 @@ RCT_EXPORT_METHOD(destroy:(nonnull NSNumber *)recorderId withCallback:(RCTRespon
 - (void)audioRecorderDidFinishRecording:(AVAudioRecorder *) aRecorder successfully:(BOOL)flag {
     if ([[_recorderPool allValues] containsObject:aRecorder]) {
         NSNumber *recordId = [self keyForRecorder:aRecorder];
-        [[self recorderPool] removeObjectForKey:recordId];
-        NSLog (@"RCTAudioRecorder: Recording finished, successful: %d", flag);
-        NSString *eventName = [NSString stringWithFormat:@"RCTAudioRecorderEvent:%@", recordId];
-        [self.bridge.eventDispatcher sendAppEventWithName:eventName
-                                                        body:@{@"event" : @"ended",
-                                                               @"data" : [NSNull null]
-                                                               }];
+        [self destroyRecorderWithId:recordId];
     }
-  
 }
 
 - (void)destroyRecorderWithId:(NSNumber *)recorderId {
     if ([[[self recorderPool] allKeys] containsObject:recorderId]) {
         AVAudioRecorder *recorder = [[self recorderPool] objectForKey:recorderId];
-        [recorder stop];
         if (recorder) {
+            [recorder stop];
             [[self recorderPool] removeObjectForKey:recorderId];
+            NSString *eventName = [NSString stringWithFormat:@"RCTAudioRecorderEvent:%@", recorderId];
+            [self.bridge.eventDispatcher sendAppEventWithName:eventName
+                                                         body:@{@"event" : @"ended",
+                                                                @"data" : [NSNull null]
+                                                                }];
         }
     }
 }

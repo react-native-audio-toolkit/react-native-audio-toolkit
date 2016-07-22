@@ -160,7 +160,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             Callback oldCallback = this.playerSeekCallback.get(playerId);
 
             if (oldCallback != null) {
-                oldCallback.invoke(errObj("oldcallback", "new seek operation before old one completed"));
+                oldCallback.invoke(errObj("seekfail", "new seek operation before old one completed"));
                 this.playerSeekCallback.remove(playerId);
             }
 
@@ -207,7 +207,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             Log.d(LOG_TAG, uri.getPath());
             player.setDataSource(this.context, uri);
         } catch (IOException e) {
-            callback.invoke(errObj("ioexception", e.toString()));
+            callback.invoke(errObj("invalidpath", e.toString()));
             return;
         }
 

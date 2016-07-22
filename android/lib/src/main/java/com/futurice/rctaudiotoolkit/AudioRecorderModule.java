@@ -1,4 +1,4 @@
-package com.futurice.rctaudiotoolkit;
+sdpackage com.futurice.rctaudiotoolkit;
 
 import android.media.MediaRecorder;
 import android.os.Environment;
@@ -163,7 +163,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
     @ReactMethod
     public void prepare(Integer recorderId, String path, ReadableMap options, Callback callback) {
         if (path == null || path.isEmpty()) {
-            callback.invoke(errObj("nopath", "Provided path was empty"));
+            callback.invoke(errObj("invalidpath", "Provided path was empty"));
             return;
         }
 
@@ -217,7 +217,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
 
             callback.invoke();
         } catch (IOException e) {
-            callback.invoke(errObj("prepare", e.toString()));
+            callback.invoke(errObj("preparefail", e.toString()));
         }
     }
 
@@ -234,7 +234,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
 
             callback.invoke();
         } catch (Exception e) {
-            callback.invoke(errObj("playback", e.toString()));
+            callback.invoke(errObj("startfail", e.toString()));
         }
     }
 
@@ -254,7 +254,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
             }
             callback.invoke();
         } catch (Exception e) {
-            callback.invoke(errObj("stop", e.toString()));
+            callback.invoke(errObj("stopfail", e.toString()));
         }
     }
 
