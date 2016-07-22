@@ -328,7 +328,7 @@ RCT_EXPORT_METHOD(resume:(nonnull NSNumber*)playerId withCallback:(RCTResponseSe
         // Send looping event and start playing again
         NSString *eventName = [NSString stringWithFormat:@"RCTAudioPlayerEvent:%@", playerId];
         [self.bridge.eventDispatcher sendAppEventWithName:eventName
-                                                     body:@{@"event": @"looping",
+                                                     body:@{@"event": @"looped",
                                                             @"data" : [NSNull null]
                                                             }];
         [player play];
