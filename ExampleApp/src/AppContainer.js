@@ -96,7 +96,9 @@ class AppContainer extends React.Component {
       this.recorder.destroy();
     }
 
-    this.recorder = new Recorder(filename);
+    this.recorder = new Recorder(filename, {
+      bitrate: 256000
+    });
     this._updateState();
   }
 
