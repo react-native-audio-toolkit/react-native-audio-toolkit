@@ -39,6 +39,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     Map<Integer, Boolean> playerAutoDestroy = new HashMap<>();
     Map<Integer, Callback> playerSeekCallback = new HashMap<>();
 
+    boolean looping = false;
     private ReactApplicationContext context;
 
     public AudioPlayerModule(ReactApplicationContext reactContext) {
@@ -267,8 +268,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         }
 
         if (options.hasKey("looping") && !options.isNull("looping")) {
-            boolean looping = options.getBoolean("looping");
-            player.setLooping(looping);
+            this.looping = options.getBoolean("looping");
         }
 
         if (options.hasKey("speed") || options.hasKey("pitch")) {
@@ -300,7 +300,6 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             player.start();
 
             callback.invoke(null, getInfo(player));
-            emitEvent(playerId, "playing", data);
         } catch (Exception e) {
             callback.invoke(errObj("playback", e.toString()));
         }
@@ -397,10 +396,18 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         Integer playerId = getPlayerId(player);
 
         WritableMap data = new WritableNativeMap();
-        data.putString("message", "Playback completed");
-        emitEvent(playerId, "ended", data);
 
-        if (this.playerAutoDestroy.get(playerId)) {
+        if (this.looping) {
+            player.seekTo(0);
+            player.start();
+            data.putString("message", "Media playback looped");
+            emitEvent(playerId, "looped", data);
+        } else {
+            data.putString("message", "Playback completed");
+            emitEvent(playerId, "ended", data);
+        }
+
+        if (!this.looping && this.playerAutoDestroy.get(playerId)) {
             Log.d(LOG_TAG, "onCompletion(): Autodestroying player...");
             destroy(playerId);
         }

@@ -188,6 +188,13 @@ class Player extends EventEmitter {
   }
 
   _storeInfo(info) {
+    if (!info) {
+      return;
+    }
+
+    console.log('got info:');
+    console.log(info);
+
     this._duration = info.duration;
     this._position = info.position;
     this._lastSync = Date.now();
@@ -221,6 +228,10 @@ class Player extends EventEmitter {
       case 'error':
         this._reset();
         //this.emit('error', data);
+        break;
+      case 'looped':
+        this._position = 0;
+        this._lastSync = Date.now();
         break;
     }
 

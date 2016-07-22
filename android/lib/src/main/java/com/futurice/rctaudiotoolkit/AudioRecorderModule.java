@@ -1,4 +1,4 @@
-sdpackage com.futurice.rctaudiotoolkit;
+package com.futurice.rctaudiotoolkit;
 
 import android.media.MediaRecorder;
 import android.os.Environment;

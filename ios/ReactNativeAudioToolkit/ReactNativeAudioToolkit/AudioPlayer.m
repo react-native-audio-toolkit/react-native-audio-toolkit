@@ -208,14 +208,14 @@ RCT_EXPORT_METHOD(seek:(nonnull NSNumber*)playerId withPos:(nonnull NSNumber*)po
              toleranceBefore:kCMTimeZero // for precise positioning
              toleranceAfter:kCMTimeZero
              completionHandler:^(BOOL finished) {
-                 callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration)),
+                 callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration) * 1000),
                                              @"position": @(CMTimeGetSeconds(player.currentTime) * 1000)}]);
              }];
         } else {
             [player.currentItem
              seekToTime:CMTimeMakeWithSeconds([position doubleValue] / 1000, 60000)
              completionHandler:^(BOOL finished) {
-                 callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration)),
+                 callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration) * 1000),
                                              @"position": @(CMTimeGetSeconds(player.currentTime) * 1000)}]);
              }];
         }
@@ -233,7 +233,7 @@ RCT_EXPORT_METHOD(play:(nonnull NSNumber*)playerId withCallback:(RCTResponseSend
     }
     
     [player play];
-    callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration)),
+    callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration) * 1000),
                                 @"position": @(CMTimeGetSeconds(player.currentTime) * 1000)}]);
     
 
