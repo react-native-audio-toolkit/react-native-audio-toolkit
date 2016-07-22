@@ -19,8 +19,6 @@ var MediaStates = {
   DESTROYED: -2,
   ERROR: -1,
   IDLE: 0,
-  //INITIALIZING: 1,
-  //INITIALIZED: 2,
   PREPARING: 1,
   PREPARED: 2,
   SEEKING: 3,
@@ -390,8 +388,8 @@ class Player extends EventEmitter {
   }
 
   get volume() { return this._volume; }
+  get looping() { return this._looping; }
   get duration() { return this._duration; }
-
 
   get state()      { return this._state; }
   get canPlay()    { return this._state >= MediaStates.PREPARED; }

@@ -341,7 +341,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
                 Callback oldCallback = this.playerSeekCallback.get(playerId);
 
                 if (oldCallback != null) {
-                    oldCallback.invoke(errObj("oldcallback", "Playback stopped before seek operation could finish"));
+                    oldCallback.invoke(errObj("seekfail", "Playback stopped before seek operation could finish"));
                     this.playerSeekCallback.remove(playerId);
                 }
 

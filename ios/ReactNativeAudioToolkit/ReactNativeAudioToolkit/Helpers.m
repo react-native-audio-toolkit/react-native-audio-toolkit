@@ -36,11 +36,12 @@
     channels = channels ? channels : @2;
     bitRate = bitRate ? bitRate : @128000;
     
+    // "aac" or "mp4"
     NSNumber *format = [NSNumber numberWithInt:kAudioFormatMPEG4AAC];
     if (formatString) {
-        if ([formatString isEqualToString:@"PCM"]) {
+        if ([formatString isEqualToString:@"pcm"]) {
             format = [NSNumber numberWithInt:kAudioFormatLinearPCM];
-        } else if ([formatString isEqualToString:@"AC3"]) {
+        } else if ([formatString isEqualToString:@"ac3"]) {
             format = [NSNumber numberWithInt:kAudioFormatAC3];
         }
     }

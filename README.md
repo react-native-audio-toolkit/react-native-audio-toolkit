@@ -7,8 +7,24 @@ and recording is supported. Many useful features are included, for example seeki
 to the basic play/pause/stop/record functionality.
 
 An example how to use this library is included in the ExampleApp directory. The demo showcases most of the functionality that is available,
-rest is documented in this README file. In essence, index.js acts as a proxy to the native classes so that most of the ugly stuff is abstracted
-away. 
+rest is documented in this README file. In the simplest case, an example of media playback is as follows:
+
+```
+new Player("filename.mp4").play();
+```
+
+Example of media recording for 3 seconds followed by playing the file back:
+
+```
+let rec = new Recorder("filename.mp4").record();
+
+setTimeout(() => {
+  rec.stop((err) => {
+    if (err) { return console.log(err); }
+    new Player("filename.mp4").play();
+  });
+}, 3000);
+```
 
 How to get this stuff running?
 ------------------------------
@@ -131,8 +147,7 @@ Media methods
 
 * `new Player(String path, Object ?playbackOptions)`
 
-    Initialize the player for playback of song in `path`. Path can be either filename, URL or a raw
-    path to resource. The library tries to parse the provided path to the best of it's abilities.
+    Initialize the player for playback of song in `path`. Path can be either filename, network URL or a file URL to resource. The library tries to parse the provided path to the best of it's abilities.
 
     ```
     playbackOptions:
@@ -151,7 +166,7 @@ Media methods
 
     Callback is called with `null` as first parameter when file is ready for
     playback with `play()`. If there was an error, the callback is called
-    with a String explaining the reason as first parameter. See Callbacks for more information.
+    with an error object as first parameter. See Callbacks for more information.
 
 
 * `play(Function ?callback)`
@@ -161,65 +176,131 @@ Media methods
     If callback is given, it is called when playback has started.
 
 
-* `stop(Function ?callback)`
-
-    Stop playback.
-
-    If autodestroy-option was set during initialization, clears all media resources from memory. In this case a new song must be loaded with prepare() or play() before the RCTAudioPlayer can be used again.
-
-
 * `pause(Function ?callback)`
 
     Pauses playback. Playback can be resumed by calling `play()` with no
     parameters.
 
-    Callback is called after the operation is finished.
+    Callback is called after the operation has finished.
+
+
+* `playPause(Function ?callback)`
+
+    Helper method for toggling pause.
+
+    Callback is called after the operation has finished. Callback receives `Object error` as first argument, `Boolean playing` as second argument indicating if the player ended up playing (true) or paused (false).
+
+
+* `stop(Function ?callback)`
+
+    Stop playback.
+
+    If `autoDestroy` option was set during initialization, clears all media resources from memory. In this case the player should no longer be used.
 
 
 * `destroy(Function ?callback)`
 
-    Stops playback and destroys the player.
+    Stops playback and destroys the player. The player should no longer be used.
 
-    Callback is called after the operation is finished.
+    Callback is called after the operation has finished.
 
 
-* `seekTo(Number pos, Function ?callback)`
+* `seek(Number position, Function ?callback)`
 
-    Seek in currently playing media. `pos` is the offset from the start.
+    Seek in currently playing media. `position` is the offset from the start.
 
-    If callback is given, it is called when the seek operation completes.
+    If callback is given, it is called when the seek operation completes. If
+    another seek operation is performed before the previous has finished,
+    the previous operation gets an error in its callback with the `err` field
+    set to `oldcallback`. The previous operation should likely do nothing in
+    this case.
 
 
 ### RCTAudioPlayer properties
-* `looping` - Boolean
 
-    Enable/disable looping of the current file.
+The following properties can be read and manipulated directly on the Player instance, for example:
 
-* `volume` - Number
+```
+var p = new Player(...);
+p.looping = true;
+p.volume = 0.5;
 
-    Set playback volume.
+p.prepare((err) => {
+  ...
+  console.log(p.duration);
+});
+```
+
+* `looping` - Boolean, default `false`
+
+    Get/set looping status of the current file. If true, file will loop when playback reaches end of file.
+
+* `volume` - Number, default `1.0`
+
+    Get/set playback volume.
     The scale is from 0.0 (silence) to 1.0 (full volume).
 
-* `duration`
+* `duration` - Number (**read only**)
 
     Get duration of prepared/playing media in milliseconds. If no duration is available (for example live streams), -1 is returned.
+
+* `wakeLock` - Boolean, default: `false` (Android only)
+
+    Get/set wakeLock on player, keeping it alive in the background.
+
+    TODO: support attaching to media notification
+
+* `currentTime` - Number
+
+    Get/set current playback position in milliseconds. It's recommended to do seeking via `Player.seek()`,
+    as it is not possible to pass a callback when setting the `currentTime` property.
+
+* `state` - Number (**read only**)
+
+    Get the playback state. Can be one of:
+    ```
+    var MediaStates = {
+      DESTROYED: -2,
+      ERROR: -1,
+      IDLE: 0,
+      PREPARING: 1,
+      PREPARED: 2,
+      SEEKING: 3,
+      PLAYING: 4,   // only for Player
+      RECORDING: 4, // only for Recorder
+      PAUSED: 5
+    };
+    ```
+
+    NOTE: This object is available as `require('react-native-audio-toolkit').MediaStates`
+
+* Helpers for states - Boolean (**read only**)
+
+    ```
+    Player.canPlay      true if player can begin playback
+    Player.canStop      true if player can stop playback
+    Player.canPrepare   true if player can prepare for playback
+    Player.isPlaying    true if player is playing
+    Player.isStopped    true if player is stopped
+    Player.isPaused     true if player is paused
+    Player.isPrepared   true if player is prepared
+    ```
 
 
 ### RCTAudioRecorder methods
 
-
 * `new Recorder(String path, Object ?playbackOptions)`
 
-    Initialize the recorder for recording to file in `path`. Path can be either filename or a
-    path (Android only). The library tries to parse the provided path to the best of it's abilities.
+    Initialize the recorder for recording to file in `path`. Path can either be a filename or a
+    file URL (Android only). The library tries to parse the provided path to the best of it's abilities.
 
     Playback options can include the following settings:
 
     ```
     playbackOptions:
     {
-      // Set bitrate for the recording, in kb/s
-      bitrate : Number (default: 128)
+      // Set bitrate for the recorder, in bits per second
+      bitrate : Number (default: 128000)
 
       // Set number of channels
       channels : Number (default: 2)
@@ -227,11 +308,15 @@ Media methods
       // Set how many samples per second
       sampleRate : Number (default: 44100)
 
-      // Set format. Possible values:
-      // MPEG4, AC3, PCM (iOS only)
-      format : String (default: 'MPEG4')
+      // Override format. Possible values:
+      // Cross-platform:  'mp4', 'aac'
+      // iOS only:        'ac3', 'pcm'
+      // Android only:    'ogg', 'webm', 'amr'
+      format : String (default: based on filename extension)
 
-      // Encoder for the recording, Android only.
+      // Override encoder. Android only.
+      // Possible values:
+      // 'aac', 'mp4', 'webm', 'ogg', 'amr'
       encoder : String (default: based on filename extension)
 
       // Quality of the recording, iOS only.
@@ -246,42 +331,42 @@ Media methods
 
     Callback is called with `null` as first parameter when file is ready for
     recording with `record()`. If there was an error, the callback is called
-    with a String explaining the reason as first parameter. See Callbacks for more information.
+    with an error object as first parameter. See Callbacks for more information.
 
 
 * `record(Function ?callback)`
 
-    Start recording to file in `path`. Callback called after recording has started or with
-    error object.
+    Start recording to file in `path`. Callback is called after recording has started or with
+    error object if an error occurred.
 
 
 * `stop(Function ?callback)`
 
-    Stop recording and save the file. Callback called after stopped or with error object. The
-    recorder is destroyed after calling stop and should be discarded.
+    Stop recording and save the file. Callback is called after recording has stopped or with error object. The
+    recorder is destroyed after calling stop and should no longer be used.
 
 Events
-------------
+------
 
 Certain events are dispatched from the Player/Recorder object to provide additional
 information concerning playback or recording. The following events are supported:
 
-* `error` - An error has occurred and object rendered unusable
+* `error` - An error has occurred and the object is rendered unusable
 
 * `ended` - Recording or playback of current file has finished. You can restart playback with a Player object by calling play() again.
 
-* `playing` - Playback of a file has started. This is useful if you specify that the file should loop in which case you can't specify a callback.
+* `looped` - Playback of a file has looped.
 
 
-Listen to these events with  `player.on('$eventname', callback(data))`.
+Listen to these events with  `player.on('eventname', callback(data))`.
 Data may contain additional information about the event, for example a more
 detailed description of the error that occurred. You might also want to update your user interface or start playing a new file after file playback or recording has concluded.
 
 If an error occurs, the object should be destroyed. If the object is not destroyed,
-future behaviour is undefined.
+future behavior is undefined.
 
 Callbacks
-------------
+---------
 
 If everything goes smoothly, the provided callback when calling Player/Recorder methods are called with an empty parameter. In case of an error however, the callback is called with an object that contains data about the error in the following format:
 
