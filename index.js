@@ -66,14 +66,11 @@ class Recorder extends EventEmitter {
   _handleEvent(event, data) {
     console.log('event: ' + event + ', data: ' + JSON.stringify(data));
     switch (event) {
-      case 'progress':
-        break;
-      case 'seeked':
-        break;
       case 'ended':
         this._state = Math.min(this._state, MediaStates.INITIALIZED);
         break;
       case 'info':
+        // TODO
         break;
       case 'error':
         this._reset();
@@ -228,13 +225,13 @@ class Player extends EventEmitter {
     console.log('event: ' + event + ', data: ' + JSON.stringify(data));
     switch (event) {
       case 'progress':
-        break;
-      case 'seeked':
+        // TODO
         break;
       case 'ended':
         this._updateState(null, MediaStates.PREPARED);
         break;
       case 'info':
+        // TODO
         break;
       case 'error':
         this._reset();
