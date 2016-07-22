@@ -59,9 +59,10 @@
                                [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject],
                                path,
                                nil];
-    NSURL *possibleUrl = [NSURL fileURLWithPathComponents:pathComponents];
     
-    if (![[NSFileManager defaultManager] fileExistsAtPath:[url absoluteString]]) {
+    NSString *possibleUrl = [NSString pathWithComponents:pathComponents];
+    
+    if (![[NSFileManager defaultManager] fileExistsAtPath:possibleUrl]) {
         NSString *fileWithoutExtension = [path stringByDeletingPathExtension];
         NSString *extension = [path pathExtension];
         NSString *urlString = [[NSBundle mainBundle] pathForResource:fileWithoutExtension ofType:extension];
@@ -79,7 +80,7 @@
             
         }
     } else {
-        url = possibleUrl;
+        url = [NSURL fileURLWithPathComponents:pathComponents];
     }
     
     return url;

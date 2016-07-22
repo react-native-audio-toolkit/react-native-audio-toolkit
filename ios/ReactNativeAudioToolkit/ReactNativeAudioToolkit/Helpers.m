@@ -61,7 +61,6 @@
     }
     
     NSMutableDictionary *recordSettings = [[NSMutableDictionary alloc] init];
-    
     [recordSettings setValue:format forKey:AVFormatIDKey];
     [recordSettings setValue:sampleRate forKey:AVSampleRateKey];
     [recordSettings setValue:channels forKey:AVNumberOfChannelsKey];

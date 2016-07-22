@@ -51,8 +51,12 @@
 RCT_EXPORT_MODULE();
 
 
-RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)recorderId withPath:(NSString * _Nullable)path withOptions:(NSDictionary *)options withCallback:(RCTResponseSenderBlock)callback) {
-    if ([path length] == 0) {
+RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)recorderId
+                  withPath:(NSString * _Nullable)filename
+                  withOptions:(NSDictionary *)options
+                  withCallback:(RCTResponseSenderBlock)callback)
+{
+    if ([filename length] == 0) {
         NSDictionary* dict = [Helpers errObjWithCode:@"invalidpath" withMessage:@"Provided path was empty"];
         callback(@[dict]);
         return;
@@ -62,11 +66,11 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)recorderId withPath:(NSString * _N
         return;
     }
     
-    NSURL *url;
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSString *filePath = [documentsDirectory stringByAppendingPathComponent:filename];
     
-    NSString *bundlePath = [NSString stringWithFormat:@"%@/%@", [[NSBundle mainBundle] bundlePath], path];
-    
-    url = [NSURL URLWithString:[bundlePath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+    NSURL *url = [NSURL fileURLWithPath:filePath];
     
     // Initialize audio session
     AVAudioSession *audioSession = [AVAudioSession sharedInstance];
