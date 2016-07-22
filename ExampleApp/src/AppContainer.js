@@ -3,7 +3,8 @@ import {
   Text,
   View,
   StyleSheet,
-  Switch
+  Switch,
+  Slider
 } from 'react-native';
 import Button from 'react-native-button';
 
@@ -14,6 +15,7 @@ import {
 } from 'react-native-audio-toolkit';
 
 let filename = 'test.mp4';
+//let filename = 'https://fruitiex.org/files/rosanna_128kbit.mp3';
 
 class AppContainer extends React.Component {
   constructor() {
@@ -27,7 +29,8 @@ class AppContainer extends React.Component {
       playButtonDisabled: true,
       recordButtonDisabled: true,
 
-      loopButtonStatus: false
+      loopButtonStatus: false,
+      progress: 0
     };
 
     console.log('mount');
@@ -37,13 +40,27 @@ class AppContainer extends React.Component {
   componentWillMount() {
     this.player = null;
     this.recorder = null;
+    this.lastSeek = 0;
 
+    this._reloadPlayer();
     this._reloadRecorder();
+
+    this._progressInterval = setInterval(() => {
+      if (this.player && this._shouldUpdateProgressBar()) {// && !this._dragging) {
+        this.setState({progress: Math.max(0, this.player.currentTime) / this.player.duration});
+      }
+    }, 100);
   }
 
   componentWillUnmount() {
     console.log('unmount');
     // TODO
+    clearInterval(this._progressInterval);
+  }
+
+  _shouldUpdateProgressBar() {
+    // Debounce progress bar update by 200 ms
+    return Date.now() - this.lastSeek > 200;
   }
 
   _updateState(err) {
@@ -65,6 +82,20 @@ class AppContainer extends React.Component {
 
   _stop() {
     this.player.stop(() => {
+      this._updateState();
+    });
+  }
+
+  _seek(percentage) {
+    if (!this.player) {
+      return;
+    }
+
+    this.lastSeek = Date.now();
+
+    let position = percentage * this.player.duration;
+
+    this.player.seek(position, () => {
       this._updateState();
     });
   }
@@ -151,6 +182,9 @@ class AppContainer extends React.Component {
             Stop
           </Button>
         </View>
+        <View style={styles.slider}>
+          <Slider step={0.0001} disabled={this.state.playButtonDisabled} onValueChange={(percentage) => this._seek(percentage)} value={this.state.progress}/>
+        </View>
         <View>
           <Text style={styles.title}>
             Recording
@@ -176,6 +210,10 @@ var styles = StyleSheet.create({
     padding: 20,
     fontSize: 20,
     backgroundColor: 'white',
+  },
+  slider: {
+    height: 10,
+    margin: 10,
   },
   buttonContainer: {
     flex: 1,
