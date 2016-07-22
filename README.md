@@ -3,8 +3,7 @@
 [![npm version](https://badge.fury.io/js/react-native-audio-toolkit.svg)](https://badge.fury.io/js/react-native-audio-toolkit)
 
 This is a cross-platform audio library for React Native. Both audio playback
-and recording is supported, but for now only very basic functionality has been
-implemented.
+and recording is supported. You can either stream or load local audio files for playback.
 
 How to get this stuff running?
 ------------------------------
@@ -125,70 +124,59 @@ Media methods
 
 ### RCTAudioPlayer methods
 
-* `prepare(String path, Object ?playbackOptions, Function callback)`
+* `new Player(String path, Object ?playbackOptions)`
 
-    Prepare playback of song in `path`.
+    Initialize the player for playback of song in `path`. Path can be either filename, URL or a raw
+    path to resource. The library tries to parse the provided path to the best of it's abilities.
 
-    Callback is called with `null` as first parameter when song is ready for
-    playback with `play()`. If there was an error, the callback is called
-    with a String explaining the reason as first parameter.
-
-    playbackOptions fields:
+    ```
+    playbackOptions:
     {
-        // Treat path as local filename in app data directory
-        local: Boolean (default: false)
-
-        // (Android only) Treat path as an Android resource ID. Include your assets in
-        // android/app/src/main/res/raw/sound.ext, then call prepare() with
-        // `sound` as path (without the filename extension).
-        resource: Boolean (default: false)
-
-        // (Android only) Keep device awake while playing media (NOTE: requires WAKE_LOCK permission)
-        partialWakeLock: Boolean (default: false)
-
-        // Initial volume. The scale is 0.0 (silence) - 1.0 (full volume).
-        volume: Number (default: 1.0)
-
-        // (iOS only) Enable speed factor adjustment
-        enableRate: boolean (default: false)
-
-        // Adjust speed factor of playback
-        speed: float (default: 1.0)
-
-        // (Android only) Adjust pitch factor of playback
-        pitch: float (default: 1.0)
+      // Boolean to indicate whether the player should self-destruct after playback is finished.
+      // If this is not set, you are responsible for destroying the object by calling player.destroy().
+      autoDestroy : boolean (default: True)
     }
+    ```
 
-* `play(String ?path, Object ?playbackOptions, Function ?callback)`
+* `prepare(Function callback)`
+
+    Prepare playback of the file provided during initialization. This method is optional to call but
+    might be useful to preload the file so that the file starts playing immediately when calling
+    play(). Otherwise the file is prepared when calling play() which may result in a small delay.
+
+    Callback is called with `null` as first parameter when file is ready for
+    playback with `play()`. If there was an error, the callback is called
+    with a String explaining the reason as first parameter. See Callbacks for more information.
+
+
+* `play(Function ?callback)`
 
     Start playback.
 
-    If `path` is given, prepare and then immediately play song from `path`.
-    If `path` is not given, play prepared/paused song. (throws error if no song
-    prepared)
-
     If callback is given, it is called when playback has started.
 
-    playbackOptions are same as in `prepare()`
 
-* `stop(Boolean destroy)`
+* `stop(Function ?callback)`
 
     Stop playback.
 
-    If destroy is true, clears all media resources from memory. In this case a
-    new song must be loaded with prepare() or play() before the RCTAudioPlayer
-    can be used again.
+    If autodestroy-option was set during initialization, clears all media resources from memory. In this case a new song must be loaded with prepare() or play() before the RCTAudioPlayer can be used again.
 
-* `pause()`
+
+* `pause(Function ?callback)`
 
     Pauses playback. Playback can be resumed by calling `play()` with no
     parameters.
 
-* `getDuration(Function callback)`
+    Callback is called after the operation is finished.
 
-    Get duration of prepared/playing media in milliseconds. callback is called
-    with result as first parameter. If no duration is available (for example
-    live streams), -1 is returned.
+
+* `destroy(Function ?callback)`
+
+    Stops playback and destroys the player.
+
+    Callback is called after the operation is finished.
+
 
 * `seekTo(Number pos, Function ?callback)`
 
@@ -196,57 +184,121 @@ Media methods
 
     If callback is given, it is called when the seek operation completes.
 
-* `setLooping(boolean loop)`
 
-    Enable/disable repeat
+### RCTAudioPlayer properties
+* `looping` - Boolean
 
-* `setVolume(Number left, Number right)`
+    Enable/disable looping of the current file.
 
-    Set volume of left/right audio channels.
+* `volume` - Number
 
+    Set playback volume.
     The scale is from 0.0 (silence) to 1.0 (full volume).
+
+* `duration`
+
+    Get duration of prepared/playing media in milliseconds. If no duration is available (for example live streams), -1 is returned.
+
 
 ### RCTAudioRecorder methods
 
-Method name                  | Description
------------------------------|------------------------
-`record(path)`               | Start recording to file in `path`
-`recordLocal(filename)`      | Start recording to `filename` in app data directory
-`stop()`                     | Stop recording
-`pause()`                    | Pause recording (not implemented)
-`resume()`                   | Resume recording (not implemented)
 
-Media events
+* `new Recorder(String path, Object ?playbackOptions)`
+
+    Initialize the recorder for recording to file in `path`. Path can be either filename or a
+    path (Android only). The library tries to parse the provided path to the best of it's abilities.
+
+    Playback options can include the following settings:
+
+    ```
+    playbackOptions:
+    {
+      // Set bitrate for the recording, in kb/s
+      bitrate : Number (default: 128)
+
+      // Set number of channels
+      channels : Number (default: 2)
+
+      // Set how many samples per second
+      sampleRate : Number (default: 44100)
+
+      // Set format. Possible values:
+      // MPEG4, AC3, PCM (iOS only)
+      format : String (default: 'MPEG4')
+
+      // Encoder for the recording, Android only.
+      encoder : String (default: based on filename extension)
+
+      // Quality of the recording, iOS only.
+      // Possible values: 'min', 'low', 'medium', 'high', 'max'
+      quality : String (default: 'medium')
+    }
+    ```
+
+* `prepare(Function callback)`
+
+    Prepare recording to the file provided during initialization. This method is optional to call but it may be beneficial to call to make sure that recording begins immediately after calling record(). Otherwise the recording is prepared when calling record() which may result in a small delay.
+
+    Callback is called with `null` as first parameter when file is ready for
+    recording with `record()`. If there was an error, the callback is called
+    with a String explaining the reason as first parameter. See Callbacks for more information.
+
+
+* `record(Function ?callback)`
+
+    Start recording to file in `path`. Callback called after recording has started or with
+    error object.
+
+
+* `stop(Function ?callback)`
+
+    Stop recording and save the file. Callback called after stopped or with error object. The
+    recorder is destroyed after calling stop and should be discarded.
+
+Events
 ------------
 
-The project aims to follow
-[HTML5 \<audio\> tag](https://developer.mozilla.org/en/docs/Web/Guide/Events/Media_events)
-conventions as close as possible, however because React Native events are global,
-the events are prefixed with `RCTAudioPlayer` and `RCTAudioRecorder` accordingly:
+Certain events are dispatched from the Player/Recorder object to provide additional
+information concerning playback or recording. The following events are supported:
 
-NOTE: [Media events documentation](https://developer.mozilla.org/en/docs/Web/Guide/Events/Media_events) by
-Mozilla Contributors is licensed under [CC-BY-SA 2.5](http://creativecommons.org/licenses/by-sa/2.5/):
+* `error` - An error has occurred and object rendered unusable
 
-### RCTAudioPlayer events
+* `ended` - Recording or playback of current file has finished. You can restart playback with a Player object by calling play() again.
 
-Event name                   | Description
------------------------------|------------------------
-`RCTAudioPlayer:playing`     | Sent when the media begins to play (either for the first time, after having been paused, or after ending and then restarting).
-`RCTAudioPlayer:play`        | Sent when playback of the media starts after having been paused; that is, when playback is resumed after a prior *pause* event.
-`RCTAudioPlayer:pause`       | Sent when playback is paused.
-`RCTAudioPlayer:ended`       | Sent when playback completes.
-`RCTAudioPlayer:error`       | Sent when an error occurs. The event handler is passed a string with a reason.
-`RCTAudioPlayer:info`        | TODO: https://developer.android.com/reference/android/media/MediaPlayer.OnInfoListener.html
+Listen to these events with  `player.on('$eventname', callback(data))`.
+Data may contain additional information about the event, for example a more
+detailed description of the error that occurred. You might also want to update your user interface or start playing a new file after file playback or recording has concluded.
 
-### RCTAudioRecorder events
+If an error occurs, the object should be destroyed. If the object is not destroyed,
+future behaviour is undefined.
 
-Event name                   | Description
------------------------------|------------------------
-`RCTAudioPlayer:start`       | Sent when recording starts.
-`RCTAudioPlayer:pause`       | Sent when recording is paused. (TODO: implement)
-`RCTAudioPlayer:ended`       | Sent when recording completes.
-`RCTAudioPlayer:error`       | Sent when an error occurs. The event handler is passed a string with a reason.
-`RCTAudioPlayer:info`        | TODO: https://developer.android.com/reference/android/media/MediaRecorder.OnInfoListener.html
+Callbacks
+------------
+
+If everything goes smoothly, the provided callback when calling Player/Recorder methods are called with an empty parameter. In case of an error however, the callback is called with an object that contains data about the error in the following format:
+
+```
+{
+  err : $errorString,
+  message : 'Additional information',
+  stackTrace : $stackTrace
+}
+```
+
+The following $errorStrings might occur:
+ ```
+'invalidpath' - Malformed path was provided
+'preparefail' - Failed to initialize player/recorder
+'startfail' - Failed to start the player/recorder
+'notfound' - Player/recorder with provided id was not found
+'stopfail' - Failed to stop recording/playing
+```
+
+### Player-specific error callbacks:
+```
+'seekfail' - new seek operation before the old one completed.
+```
+
 
 License
 -------
