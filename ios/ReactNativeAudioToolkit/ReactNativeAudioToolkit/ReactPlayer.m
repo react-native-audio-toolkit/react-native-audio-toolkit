@@ -13,6 +13,9 @@
 - (instancetype)initWithURL:(NSURL *)URL {
     self = [super initWithURL:URL];
     
+    self.looping = NO;
+    self.autoDestroy = YES;
+    
     return self;
 }
 

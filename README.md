@@ -265,6 +265,9 @@ information concerning playback or recording. The following events are supported
 
 * `ended` - Recording or playback of current file has finished. You can restart playback with a Player object by calling play() again.
 
+* `playing` - Playback of a file has started. This is useful if you specify that the file should loop in which case you can't specify a callback.
+
+
 Listen to these events with  `player.on('$eventname', callback(data))`.
 Data may contain additional information about the event, for example a more
 detailed description of the error that occurred. You might also want to update your user interface or start playing a new file after file playback or recording has concluded.

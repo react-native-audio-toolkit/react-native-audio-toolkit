@@ -289,6 +289,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             player.start();
 
             callback.invoke(null, getInfo(player));
+            emitEvent(playerId, "playing", data);
         } catch (Exception e) {
             callback.invoke(errObj("playback", e.toString()));
         }

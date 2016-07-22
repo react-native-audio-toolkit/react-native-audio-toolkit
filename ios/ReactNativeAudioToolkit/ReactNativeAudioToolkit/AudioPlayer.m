@@ -139,11 +139,9 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId
     if (player && !error) {
         
         NSNumber *autoDestroy = [options objectForKey:@"autoDestroy"];
-        if (!autoDestroy) {
-            // Default to destroy automatically
-            autoDestroy = @1;
+        if (autoDestroy) {
+            player.autoDestroy = [autoDestroy boolValue];
         }
-        player.autoDestroy = [autoDestroy boolValue];
 
         [[self playerPool] setObject:player forKey:playerId];
     } else {
@@ -237,6 +235,12 @@ RCT_EXPORT_METHOD(play:(nonnull NSNumber*)playerId withCallback:(RCTResponseSend
     [player play];
     callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration)),
                                 @"position": @(CMTimeGetSeconds(player.currentTime) * 1000)}]);
+    
+    NSString *eventName = [NSString stringWithFormat:@"RCTAudioPlayerEvent:%@", playerId];
+    [self.bridge.eventDispatcher sendAppEventWithName:eventName
+                                                 body:@{@"event": @"playing",
+                                                        @"data" : [NSNull null]
+                                                        }];
 }
 
 RCT_EXPORT_METHOD(set:(nonnull NSNumber*)playerId withOpts:(NSDictionary*)options withCallback:(RCTResponseSenderBlock)callback) {
@@ -249,9 +253,14 @@ RCT_EXPORT_METHOD(set:(nonnull NSNumber*)playerId withOpts:(NSDictionary*)option
         return;
     }
     
-    float volume = [[options objectForKey:@"volume"] floatValue];
+    NSNumber *volume = [options objectForKey:@"volume"];
     if (volume) {
-        [player setVolume:volume];
+        [player setVolume:[volume floatValue]];
+    }
+    
+    NSNumber *looping = [options objectForKey:@"looping"];
+    if (looping) {
+        [player setLooping:looping];
     }
     
     callback(@[[NSNull null]]);
@@ -318,6 +327,9 @@ RCT_EXPORT_METHOD(resume:(nonnull NSNumber*)playerId withCallback:(RCTResponseSe
         [self seek:playerId withPos:@0 withCallback:^(NSArray *response) {
             return;
         }];
+    }
+    if (player.looping) {
+        [player play];
     }
     NSString *eventName = [NSString stringWithFormat:@"RCTAudioPlayerEvent:%@", playerId];
 

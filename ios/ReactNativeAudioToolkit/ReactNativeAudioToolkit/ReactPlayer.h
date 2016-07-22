@@ -12,5 +12,6 @@
 @interface ReactPlayer : AVPlayer
 
 @property (readwrite) BOOL autoDestroy;
+@property (readwrite) BOOL looping;
 
 @end
