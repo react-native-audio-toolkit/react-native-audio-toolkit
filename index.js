@@ -229,6 +229,10 @@ class Player extends EventEmitter {
         this._reset();
         //this.emit('error', data);
         break;
+      case 'looped':
+        this._position = 0;
+        this._lastSync = Date.now();
+        break;
     }
 
     this.emit(event, data);
