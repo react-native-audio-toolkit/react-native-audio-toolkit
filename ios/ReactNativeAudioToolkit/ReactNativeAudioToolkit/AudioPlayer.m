@@ -324,7 +324,6 @@ RCT_EXPORT_METHOD(resume:(nonnull NSNumber*)playerId withCallback:(RCTResponseSe
             return;
         }];
     }
-    player = nil;
     if (player.looping && player) {
         // Send looping event and start playing again
         NSString *eventName = [NSString stringWithFormat:@"RCTAudioPlayerEvent:%@", playerId];
