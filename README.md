@@ -3,7 +3,12 @@
 [![npm version](https://badge.fury.io/js/react-native-audio-toolkit.svg)](https://badge.fury.io/js/react-native-audio-toolkit)
 
 This is a cross-platform audio library for React Native. Both audio playback
-and recording is supported. You can either stream or load local audio files for playback.
+and recording is supported. Many useful features are included, for example seeking, looping and playing audio files over network in addition
+to the basic play/pause/stop/record functionality.
+
+An example how to use this library is included in the ExampleApp directory. The demo showcases most of the functionality that is available,
+rest is documented in this README file. In essence, index.js acts as a proxy to the native classes so that most of the ugly stuff is abstracted
+away. 
 
 How to get this stuff running?
 ------------------------------
