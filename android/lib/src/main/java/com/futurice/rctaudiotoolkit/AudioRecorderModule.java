@@ -185,6 +185,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
 
         int format = formatFromPath(path);
         int encoder = formatFromPath(path);
+        int bitrate = 128000;
 
         if (options.hasKey("format")) {
             format = formatFromName(options.getString("format"));
@@ -192,9 +193,13 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         if (options.hasKey("encoder")) {
             encoder = encoderFromName(options.getString("encoder"));
         }
+        if (options.hasKey("bitrate")) {
+            bitrate = options.getInt("bitrate");
+        }
 
         recorder.setOutputFormat(format);
         recorder.setAudioEncoder(encoder);
+        recorder.setAudioEncodingBitRate(bitrate);
 
         recorder.setOutputFile(uri.getPath());
 

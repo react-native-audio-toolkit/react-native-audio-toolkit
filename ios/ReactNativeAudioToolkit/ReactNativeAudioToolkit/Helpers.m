@@ -34,7 +34,7 @@
     // Assign default values if nil and map otherwise
     sampleRate = sampleRate ? sampleRate : @44100;
     channels = channels ? channels : @2;
-    bitRate = (bitRate ? bitRate : @128000);
+    bitRate = bitRate ? bitRate : @128000;
     
     NSNumber *format = [NSNumber numberWithInt:kAudioFormatMPEG4AAC];
     if (formatString) {
