@@ -151,6 +151,12 @@ class AppContainer extends React.Component {
             Stop
           </Button>
         </View>
+        <View style={styles.settingsContainer}>
+          <Switch
+          onValueChange={(value) => this._toggleLooping(value)}
+          value={this.state.loopButtonStatus} />
+        <Text>Toggle Looping</Text>
+        </View>
         <View>
           <Text style={styles.title}>
             Recording
@@ -160,11 +166,6 @@ class AppContainer extends React.Component {
           <Button disabled={this.state.recordButtonDisabled} style={styles.button} onPress={() => this._toggleRecord()}>
             {this.state.recordButton}
           </Button>
-        </View>
-        <View>
-          <Switch
-          onValueChange={(value) => this._toggleLooping(value)}
-          value={this.state.loopButtonStatus} />
         </View>
       </View>
     );
@@ -180,6 +181,11 @@ var styles = StyleSheet.create({
   buttonContainer: {
     flex: 1,
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  settingsContainer: {
+    flex: 1,
     justifyContent: 'space-between',
     alignItems: 'center',
   },
