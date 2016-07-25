@@ -135,7 +135,7 @@ an actual Android/iOS device:
     ```js
     _onPress() {
       // Disable button while recording and playing back
-      setState({disabled: true});
+      this.setState({disabled: true});
 
       // Start recording
       let rec = new Recorder("filename.mp4").record();
