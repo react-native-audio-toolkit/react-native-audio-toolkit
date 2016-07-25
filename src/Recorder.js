@@ -49,7 +49,7 @@ class Recorder extends EventEmitter {
   }
 
   _handleEvent(event, data) {
-    console.log('event: ' + event + ', data: ' + JSON.stringify(data));
+    //console.log('event: ' + event + ', data: ' + JSON.stringify(data));
     switch (event) {
       case 'ended':
         this._state = Math.min(this._state, MediaStates.PREPARED);

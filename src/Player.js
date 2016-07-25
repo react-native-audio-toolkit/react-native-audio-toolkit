@@ -53,9 +53,6 @@ class Player extends EventEmitter {
       return;
     }
 
-    console.log('got info:');
-    console.log(info);
-
     this._duration = info.duration;
     this._position = info.position;
     this._lastSync = Date.now();
@@ -74,7 +71,7 @@ class Player extends EventEmitter {
   }
 
   _handleEvent(event, data) {
-    console.log('event: ' + event + ', data: ' + JSON.stringify(data));
+    //console.log('event: ' + event + ', data: ' + JSON.stringify(data));
     switch (event) {
       case 'progress':
         // TODO
@@ -139,7 +136,6 @@ class Player extends EventEmitter {
 
     // Start playback
     tasks.push((next) => {
-
       RCTAudioPlayer.play(this._playerId, next);
     });
 
@@ -152,8 +148,8 @@ class Player extends EventEmitter {
   }
 
   pause(callback = _.noop) {
-    RCTAudioPlayer.pause(this._playerId, (err) => {
-      this._updateState(err, MediaStates.PAUSED);
+    RCTAudioPlayer.pause(this._playerId, (err, results) => {
+      this._updateState(err, MediaStates.PAUSED, [results]);
       callback(err);
     });
 
@@ -176,7 +172,7 @@ class Player extends EventEmitter {
 
   stop(callback = _.noop) {
     RCTAudioPlayer.stop(this._playerId, (err, results) => {
-      this._updateState(err, MediaStates.PREPARED, results);
+      this._updateState(err, MediaStates.PREPARED, [results]);
       this._position = -1;
       callback(err);
     });
@@ -197,13 +193,12 @@ class Player extends EventEmitter {
 
     this._updateState(null, MediaStates.SEEKING);
     RCTAudioPlayer.seek(this._playerId, position, (err, results) => {
-      if (err) {
-        // Probably seek operation was cancelled
-        console.log(err);
+      if (err && err.err === 'seekfail') {
+        // Seek operation was cancelled; ignore
         return;
       }
 
-      this._updateState(null, this._preSeekState, [results]);
+      this._updateState(err, this._preSeekState, [results]);
       callback(err);
     });
   }

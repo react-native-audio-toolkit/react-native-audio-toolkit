@@ -46,7 +46,7 @@ following order:
 1. Find by filename in app "raw" resources (as in bundle step above, e.g.
    `filename.mp3`)
 2. Find by filename in app data directory (e.g. `filename.mp3` becomes
-   `/data/data/<package_name>/filename.mp3`)
+   `/data/user/0/<package_name>/files/filename.mp3`)
 3. Find by appending path to the external storage directory (usually `/sdcard`)
 4. Find by full path (e.g. `/path/to/file.mp3`)
 5. Parse as URI (e.g. `file:///path/to/file.mp3` or

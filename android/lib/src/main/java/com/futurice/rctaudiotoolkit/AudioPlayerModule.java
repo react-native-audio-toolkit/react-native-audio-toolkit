@@ -315,7 +315,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
 
         try {
             player.pause();
-            callback.invoke();
+            callback.invoke(null, getInfo(player));
         } catch (Exception e) {
             callback.invoke(errObj("pause", e.toString()));
         }
@@ -397,8 +397,10 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
 
         WritableMap data = new WritableNativeMap();
 
+        Log.d(LOG_TAG, "onCompletion()");
+
+        player.seekTo(0);
         if (this.looping) {
-            player.seekTo(0);
             player.start();
             data.putString("message", "Media playback looped");
             emitEvent(playerId, "looped", data);
