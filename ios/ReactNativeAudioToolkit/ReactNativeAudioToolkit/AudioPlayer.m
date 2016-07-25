@@ -126,8 +126,7 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId
     [[AVAudioSession sharedInstance] setCategory: AVAudioSessionCategoryPlayback error: &error];
     if (error) {
         NSDictionary* dict = [Helpers errObjWithCode:@"preparefail"
-                                         withMessage:
-                              [NSString stringWithFormat:@"Failed to set audio session category for player %@.", playerId]];
+                                         withMessage:@"Failed to set audio session category."];
         callback(@[dict]);
         return;
     }
@@ -137,7 +136,7 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId
                         initWithPlayerItem:item];
     
     // If successful, check options and add to player pool
-    if (player && !error) {
+    if (player) {
         
         NSNumber *autoDestroy = [options objectForKey:@"autoDestroy"];
         if (autoDestroy) {
@@ -146,29 +145,14 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId
 
         [[self playerPool] setObject:player forKey:playerId];
     } else {
-        callback(@[RCTJSErrorFromNSError(error)]);
-        return;
-    }
-    
-    // Prepare the player
-    [self prepare:playerId withCallback:callback];
-}
-
-RCT_EXPORT_METHOD(destroy:(nonnull NSNumber*)playerId withCallback:(RCTResponseSenderBlock)callback) {
-    [self destroyPlayerWithId:playerId];
-    callback(@[[NSNull null]]);
-}
-
--(void)prepare:(nonnull NSNumber*)playerId withCallback:(RCTResponseSenderBlock)callback {
-    ReactPlayer* player = (ReactPlayer *)[self playerForKey:playerId];
-    
-    if (!player) {
-        NSDictionary* dict = [Helpers errObjWithCode:@"notfound"
-                                         withMessage:[NSString stringWithFormat:@"playerId %@ not found.", playerId]];
+        NSString *errMsg = [NSString stringWithFormat:@"Could not initialize player, error: %@", error];
+        NSDictionary* dict = [Helpers errObjWithCode:@"preparefail"
+                                         withMessage:errMsg];
         callback(@[dict]);
         return;
     }
     
+    // Prepare the player
     // Wait until player is ready
     while (player.status == AVPlayerStatusUnknown) {
         [NSThread sleepForTimeInterval:0.01f];
@@ -187,6 +171,11 @@ RCT_EXPORT_METHOD(destroy:(nonnull NSNumber*)playerId withCallback:(RCTResponseS
         
         callback(@[dict]);
     }
+}
+
+RCT_EXPORT_METHOD(destroy:(nonnull NSNumber*)playerId withCallback:(RCTResponseSenderBlock)callback) {
+    [self destroyPlayerWithId:playerId];
+    callback(@[[NSNull null]]);
 }
 
 RCT_EXPORT_METHOD(seek:(nonnull NSNumber*)playerId withPos:(nonnull NSNumber*)position withCallback:(RCTResponseSenderBlock)callback) {
