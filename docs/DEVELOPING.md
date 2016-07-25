@@ -41,3 +41,21 @@ and any changes will be immediately visible to the included library in
 ExampleApp. Under the hood, wml is watching the source files and copying any
 changes to the destination. You only need to do `wml start` when developing in
 the future, `wml` will remember any links you've set.
+
+Library structure
+=================
+
+The library consists of two parts:
+
+* Native code that implements the device specific media APIs
+* JavaScript code that exposes the native methods to React Native developers
+
+The main JavaScript file that exports all library classes is at
+[index.js](/index.js). The class implementations are available in [src/](/src)
+
+Native code is available in the [android/](/android) and [ios/](/ios)
+directories for respective platforms.
+
+Try to avoid having platform specific code in the JavaScript where possible,
+instead abstract these away in the platform specific native code. Other than
+that, try to keep as much of the logic as possible in JavaScript.
