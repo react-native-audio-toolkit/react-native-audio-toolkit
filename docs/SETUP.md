@@ -150,7 +150,7 @@ an actual Android/iOS device:
           .play()
           .on('ended', () => {
             // Enable button again after playback finishes
-            setState({disabled: false});
+            this.setState({disabled: false});
           });
         });
       }, 3000);
