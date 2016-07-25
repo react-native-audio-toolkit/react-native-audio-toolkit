@@ -36,28 +36,28 @@
     channels = channels ? channels : @2;
     bitRate = bitRate ? bitRate : @128000;
     
+    
     // "aac" or "mp4"
     NSNumber *format = [NSNumber numberWithInt:kAudioFormatMPEG4AAC];
     if (formatString) {
-        if ([formatString isEqualToString:@"pcm"]) {
-            format = [NSNumber numberWithInt:kAudioFormatLinearPCM];
-        } else if ([formatString isEqualToString:@"ac3"]) {
-            format = [NSNumber numberWithInt:kAudioFormatAC3];
+        if ([formatString isEqualToString:@"ac3"]) {
+            format = [NSNumber numberWithInt:kAudioFormatMPEG4AAC];
         }
     }
+    
     
     NSNumber *quality = [NSNumber numberWithInt:AVAudioQualityMedium];
     if (qualityString) {
         if ([qualityString isEqualToString:@"min"]) {
-            format = [NSNumber numberWithInt:AVAudioQualityMin];
+            quality = [NSNumber numberWithInt:AVAudioQualityMin];
         } else if ([qualityString isEqualToString:@"low"]) {
-            format = [NSNumber numberWithInt:AVAudioQualityLow];
+            quality = [NSNumber numberWithInt:AVAudioQualityLow];
         } else if ([qualityString isEqualToString:@"medium"]) {
-            format = [NSNumber numberWithInt:AVAudioQualityMedium];
+            quality = [NSNumber numberWithInt:AVAudioQualityMedium];
         } else if ([qualityString isEqualToString:@"high"]) {
-            format = [NSNumber numberWithInt:AVAudioQualityHigh];
+            quality = [NSNumber numberWithInt:AVAudioQualityHigh];
         } else if ([qualityString isEqualToString:@"max"]) {
-            format = [NSNumber numberWithInt:AVAudioQualityMax];
+            quality = [NSNumber numberWithInt:AVAudioQualityMax];
         }
     }
     

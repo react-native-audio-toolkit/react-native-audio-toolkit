@@ -143,7 +143,8 @@ class AppContainer extends React.Component {
       bitrate: 256000,
       channels: 2,
       sampleRate: 44100,
-      //format: 'mp4', // autodetected
+      quality: 'max'
+      //format: 'ac3', // autodetected
       //encoder: 'aac', // autodetected
     });
     this._updateState();
