@@ -161,5 +161,5 @@ an actual Android/iOS device:
 
 ### Where to go next?
 
-- Check out the [API documentation](/API.md) for more information.
-- Examples on playback from various [media sources](/SOURCES.md)
+- Check out the [API documentation](/docs/API.md) for more information.
+- Examples on playback from various [media sources](/docs/SOURCES.md)

@@ -20,13 +20,13 @@ How to get this stuff running?
 ------------------------------
 
 * For a quick test, check out the [demo application](/ExampleApp)
-* [Include the library](/SETUP.md) in your project
+* [Include the library](/docs/SETUP.md) in your project
 
 Documentation
 -------------
 
-* Find the API documentation [here](/API.md)
-* Examples on playback from various [media sources](/SOURCES.md)
+* Find the API documentation [here](/docs/API.md)
+* Examples on playback from various [media sources](/docs/SOURCES.md)
 
 License
 -------

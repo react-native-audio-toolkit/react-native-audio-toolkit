@@ -12,6 +12,8 @@ Media methods
     filename, network URL or a file URL to resource. The library tries to parse
     the provided path to the best of it's abilities.
 
+    See [SOURCES.md](docs/SOURCES.md) for more information.
+
     ```js
     playbackOptions:
     {
@@ -30,7 +32,7 @@ Media methods
     starts playing immediately when calling play(). Otherwise the file is
     prepared when calling play() which may result in a small delay.
 
-    Callback is called with `null` as first parameter when file is ready for
+    Callback is called with empty first parameter when file is ready for
     playback with `play()`. If there was an error, the callback is called with
     an error object as first parameter. See Callbacks for more information.
 
@@ -209,7 +211,7 @@ Player.isPrepared   true if player is prepared
     recording is prepared when calling record() which may result in a small
     delay.
 
-    Callback is called with `null` as first parameter when file is ready for
+    Callback is called with empty first parameter when file is ready for
     recording with `record()`. If there was an error, the callback is called
     with an error object as first parameter. See Callbacks for more
     information.
