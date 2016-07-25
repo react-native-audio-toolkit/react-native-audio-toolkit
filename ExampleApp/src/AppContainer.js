@@ -15,7 +15,6 @@ import {
 } from 'react-native-audio-toolkit';
 
 let filename = 'test.mp4';
-//let filename = 'https://fruitiex.org/files/rosanna_128kbit.mp3';
 
 class AppContainer extends React.Component {
   constructor() {
