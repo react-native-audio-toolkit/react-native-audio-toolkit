@@ -12,7 +12,7 @@ Media methods
     filename, network URL or a file URL to resource. The library tries to parse
     the provided path to the best of it's abilities.
 
-    See [SOURCES.md](docs/SOURCES.md) for more information.
+    See [SOURCES.md](/docs/SOURCES.md) for more information.
 
     ```js
     playbackOptions:
