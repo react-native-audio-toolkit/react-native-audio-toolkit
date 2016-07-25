@@ -30,7 +30,9 @@ class AppContainer extends React.Component {
       recordButtonDisabled: true,
 
       loopButtonStatus: false,
-      progress: 0
+      progress: 0,
+
+      error: null
     };
 
     console.log('mount');
@@ -76,6 +78,11 @@ class AppContainer extends React.Component {
 
   _playPause() {
     this.player.playPause((err, playing) => {
+      if (err) {
+        this.setState({
+          error: err.message
+        });
+      }
       this._updateState();
     });
   }
@@ -148,6 +155,11 @@ class AppContainer extends React.Component {
     }
 
     this.recorder.toggleRecord((err, stopped) => {
+      if (err) {
+        this.setState({
+          error: err.message
+        });
+      }
       if (stopped) {
         this._reloadPlayer();
         this._reloadRecorder();
@@ -201,6 +213,9 @@ class AppContainer extends React.Component {
             {this.state.recordButton}
           </Button>
         </View>
+        <View>
+          <Text style={styles.errorMessage}>{this.state.error}</Text>
+        </View>
       </View>
     );
   }
@@ -237,6 +252,12 @@ var styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     padding: 20,
+  },
+  errorMessage: {
+    fontSize: 15,
+    textAlign: 'center',
+    padding: 10,
+    color: 'red'
   }
 });
 

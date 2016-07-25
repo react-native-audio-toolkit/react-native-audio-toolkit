@@ -57,11 +57,13 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)recorderId
                   withCallback:(RCTResponseSenderBlock)callback)
 {
     if ([filename length] == 0) {
-        NSDictionary* dict = [Helpers errObjWithCode:@"invalidpath" withMessage:@"Provided path was empty"];
+        NSDictionary* dict = [Helpers errObjWithCode:@"invalidpath"
+                                         withMessage:@"Provided path was empty"];
         callback(@[dict]);
         return;
     } else if ([[self recorderPool] objectForKey:recorderId]) {
-        NSDictionary* dict = [Helpers errObjWithCode:@"invalidpath" withMessage:@"Recorder with that id already exists"];
+        NSDictionary* dict = [Helpers errObjWithCode:@"invalidpath"
+                                         withMessage:@"Recorder with that id already exists"];
         callback(@[dict]);
         return;
     }
@@ -86,7 +88,9 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)recorderId
     // Set audio session active
     [audioSession setActive:YES error:&error];
     if (error) {
-        NSDictionary* dict = [Helpers errObjWithCode:@"preparefail" withMessage:@"Could not set audio session active"];
+        NSString *errMsg = [NSString stringWithFormat:@"Could not set audio session active, error: %@", error];
+        NSDictionary* dict = [Helpers errObjWithCode:@"preparefail"
+                                         withMessage:errMsg];
         callback(@[dict]);
         
         return;
@@ -98,11 +102,12 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)recorderId
     // Initialize a new recorder
     AVAudioRecorder *recorder = [[AVAudioRecorder alloc] initWithURL:url settings:recordSetting error:&error];
     if (error) {
-        NSDictionary* dict = [Helpers errObjWithCode:@"preparefail" withMessage:@"Failed to initialize recorder"];
+        NSString *errMsg = [NSString stringWithFormat:@"Failed to initialize recorder, error: %@", error];
+        NSDictionary* dict = [Helpers errObjWithCode:@"preparefail"
+                                         withMessage:errMsg];
         callback(@[dict]);
         return;
         
-        return;
     } else if (!recorder) {
         NSDictionary* dict = [Helpers errObjWithCode:@"preparefail" withMessage:@"Failed to initialize recorder"];
         callback(@[dict]);
