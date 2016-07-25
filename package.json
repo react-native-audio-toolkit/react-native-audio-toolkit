@@ -1,6 +1,6 @@
 {
   "name": "react-native-audio-toolkit",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "scripts": {
     "start": "node node_modules/react-native/local-cli/cli.js start"
   },
