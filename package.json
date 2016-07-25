@@ -1,9 +1,14 @@
 {
   "name": "react-native-audio-toolkit",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/futurice/react-native-audio-toolkit"
+  },
   "scripts": {
     "start": "node node_modules/react-native/local-cli/cli.js start"
   },
+  "license": "MIT",
   "dependencies": {
     "async": "^2.0.0",
     "eventemitter3": "^1.2.0",
