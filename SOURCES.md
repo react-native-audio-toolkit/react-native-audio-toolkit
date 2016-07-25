@@ -32,6 +32,10 @@ Streaming media over network is as simple as providing a network URL to the
 new Player('https://example.com/test.mp3').play();
 ```
 
+
+Note that on iOS, you have to whitelist the domain used if it does not use SSL in the app's 
+info.plist file. Otherwise the file won't play.
+
 Playing back local files (Android only)
 ---------------------------------------
 
