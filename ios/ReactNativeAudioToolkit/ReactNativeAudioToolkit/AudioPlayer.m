@@ -269,7 +269,8 @@ RCT_EXPORT_METHOD(stop:(nonnull NSNumber*)playerId withCallback:(RCTResponseSend
         [player.currentItem seekToTime:CMTimeMakeWithSeconds(0.0, 60000)];
     }
     
-    callback(@[[NSNull null]]);
+    callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration) * 1000),
+                                @"position": @(CMTimeGetSeconds(player.currentTime) * 1000)}]);
 }
 
 RCT_EXPORT_METHOD(pause:(nonnull NSNumber*)playerId withCallback:(RCTResponseSenderBlock)callback) {
@@ -283,8 +284,9 @@ RCT_EXPORT_METHOD(pause:(nonnull NSNumber*)playerId withCallback:(RCTResponseSen
     }
     
     [player pause];
-    
-    callback(@[[NSNull null]]);
+
+    callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration) * 1000),
+                                @"position": @(CMTimeGetSeconds(player.currentTime) * 1000)}]);
 }
 
 RCT_EXPORT_METHOD(resume:(nonnull NSNumber*)playerId withCallback:(RCTResponseSenderBlock)callback) {

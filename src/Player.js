@@ -172,7 +172,7 @@ class Player extends EventEmitter {
 
   stop(callback = _.noop) {
     RCTAudioPlayer.stop(this._playerId, (err, results) => {
-      this._updateState(err, MediaStates.PREPARED, [results]);
+      this._updateState(err, MediaStates.PREPARED);
       this._position = -1;
       callback(err);
     });
