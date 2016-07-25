@@ -27,6 +27,7 @@ Documentation
 
 * Find the API documentation [here](/docs/API.md)
 * Examples on playback from various [media sources](/docs/SOURCES.md)
+* Notes on [developing the library itself](/docs/DEVELOPING.md)
 
 License
 -------
