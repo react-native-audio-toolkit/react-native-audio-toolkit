@@ -276,15 +276,15 @@ p.prepare((err) => {
 
 * Helpers for states - Boolean (**read only**)
 
-    ```
-    Player.canPlay      true if player can begin playback
-    Player.canStop      true if player can stop playback
-    Player.canPrepare   true if player can prepare for playback
-    Player.isPlaying    true if player is playing
-    Player.isStopped    true if player is stopped
-    Player.isPaused     true if player is paused
-    Player.isPrepared   true if player is prepared
-    ```
+  ```
+  Player.canPlay      true if player can begin playback
+  Player.canStop      true if player can stop playback
+  Player.canPrepare   true if player can prepare for playback
+  Player.isPlaying    true if player is playing
+  Player.isStopped    true if player is stopped
+  Player.isPaused     true if player is paused
+  Player.isPrepared   true if player is prepared
+  ```
 
 
 ### RCTAudioRecorder methods
@@ -310,7 +310,6 @@ p.prepare((err) => {
 
       // Override format. Possible values:
       // Cross-platform:  'mp4', 'aac'
-      // iOS only:        'ac3', 'pcm'
       // Android only:    'ogg', 'webm', 'amr'
       format : String (default: based on filename extension)
 
