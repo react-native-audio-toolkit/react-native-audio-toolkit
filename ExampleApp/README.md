@@ -6,7 +6,7 @@ Running the demo app
 
 Expecting you have the React Native development environment in place:
 
-#### [Android](ExampleApp/index.android.js)
+#### Android
 
 ```sh
 cd ExampleApp
@@ -18,7 +18,7 @@ adb reverse tcp:8081 tcp:8081
 react-native run-android
 ```
 
-#### [iOS](ExampleApp/index.ios.js)
+#### iOS
 
 ```sh
 cd ExampleApp
