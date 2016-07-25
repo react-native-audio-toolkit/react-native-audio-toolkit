@@ -4,7 +4,7 @@ react-native-audio-toolkit API
 Media methods
 -------------
 
-### RCTAudioPlayer methods
+### Player methods
 
 * `new Player(String path, Object ?playbackOptions)`
 
@@ -88,7 +88,7 @@ Media methods
     case.
 
 
-### RCTAudioPlayer properties
+### Player properties
 
 The following properties can be read and manipulated directly on the Player instance, for example:
 
@@ -164,9 +164,9 @@ Player.isPrepared   true if player is prepared
 ```
 
 
-### RCTAudioRecorder methods
+### Recorder methods
 
-* `new Recorder(String path, Object ?playbackOptions)`
+* `new Recorder(String path, Object ?recorderOptions)`
 
     Initialize the recorder for recording to file in `path`. Path can either be
     a filename or a file URL (Android only). The library tries to parse the
@@ -175,7 +175,7 @@ Player.isPrepared   true if player is prepared
     Playback options can include the following settings:
 
     ```js
-    playbackOptions:
+    recorderOptions:
     {
       // Set bitrate for the recorder, in bits per second
       bitrate : Number (default: 128000)
@@ -228,6 +228,45 @@ Player.isPrepared   true if player is prepared
     Stop recording and save the file. Callback is called after recording has
     stopped or with error object. The recorder is destroyed after calling stop
     and should no longer be used.
+    
+* `destroy(Function ?callback)`
+
+    Destroy the recorder. Should only be used if a recorder was constructed,
+    and for some reason is now unwanted.
+
+    Callback is called after the operation has finished.
+
+### Recorder properties
+
+* `state` - Number (**read only**)
+
+    Get the recording state. Can be one of:
+
+    ```js
+    var MediaStates = {
+      DESTROYED: -2,
+      ERROR: -1,
+      IDLE: 0,
+      PREPARING: 1,
+      PREPARED: 2,
+      SEEKING: 3,
+      PLAYING: 4,   // only for Player
+      RECORDING: 4, // only for Recorder
+      PAUSED: 5
+    };
+    ```
+
+    NOTE: This object is available as
+    `require('react-native-audio-toolkit').MediaStates`
+
+* Helpers for states - Boolean (**read only**)
+
+```
+Recorder.canRecord    true if recorder can begin recording
+Recorder.canPrepare   true if recorder can prepare for recording
+Recorder.isRecording  true if recorder is recording
+Recorder.isPrepared   true if recorder is prepared
+```
 
 Events
 ------
