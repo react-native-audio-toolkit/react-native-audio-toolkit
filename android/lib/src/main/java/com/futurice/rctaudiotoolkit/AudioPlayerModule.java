@@ -330,8 +330,8 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         }
 
         try {
-            player.pause();
             if (this.playerAutoDestroy.get(playerId)) {
+                player.pause();
                 Log.d(LOG_TAG, "stop(): Autodestroying player...");
                 destroy(playerId);
                 callback.invoke();
@@ -346,7 +346,9 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
                 }
 
                 this.playerSeekCallback.put(playerId, callback);
+
                 player.seekTo(0);
+                player.pause();
             }
         } catch (Exception e) {
             callback.invoke(errObj("stop", e.toString()));
