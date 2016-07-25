@@ -33,9 +33,6 @@ class AppContainer extends React.Component {
 
       error: null
     };
-
-    console.log('mount');
-
   }
 
   componentWillMount() {
@@ -54,7 +51,7 @@ class AppContainer extends React.Component {
   }
 
   componentWillUnmount() {
-    console.log('unmount');
+    //console.log('unmount');
     // TODO
     clearInterval(this._progressInterval);
   }
@@ -107,8 +104,6 @@ class AppContainer extends React.Component {
   }
 
   _reloadPlayer() {
-    console.log('_reloadPlayer()');
-
     if (this.player) {
       this.player.destroy();
     }
