@@ -16,6 +16,11 @@ easy as:
 new Player('filename.mp4').play();
 ```
 
+and recording media to filename.mp4 similarly
+```js
+new Recorder(‘filename.mp4’).record();
+```
+
 How to get this stuff running?
 ------------------------------
 
