@@ -84,7 +84,7 @@ class Player extends EventEmitter {
         // TODO
         break;
       case 'error':
-        this._reset();
+        this._state = MediaStates.ERROR;
         //this.emit('error', data);
         break;
       case 'looped':

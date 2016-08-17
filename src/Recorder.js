@@ -70,9 +70,10 @@ class Recorder extends EventEmitter {
     this._updateState(null, MediaStates.PREPARING);
 
     // Prepare recorder
-    RCTAudioRecorder.prepare(this._recorderId, this._path, this._options, (err) => {
+    RCTAudioRecorder.prepare(this._recorderId, this._path, this._options, (err, fsPath) => {
+      this._fsPath = fsPath;
       this._updateState(err, MediaStates.PREPARED);
-      callback(err);
+      callback(err, fsPath);
     });
 
     return this;
@@ -138,6 +139,7 @@ class Recorder extends EventEmitter {
   get canPrepare()  { return this._state == MediaStates.IDLE;      }
   get isRecording() { return this._state == MediaStates.RECORDING; }
   get isPrepared()  { return this._state == MediaStates.PREPARED;  }
+  get fsPath()      { return this._fsPath; }
 }
 
 export default Recorder;

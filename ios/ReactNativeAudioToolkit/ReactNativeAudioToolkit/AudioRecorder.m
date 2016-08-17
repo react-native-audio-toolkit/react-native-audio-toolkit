@@ -126,7 +126,7 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)recorderId
         return;
     }
     
-    callback(@[[NSNull null]]);
+    callback(@[[NSNull null], filePath]);
 }
 
 RCT_EXPORT_METHOD(record:(nonnull NSNumber *)recorderId withCallback:(RCTResponseSenderBlock)callback) {
