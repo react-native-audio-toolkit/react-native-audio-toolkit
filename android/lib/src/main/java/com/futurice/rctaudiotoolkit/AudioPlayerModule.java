@@ -292,7 +292,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     public void play(Integer playerId, Callback callback) {
         MediaPlayer player = this.playerPool.get(playerId);
         if (player == null) {
-            callback.invoke(errObj("notfound", "playerId " + playerId + "not found."));
+            callback.invoke(errObj("notfound", "playerId " + playerId + " not found."));
             return;
         }
 
@@ -309,7 +309,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     public void pause(Integer playerId, Callback callback) {
         MediaPlayer player = this.playerPool.get(playerId);
         if (player == null) {
-            callback.invoke(errObj("notfound", "playerId " + playerId + "not found."));
+            callback.invoke(errObj("notfound", "playerId " + playerId + " not found."));
             return;
         }
 
@@ -325,7 +325,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     public void stop(Integer playerId, Callback callback) {
         MediaPlayer player = this.playerPool.get(playerId);
         if (player == null) {
-            callback.invoke(errObj("notfound", "playerId " + playerId + "not found."));
+            callback.invoke(errObj("notfound", "playerId " + playerId + " not found."));
             return;
         }
 

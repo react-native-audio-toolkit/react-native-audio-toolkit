@@ -209,12 +209,14 @@ Player.isPrepared   true if player is prepared
     is optional to call but it may be beneficial to call to make sure that
     recording begins immediately after calling record(). Otherwise the
     recording is prepared when calling record() which may result in a small
-    delay.
+    delay. NOTE: Assume that this wipes the destination file immediately.
 
-    Callback is called with empty first parameter when file is ready for
-    recording with `record()`. If there was an error, the callback is called
-    with an error object as first parameter. See Callbacks for more
-    information.
+    Callback signature is (err, fsPath). When ready to record using `record()`,
+    the callback is called with an empty first parameter. Second parameter
+    contains a path to the destination file on the filesystem.
+
+    If there was an error, the callback is called with an error object as first
+    parameter. See Callbacks for more information.
 
 
 * `record(Function ?callback)`
@@ -228,7 +230,7 @@ Player.isPrepared   true if player is prepared
     Stop recording and save the file. Callback is called after recording has
     stopped or with error object. The recorder is destroyed after calling stop
     and should no longer be used.
-    
+
 * `destroy(Function ?callback)`
 
     Destroy the recorder. Should only be used if a recorder was constructed,
@@ -258,6 +260,11 @@ Player.isPrepared   true if player is prepared
 
     NOTE: This object is available as
     `require('react-native-audio-toolkit').MediaStates`
+
+* `fsPath` - String (**read only**)
+
+    Get the filesystem path of file being recorded to. Available after
+    `prepare()` call has invoked its callback successfully.
 
 * Helpers for states - Boolean (**read only**)
 

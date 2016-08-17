@@ -231,7 +231,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         try {
             recorder.prepare();
 
-            callback.invoke();
+            callback.invoke(null, uri.getPath());
         } catch (IOException e) {
             callback.invoke(errObj("preparefail", e.toString()));
         }

@@ -141,6 +141,7 @@ class AppContainer extends React.Component {
       //format: 'ac3', // autodetected
       //encoder: 'aac', // autodetected
     });
+
     this._updateState();
   }
 
