@@ -2,7 +2,9 @@
 
 import {
   NativeModules,
-  DeviceEventEmitter
+  DeviceEventEmitter,
+  NativeAppEventEmitter,
+  Platform
 } from 'react-native';
 
 import _ from 'lodash';
@@ -32,7 +34,9 @@ class Player extends EventEmitter {
     this._playerId = playerId++;
     this._reset();
 
-    DeviceEventEmitter.addListener('RCTAudioPlayerEvent:' + this._playerId, (payload: Event) => {
+    let appEventEmitter = Platform.OS === 'ios' ? NativeAppEventEmitter : DeviceEventEmitter;
+
+    appEventEmitter.addListener('RCTAudioPlayerEvent:' + this._playerId, (payload: Event) => {
       this._handleEvent(payload.event, payload.data);
     });
   }
