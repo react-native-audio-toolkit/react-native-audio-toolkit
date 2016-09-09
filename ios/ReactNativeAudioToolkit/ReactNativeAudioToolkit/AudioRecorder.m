@@ -20,7 +20,12 @@
 
 @end
 
-@implementation AudioRecorder
+@implementation AudioRecorder{
+    NSNumber *_audioRecorderId;
+    id _progressUpdateTimer;
+    int _progressUpdateInterval;
+    NSDate *_prevProgressUpdateTime;
+}
 
 @synthesize bridge = _bridge;
 
@@ -125,18 +130,22 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)recorderId
         callback(@[dict]);
         return;
     }
-    
-    callback(@[[NSNull null], filePath]);
+    [self stopProgressTimer];
+    callback(@[[NSNull null],@{@"filepath": filePath}]);
 }
 
 RCT_EXPORT_METHOD(record:(nonnull NSNumber *)recorderId withCallback:(RCTResponseSenderBlock)callback) {
     AVAudioRecorder *recorder = [[self recorderPool] objectForKey:recorderId];
+    _audioRecorderId = recorderId;
+
     if (recorder) {
         if (![recorder record]) {
             NSDictionary* dict = [Helpers errObjWithCode:@"startfail" withMessage:@"Failed to start recorder"];
             callback(@[dict]);
             return;
         }
+
+        [self startProgressTimer];
     } else {
         NSDictionary* dict = [Helpers errObjWithCode:@"notfound" withMessage:@"Recorder with that id was not found"];
         callback(@[dict]);
@@ -154,11 +163,13 @@ RCT_EXPORT_METHOD(stop:(nonnull NSNumber *)recorderId withCallback:(RCTResponseS
         callback(@[dict]);
         return;
     }
+    [self stopProgressTimer];
     callback(@[[NSNull null]]);
 }
 
 RCT_EXPORT_METHOD(destroy:(nonnull NSNumber *)recorderId withCallback:(RCTResponseSenderBlock)callback) {
     [self destroyRecorderWithId:recorderId];
+    [self stopProgressTimer];
     callback(@[[NSNull null]]);
 }
 
@@ -195,6 +206,37 @@ RCT_EXPORT_METHOD(destroy:(nonnull NSNumber *)recorderId withCallback:(RCTRespon
                                                body:@{@"event": @"error",
                                                       @"data" : [error description]
                                                       }];
+}
+
+- (void)sendProgressUpdate {
+    AVAudioRecorder *recorder = [[self recorderPool] objectForKey:_audioRecorderId];
+    if (recorder && recorder.recording)
+    {
+        if (_prevProgressUpdateTime == nil ||
+            (([_prevProgressUpdateTime timeIntervalSinceNow] * -1000.0) >= _progressUpdateInterval)) {
+            NSString *eventName = [NSString stringWithFormat:@"RCTAudioRecorderEvent:%@", _audioRecorderId];
+            NSMutableDictionary *data = [[NSMutableDictionary alloc] init];
+            [data setObject:[NSNumber numberWithFloat: recorder.currentTime * 1000] forKey:@"currentTime"];
+            [self.bridge.eventDispatcher sendAppEventWithName:eventName
+                                               body:@{@"event": @"progress",
+                                                      @"data" : data
+                                                      }]; 
+            _prevProgressUpdateTime = [NSDate date];
+        } 
+    }
+}
+
+- (void)stopProgressTimer {
+    [_progressUpdateTimer invalidate];
+}
+
+- (void)startProgressTimer {
+    _progressUpdateInterval = 100;
+    _prevProgressUpdateTime = nil;
+    [self stopProgressTimer];
+
+    _progressUpdateTimer = [CADisplayLink displayLinkWithTarget:self selector:@selector(sendProgressUpdate)];
+    [_progressUpdateTimer addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
 }
 
 @end

@@ -14,6 +14,8 @@ import {
   MediaStates
 } from 'react-native-audio-toolkit';
 
+import Moment from 'moment';
+
 let filename = 'test.mp4';
 
 class AppContainer extends React.Component {
@@ -30,7 +32,7 @@ class AppContainer extends React.Component {
 
       loopButtonStatus: false,
       progress: 0,
-
+      position: 0,
       error: null
     };
   }
@@ -42,23 +44,6 @@ class AppContainer extends React.Component {
 
     this._reloadPlayer();
     this._reloadRecorder();
-
-    this._progressInterval = setInterval(() => {
-      if (this.player && this._shouldUpdateProgressBar()) {// && !this._dragging) {
-        this.setState({progress: Math.max(0, this.player.currentTime) / this.player.duration});
-      }
-    }, 100);
-  }
-
-  componentWillUnmount() {
-    //console.log('unmount');
-    // TODO
-    clearInterval(this._progressInterval);
-  }
-
-  _shouldUpdateProgressBar() {
-    // Debounce progress bar update by 200 ms
-    return Date.now() - this.lastSeek > 200;
   }
 
   _updateState(err) {
@@ -119,13 +104,19 @@ class AppContainer extends React.Component {
       }
 
       this._updateState();
-    });
+    });  
+
+    this.player.on("progress", (data)=>{
+      let currentTime = data.currentTime;
+      this.setState({progress: Math.max(0,  currentTime) / this.player.duration, position: currentTime});
+    })    
+
+    this.player.on("ended", ()=>{
+      this._updateState();
+      this.setState({progress: 0, position: 0});
+    })
 
     this._updateState();
-
-    this.player.on('ended', () => {
-      this._updateState();
-    });
   }
 
   _reloadRecorder() {
@@ -138,9 +129,12 @@ class AppContainer extends React.Component {
       channels: 2,
       sampleRate: 44100,
       quality: 'max'
-      //format: 'ac3', // autodetected
-      //encoder: 'aac', // autodetected
     });
+
+    this.recorder.on("progress", (data)=>{
+      let currentTime = data.currentTime;
+      this.setState({position: currentTime});
+    })
 
     this._updateState();
   }
@@ -175,6 +169,8 @@ class AppContainer extends React.Component {
   }
 
   render() {
+    let position = Moment.utc(this.state.position).format("mm:ss")
+
     return (
       <View>
         <View>
@@ -210,6 +206,7 @@ class AppContainer extends React.Component {
           </Button>
         </View>
         <View>
+          <Text style={styles.errorMessage}>{position}</Text>
           <Text style={styles.errorMessage}>{this.state.error}</Text>
         </View>
       </View>
@@ -224,7 +221,6 @@ var styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   slider: {
-    height: 10,
     margin: 10,
   },
   buttonContainer: {

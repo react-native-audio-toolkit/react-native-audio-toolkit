@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class AudioPlayerModule extends ReactContextBaseJavaModule implements MediaPlayer.OnInfoListener,
         MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnSeekCompleteListener,
@@ -38,8 +40,10 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     Map<Integer, MediaPlayer> playerPool = new HashMap<>();
     Map<Integer, Boolean> playerAutoDestroy = new HashMap<>();
     Map<Integer, Callback> playerSeekCallback = new HashMap<>();
-
-    boolean looping = false;
+    private TimerTask mTimerTask;
+    private Timer timer; 
+    private Integer doPlayerId;
+    private boolean looping = false;
     private ReactApplicationContext context;
 
     public AudioPlayerModule(ReactApplicationContext reactContext) {
@@ -149,6 +153,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         if (callback != null) {
             callback.invoke();
         }
+        stopTask();
     }
 
     private void destroy(Integer playerId) {
@@ -298,7 +303,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
 
         try {
             player.start();
-
+            doTimerTask(playerId);
             callback.invoke(null, getInfo(player));
         } catch (Exception e) {
             callback.invoke(errObj("playback", e.toString()));
@@ -353,6 +358,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         } catch (Exception e) {
             callback.invoke(errObj("stop", e.toString()));
         }
+        stopTask();
     }
 
     // Find playerId matching player from playerPool
@@ -413,6 +419,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             Log.d(LOG_TAG, "onCompletion(): Autodestroying player...");
             destroy(playerId);
         }
+        stopTask();
     }
 
     @Override
@@ -450,5 +457,35 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         emitEvent(playerId, "info", data);
 
         return false;
+    }
+
+    private void doTimerTask(Integer playerId){
+        doPlayerId = playerId;
+        mTimerTask = new TimerTask() {
+          public void run() {
+            MediaPlayer player = playerPool.get(doPlayerId);
+            if (player != null) {
+                emitEvent(doPlayerId, "progress", currentPosition(player));
+            }
+        }};
+        timer = new Timer();
+        timer.schedule(mTimerTask, 0, 100);  // 
+    }
+      
+    private void stopTask(){
+        if(mTimerTask!=null){
+            mTimerTask.cancel();
+        }
+
+        if(timer!=null){
+            timer.cancel();
+            timer.purge();
+        }
+    } 
+
+    private WritableMap currentPosition(MediaPlayer mediaPlayer){
+        WritableMap data   = new WritableNativeMap();
+        data.putDouble("currentTime", mediaPlayer.getCurrentPosition() );
+        return data;
     }
 }
