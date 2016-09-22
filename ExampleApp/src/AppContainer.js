@@ -126,6 +126,9 @@ class AppContainer extends React.Component {
     this.player.on('ended', () => {
       this._updateState();
     });
+    this.player.on('pause', () => {
+      this._updateState();
+    });
   }
 
   _reloadRecorder() {
