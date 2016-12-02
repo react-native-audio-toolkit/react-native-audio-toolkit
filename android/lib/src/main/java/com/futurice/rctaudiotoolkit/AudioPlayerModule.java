@@ -29,7 +29,6 @@ import java.lang.Thread;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 
 public class AudioPlayerModule extends ReactContextBaseJavaModule implements MediaPlayer.OnInfoListener,
         MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnSeekCompleteListener,
@@ -404,7 +403,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     // Find playerId matching player from playerPool
     private Integer getPlayerId(MediaPlayer player) {
         for (Entry<Integer, MediaPlayer> entry : playerPool.entrySet()) {
-            if (Objects.equals(player, entry.getValue())) {
+            if (equals(player, entry.getValue())) {
                 return entry.getKey();
             }
         }
@@ -496,5 +495,10 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         emitEvent(playerId, "info", data);
 
         return false;
+    }
+
+    // Utils
+    public static boolean equals(Object a, Object b) {
+        return (a == b) || (a != null && a.equals(b));
     }
 }
