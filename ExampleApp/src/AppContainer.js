@@ -104,14 +104,14 @@ class AppContainer extends React.Component {
       }
 
       this._updateState();
-    });  
+    });
 
-    this.player.on("progress", (data)=>{
+    this.player.on("progress", (data) => {
       let currentTime = data.currentTime;
       this.setState({progress: Math.max(0,  currentTime) / this.player.duration, position: currentTime});
-    })    
+    })
 
-    this.player.on("ended", ()=>{
+    this.player.on("ended", () => {
       this._updateState();
       this.setState({progress: 0, position: 0});
     })

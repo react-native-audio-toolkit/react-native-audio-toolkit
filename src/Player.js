@@ -17,7 +17,8 @@ var RCTAudioPlayer = NativeModules.AudioPlayer;
 var playerId = 0;
 
 var defaultPlayerOptions = {
-  autoDestroy: true
+  autoDestroy: true,
+  continuesToPlayInBackground: false
 };
 
 /**
@@ -90,6 +91,10 @@ class Player extends EventEmitter {
       case 'error':
         this._state = MediaStates.ERROR;
         //this.emit('error', data);
+        break;
+      case 'pause':
+        this._state = MediaStates.PAUSED;
+        this._storeInfo(data.info);
         break;
       case 'looped':
         this._position = 0;

@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.content.ContextWrapper;
 
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -28,17 +29,21 @@ import java.lang.Thread;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+<<<<<<< HEAD
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
+=======
+>>>>>>> master
 
 public class AudioPlayerModule extends ReactContextBaseJavaModule implements MediaPlayer.OnInfoListener,
         MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnSeekCompleteListener,
-        MediaPlayer.OnBufferingUpdateListener {
+        MediaPlayer.OnBufferingUpdateListener, LifecycleEventListener {
     private static final String LOG_TAG = "AudioPlayerModule";
 
     Map<Integer, MediaPlayer> playerPool = new HashMap<>();
     Map<Integer, Boolean> playerAutoDestroy = new HashMap<>();
+    Map<Integer, Boolean> playerContinueInBackground = new HashMap<>();
     Map<Integer, Callback> playerSeekCallback = new HashMap<>();
     private TimerTask mTimerTask;
     private Timer timer; 
@@ -49,6 +54,37 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     public AudioPlayerModule(ReactApplicationContext reactContext) {
         super(reactContext);
         this.context = reactContext;
+        reactContext.addLifecycleEventListener(this);
+    }
+
+    @Override
+    public void onHostResume() {
+        // Activity `onResume`
+    }
+
+    @Override
+    public void onHostPause() {
+        for (Map.Entry<Integer, MediaPlayer> entry : this.playerPool.entrySet()) {
+            Integer playerId = entry.getKey();
+
+            if (!this.playerContinueInBackground.get(playerId)) {
+                MediaPlayer player = entry.getValue();
+                player.pause();
+
+                WritableMap info = getInfo(player);
+
+                WritableMap data = new WritableNativeMap();
+                data.putString("message", "Playback paused due to onHostPause");
+                data.putMap("info", info);
+
+                emitEvent(playerId, "pause", data);
+            }
+        }
+    }
+
+    @Override
+    public void onHostDestroy() {
+        // Activity `onDestroy`
     }
 
     @Override
@@ -142,6 +178,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             player.release();
             this.playerPool.remove(playerId);
             this.playerAutoDestroy.remove(playerId);
+            this.playerContinueInBackground.remove(playerId);
             this.playerSeekCallback.remove(playerId);
 
             WritableMap data = new WritableNativeMap();
@@ -237,7 +274,15 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             autoDestroy = options.getBoolean("autoDestroy");
         }
 
+        // Don't continue in background by default
+        boolean continueInBackground = false;
+
+        if (options.hasKey("continuesToPlayInBackground")) {
+            continueInBackground = options.getBoolean("continuesToPlayInBackground");
+        }
+
         this.playerAutoDestroy.put(playerId, autoDestroy);
+        this.playerContinueInBackground.put(playerId, autoDestroy);
 
         try {
             player.prepare();
@@ -265,6 +310,10 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
 
         if (options.hasKey("autoDestroy")) {
             this.playerAutoDestroy.put(playerId, options.getBoolean("autoDestroy"));
+        }
+
+        if (options.hasKey("continuesToPlayInBackground")) {
+            this.playerContinueInBackground.put(playerId, options.getBoolean("continuesToPlayInBackground"));
         }
 
         if (options.hasKey("volume") && !options.isNull("volume")) {
@@ -364,7 +413,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     // Find playerId matching player from playerPool
     private Integer getPlayerId(MediaPlayer player) {
         for (Entry<Integer, MediaPlayer> entry : playerPool.entrySet()) {
-            if (Objects.equals(player, entry.getValue())) {
+            if (equals(player, entry.getValue())) {
                 return entry.getKey();
             }
         }
@@ -459,6 +508,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         return false;
     }
 
+<<<<<<< HEAD
     private void doTimerTask(Integer playerId){
         doPlayerId = playerId;
         mTimerTask = new TimerTask() {
@@ -487,5 +537,10 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         WritableMap data   = new WritableNativeMap();
         data.putDouble("currentTime", mediaPlayer.getCurrentPosition() );
         return data;
+=======
+    // Utils
+    public static boolean equals(Object a, Object b) {
+        return (a == b) || (a != null && a.equals(b));
+>>>>>>> master
     }
 }

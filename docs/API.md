@@ -20,7 +20,11 @@ Media methods
       // Boolean to indicate whether the player should self-destruct after
       // playback is finished. If this is not set, you are responsible for
       // destroying the object by calling player.destroy().
-      autoDestroy : boolean (default: True)
+      autoDestroy : boolean (default: True),
+
+      // (Android only) Should playback continue if app is sent to background?
+      // iOS will always pause in this case.
+      continuesToPlayInBackground : boolean (default: False)
     }
     ```
 
