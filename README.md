@@ -25,6 +25,14 @@ How to get this stuff running?
 ------------------------------
 
 * For a quick test drive, check out the [demo application](/ExampleApp)
+
+### React Native versions > 0.40
+```
+npm install --save react-native-audio-toolkit
+react-native link react-native-audio-toolkit
+```
+
+### React Native versions < 0.40
 * [Include the library](/docs/SETUP.md) in your project
 
 Documentation
