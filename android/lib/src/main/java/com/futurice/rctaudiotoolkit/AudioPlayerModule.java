@@ -29,12 +29,9 @@ import java.lang.Thread;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-<<<<<<< HEAD
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
-=======
->>>>>>> master
 
 public class AudioPlayerModule extends ReactContextBaseJavaModule implements MediaPlayer.OnInfoListener,
         MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnSeekCompleteListener,
@@ -508,7 +505,6 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         return false;
     }
 
-<<<<<<< HEAD
     private void doTimerTask(Integer playerId){
         doPlayerId = playerId;
         mTimerTask = new TimerTask() {
@@ -519,9 +515,9 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             }
         }};
         timer = new Timer();
-        timer.schedule(mTimerTask, 0, 100);  // 
+        timer.schedule(mTimerTask, 0, 100);
     }
-      
+
     private void stopTask(){
         if(mTimerTask!=null){
             mTimerTask.cancel();
@@ -531,16 +527,16 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             timer.cancel();
             timer.purge();
         }
-    } 
+    }
 
-    private WritableMap currentPosition(MediaPlayer mediaPlayer){
-        WritableMap data   = new WritableNativeMap();
-        data.putDouble("currentTime", mediaPlayer.getCurrentPosition() );
+    private WritableMap currentPosition(MediaPlayer player) {
+        WritableMap data = new WritableNativeMap();
+        data.putDouble("currentTime", player.getCurrentPosition());
         return data;
-=======
+    }
+
     // Utils
     public static boolean equals(Object a, Object b) {
         return (a == b) || (a != null && a.equals(b));
->>>>>>> master
     }
 }
