@@ -1,13 +1,13 @@
-import React from 'react';
-import {AppRegistry} from 'react-native';
-import AppContainer from './src/AppContainer';
+/**
+ * Sample React Native App
+ * https://github.com/facebook/react-native
+ * @flow
+ */
 
-class ExampleApp extends React.Component {
-  render() {
-    return (
-      <AppContainer />
-    );
-  }
-}
+import React, { Component } from 'react';
+import {
+  AppRegistry,
+} from 'react-native';
 
+import ExampleApp from './App';
 AppRegistry.registerComponent('ExampleApp', () => ExampleApp);

@@ -4,21 +4,21 @@ import {
   View,
   StyleSheet,
   Switch,
-  Slider
+  Slider,
+  Button,
 } from 'react-native';
-import Button from 'react-native-button';
 
 import {
   Player,
   Recorder,
-  MediaStates
+  MediaStates,
 } from 'react-native-audio-toolkit';
 
 import Moment from 'moment';
 
 let filename = 'test.mp4';
 
-class AppContainer extends React.Component {
+class App extends React.Component {
   constructor() {
     super();
 
@@ -179,12 +179,19 @@ class AppContainer extends React.Component {
           </Text>
         </View>
         <View style={styles.buttonContainer}>
-          <Button disabled={this.state.playButtonDisabled} style={styles.button} onPress={() => this._playPause()}>
-            {this.state.playPauseButton}
-          </Button>
-          <Button disabled={this.state.stopButtonDisabled} style={styles.button} onPress={() => this._stop()}>
-            Stop
-          </Button>
+          <Button
+            onPress={() => this._playPause()}
+            title={this.state.playPauseButton}
+            disabled={this.state.playButtonDisabled}
+            style={styles.button}
+          />
+
+          <Button
+            onPress={() => this._stop()}
+            title='Stop'
+            disabled={this.state.stopButtonDisabled}
+            style={styles.button}
+          />
         </View>
         <View style={styles.settingsContainer}>
           <Switch
@@ -201,9 +208,12 @@ class AppContainer extends React.Component {
           </Text>
         </View>
         <View style={styles.buttonContainer}>
-          <Button disabled={this.state.recordButtonDisabled} style={styles.button} onPress={() => this._toggleRecord()}>
-            {this.state.recordButton}
-          </Button>
+          <Button
+            onPress={() => this._toggleRecord()}
+            title={this.state.recordButton}
+            disabled={this.state.recordButtonDisabled}
+            style={styles.button}
+          />
         </View>
         <View>
           <Text style={styles.errorMessage}>{position}</Text>
@@ -253,4 +263,4 @@ var styles = StyleSheet.create({
   }
 });
 
-export default AppContainer;
+export default App;
