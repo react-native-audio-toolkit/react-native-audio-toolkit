@@ -5,6 +5,7 @@ import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.net.Uri;
+import android.os.*;
 import android.webkit.URLUtil;
 import android.content.ContextWrapper;
 
@@ -27,6 +28,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         MediaRecorder.OnInfoListener, MediaRecorder.OnErrorListener {
@@ -36,6 +39,10 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
     Map<Integer, Boolean> recorderAutoDestroy = new HashMap<>();
 
     private ReactApplicationContext context;
+    private Integer currentRecorderId;
+    private long startHTime = 0L;
+    private TimerTask mTimerTask;
+    private Timer timer;
 
     public AudioRecorderModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -154,6 +161,8 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         if (callback != null) {
             callback.invoke();
         }
+
+        stopTask();
     }
 
     private void destroy(Integer recorderId) {
@@ -230,8 +239,9 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
 
         try {
             recorder.prepare();
-
-            callback.invoke(null, uri.getPath());
+            WritableMap data   = new WritableNativeMap();
+            data.putString("filepath",  uri.getPath());
+            callback.invoke(null, data);
         } catch (IOException e) {
             callback.invoke(errObj("preparefail", e.toString()));
         }
@@ -247,7 +257,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
 
         try {
             recorder.start();
-
+            doTimerTask(recorderId);
             callback.invoke();
         } catch (Exception e) {
             callback.invoke(errObj("startfail", e.toString()));
@@ -272,6 +282,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         } catch (Exception e) {
             callback.invoke(errObj("stopfail", e.toString()));
         }
+        stopTask();
     }
 
     // Find recorderId matching recorder from recorderPool
@@ -318,5 +329,33 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
 
         emitEvent(recorderId, "info", data);
 
+    }
+
+    public void doTimerTask(Integer recorderId){
+        currentRecorderId = recorderId;
+        startHTime = SystemClock.uptimeMillis();
+        mTimerTask = new TimerTask() {
+        public void run() {
+            MediaRecorder mMediaRecorder = recorderPool.get(currentRecorderId);
+            if (mMediaRecorder != null) {
+                double currentTime  = (float)(SystemClock.uptimeMillis() - startHTime);
+                WritableMap data   = new WritableNativeMap();
+                data.putDouble("currentTime", currentTime);
+                emitEvent(currentRecorderId, "progress", data);
+            }
+        }};
+
+        timer = new Timer();
+        timer.schedule(mTimerTask, 0, 100);  // 
+    }
+
+    public void stopTask(){
+        if(mTimerTask != null)
+            mTimerTask.cancel();
+
+        if (timer != null) {
+            timer.cancel();
+            timer.purge();
+        }
     }
 }

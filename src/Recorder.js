@@ -2,7 +2,9 @@
 
 import {
   NativeModules,
-  DeviceEventEmitter
+  DeviceEventEmitter,
+  NativeAppEventEmitter,
+  Platform
 } from 'react-native';
 
 import _ from 'lodash';
@@ -32,7 +34,9 @@ class Recorder extends EventEmitter {
     this._recorderId = recorderId++;
     this._reset();
 
-    DeviceEventEmitter.addListener('RCTAudioRecorderEvent:' + this._recorderId, (payload: Event) => {
+    let appEventEmitter = Platform.OS === 'ios' ? NativeAppEventEmitter : DeviceEventEmitter;
+
+    appEventEmitter.addListener('RCTAudioRecorderEvent:' + this._recorderId, (payload: Event) => {
       this._handleEvent(payload.event, payload.data);
     });
   }
