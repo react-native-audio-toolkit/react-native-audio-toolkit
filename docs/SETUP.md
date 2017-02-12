@@ -1,5 +1,5 @@
-Setup
-=====
+Setup (NOTE: React Native versions < 0.40)
+==========================================
 
 Expecting you have the React Native development environment in place, are
 starting with a React Native hello world project and have managed to run it on
