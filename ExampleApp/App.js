@@ -4,7 +4,7 @@ import {
   View,
   StyleSheet,
   Switch,
-  Slider, 
+  Slider,
   Button,
 } from 'react-native';
 
