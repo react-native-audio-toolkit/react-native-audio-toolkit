@@ -4,9 +4,10 @@ import {
   View,
   StyleSheet,
   Switch,
-  Slider
+  Slider, 
+  Button
 } from 'react-native';
-import Button from 'react-native-button';
+//import Button from 'react-native-button';
 
 import {
   Player,
@@ -186,31 +187,26 @@ class AppContainer extends React.Component {
           </Text>
         </View>
         <View style={styles.buttonContainer}>
-          <Button disabled={this.state.playButtonDisabled} style={styles.button} onPress={() => this._playPause()}>
-            {this.state.playPauseButton}
-          </Button>
-          <Button disabled={this.state.stopButtonDisabled} style={styles.button} onPress={() => this._stop()}>
-            Stop
-          </Button>
+          <Button title={this.state.playPauseButton} disabled={this.state.playButtonDisabled} style={styles.button} onPress={() => this._playPause()} />
+          <Button title={"Stop"} disabled={this.state.stopButtonDisabled} style={styles.button} onPress={() => this._stop()} />
         </View>
-        <View style={styles.settingsContainer}>
+        <View style={styles.settingsContinaer}>
           <Switch
-          onValueChange={(value) => this._toggleLooping(value)}
-          value={this.state.loopButtonStatus} />
-          <Text>Toggle Looping</Text>
+            style={styles.settingItem}
+            onValueChange={(value) => this._toggleLooping(value)}
+            value={this.state.loopButtonStatus} />
+          <Text style={styles.settingItem}>Toggle Looping</Text>
         </View>
-        <View style={styles.slider}>
-          <Slider step={0.0001} disabled={this.state.playButtonDisabled} onValueChange={(percentage) => this._seek(percentage)} value={this.state.progress}/>
-        </View>
+         <View style={styles.slider}>
+            <Slider step={0.0001} disabled={this.state.playButtonDisabled} onValueChange={(percentage) => this._seek(percentage)} value={this.state.progress}/>
+          </View>
         <View>
           <Text style={styles.title}>
             Recording
           </Text>
         </View>
         <View style={styles.buttonContainer}>
-          <Button disabled={this.state.recordButtonDisabled} style={styles.button} onPress={() => this._toggleRecord()}>
-            {this.state.recordButton}
-          </Button>
+          <Button title={this.state.recordButton} disabled={this.state.recordButtonDisabled} style={styles.button} onPress={() => this._toggleRecord()} />
         </View>
         <View>
           <Text style={styles.errorMessage}>{this.state.error}</Text>
@@ -227,24 +223,21 @@ var styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   slider: {
-    height: 10,
+    height: 30,
     margin: 10,
   },
   buttonContainer: {
-    flex: 1,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     alignItems: 'center',
   },
   settingsContainer: {
-    flex: 1,
-    justifyContent: 'space-between',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     alignItems: 'center',
   },
-  container: {
-    borderRadius: 4,
-    borderWidth: 0.5,
-    borderColor: '#d6d7da',
+  settingItem: {
+    alignSelf: 'center',
   },
   title: {
     fontSize: 19,
