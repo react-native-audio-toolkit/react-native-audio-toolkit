@@ -20,13 +20,16 @@ Media methods
       // Boolean to indicate whether the player should self-destruct after
       // playback is finished. If this is not set, you are responsible for
       // destroying the object by calling player.destroy().
-      autoDestroy : boolean (default: True),
+      autoDestroy : boolean (default: true),
 
-      // (Android only) Should playback continue if app is sent to background?
-      // iOS will always pause in this case.
-      continuesToPlayInBackground : boolean (default: False)
+      // (Android only) Should playback continue if app is sent to background
+      // For iOS background playback, please refer the screenshot below
+      continuesToPlayInBackground : boolean (default: false)
     }
     ```
+  
+    ![Screenshot](https://cloud.githubusercontent.com/assets/1323963/23828922/69c128ca-0724-11e7-9d56-167407040625.png)
+    To supprt background play in iOS, please enable the 'Audio, AirPlay, and Picture' option in 'Project - Capabilities - Background Modes'.
 
 
 * `prepare(Function callback)`
