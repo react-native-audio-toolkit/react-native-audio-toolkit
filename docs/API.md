@@ -10,7 +10,10 @@ Media methods
 
     Initialize the player for playback of song in `path`. Path can be either
     filename, network URL or a file URL to resource. The library tries to parse
-    the provided path to the best of it's abilities.
+    the provided path to the best of it's abilities. For local files, the path should have 'file://' as its prefix. Please refer the examples below.
+    
+    - iOS: file:///Users/.../test.mp4
+    - Android: file:///data/data/.../test.m4a
 
     See [SOURCES.md](/docs/SOURCES.md) for more information.
 
