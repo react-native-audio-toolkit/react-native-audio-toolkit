@@ -32,7 +32,7 @@ import java.util.Map.Entry;
 
 public class AudioPlayerModule extends ReactContextBaseJavaModule implements MediaPlayer.OnInfoListener,
         MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnSeekCompleteListener,
-        MediaPlayer.OnBufferingUpdateListener, LifecycleEventListener, MediaPlayer.OnPreparedListener {
+        MediaPlayer.OnBufferingUpdateListener, LifecycleEventListener {
     private static final String LOG_TAG = "AudioPlayerModule";
 
     Map<Integer, MediaPlayer> playerPool = new HashMap<>();
@@ -255,7 +255,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         player.setOnInfoListener(this);
         player.setOnCompletionListener(this);
         player.setOnSeekCompleteListener(this);
-        player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+        player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() { // Async preparing, so we need to run the callback after preparing has finished
 
             @Override
             public void onPrepared(MediaPlayer player) {
@@ -418,12 +418,6 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         return null;
     }
 
-
-
-    @Override
-    public void onPrepared(MediaPlayer player) {
-
-    }
 
     @Override
     public void onBufferingUpdate(MediaPlayer player, int percent) {
