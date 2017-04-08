@@ -32,7 +32,7 @@ import java.util.Map.Entry;
 
 public class AudioPlayerModule extends ReactContextBaseJavaModule implements MediaPlayer.OnInfoListener,
         MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnSeekCompleteListener,
-        MediaPlayer.OnBufferingUpdateListener, LifecycleEventListener {
+        MediaPlayer.OnBufferingUpdateListener, LifecycleEventListener, MediaPlayer.OnPreparedListener {
     private static final String LOG_TAG = "AudioPlayerModule";
 
     Map<Integer, MediaPlayer> playerPool = new HashMap<>();
@@ -220,7 +220,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     }
 
     @ReactMethod
-    public void prepare(Integer playerId, String path, ReadableMap options, Callback callback) {
+    public void prepare(Integer playerId, String path, ReadableMap options, final Callback callback) {
         if (path == null || path.isEmpty()) {
             callback.invoke(errObj("nopath", "Provided path was empty"));
             return;
@@ -255,6 +255,14 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         player.setOnInfoListener(this);
         player.setOnCompletionListener(this);
         player.setOnSeekCompleteListener(this);
+        player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+
+            @Override
+            public void onPrepared(MediaPlayer player) {
+                callback.invoke(null, getInfo(player));
+            }
+
+        });
 
         this.playerPool.put(playerId, player);
 
@@ -276,9 +284,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         this.playerContinueInBackground.put(playerId, continueInBackground);
 
         try {
-            player.prepare();
-
-            callback.invoke(null, getInfo(player));
+            player.prepareAsync();
         } catch (Exception e) {
             callback.invoke(errObj("prepare", e.toString()));
         }
@@ -332,6 +338,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
 
         callback.invoke();
     }
+
 
     @ReactMethod
     public void play(Integer playerId, Callback callback) {
@@ -409,6 +416,13 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         }
 
         return null;
+    }
+
+
+
+    @Override
+    public void onPrepared(MediaPlayer player) {
+
     }
 
     @Override
