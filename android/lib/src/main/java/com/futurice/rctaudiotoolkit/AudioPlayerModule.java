@@ -517,6 +517,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     {
         switch (focusChange)
         {
+            case AudioManager.AUDIOFOCUS_LOSS:
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
                 MediaPlayer player = this.playerPool.get(this.lastPlayerId);
                 if(player != null) player.pause();
