@@ -519,17 +519,11 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         {
             case AudioManager.AUDIOFOCUS_LOSS:
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-                MediaPlayer player = this.playerPool.get(this.lastPlayerId);
-                if(player != null) {
+                //MediaPlayer player = this.playerPool.get(this.lastPlayerId);
+                WritableMap data = new WritableNativeMap();
+                data.putString("message", "Lost audio focus, playback paused");
 
-                    player.pause();
-
-                    WritableMap info = this.getInfo(player);
-                    WritableMap data = new WritableNativeMap();
-                    data.putString("message", "Lost audio focus, playback paused");
-
-                    this.emitEvent(this.lastPlayerId, "forcePause", data);
-                }
+                this.emitEvent(this.lastPlayerId, "forcePause", data);
                 break;
         }
     }
