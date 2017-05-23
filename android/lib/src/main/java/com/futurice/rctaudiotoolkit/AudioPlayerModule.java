@@ -1,5 +1,7 @@
 package com.futurice.rctaudiotoolkit;
 
+import android.content.Context;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.PlaybackParams;
 import android.media.AudioAttributes;
@@ -32,7 +34,7 @@ import java.util.Map.Entry;
 
 public class AudioPlayerModule extends ReactContextBaseJavaModule implements MediaPlayer.OnInfoListener,
         MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnSeekCompleteListener,
-        MediaPlayer.OnBufferingUpdateListener, LifecycleEventListener {
+        MediaPlayer.OnBufferingUpdateListener, LifecycleEventListener, AudioManager.OnAudioFocusChangeListener {
     private static final String LOG_TAG = "AudioPlayerModule";
 
     Map<Integer, MediaPlayer> playerPool = new HashMap<>();
@@ -42,11 +44,14 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
 
     boolean looping = false;
     private ReactApplicationContext context;
+    private AudioManager mAudioManager;
+    private Integer lastPlayerId;
 
     public AudioPlayerModule(ReactApplicationContext reactContext) {
         super(reactContext);
         this.context = reactContext;
         reactContext.addLifecycleEventListener(this);
+        this.mAudioManager = (AudioManager) this.context.getSystemService(Context.AUDIO_SERVICE);
     }
 
     @Override
@@ -228,6 +233,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
 
         // Release old player if exists
         destroy(playerId);
+        this.lastPlayerId = playerId;
 
         Uri uri = uriFromPath(path);
 
@@ -349,6 +355,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         }
 
         try {
+            this.mAudioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
             player.start();
 
             callback.invoke(null, getInfo(player));
@@ -504,6 +511,19 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
 
         return false;
     }
+
+    // Audio Focus
+    public void onAudioFocusChange(int focusChange)
+    {
+        switch (focusChange)
+        {
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                MediaPlayer player = this.playerPool.get(this.lastPlayerId);
+                if(player != null) player.pause();
+                break;
+        }
+    }
+
 
     // Utils
     public static boolean equals(Object a, Object b) {
