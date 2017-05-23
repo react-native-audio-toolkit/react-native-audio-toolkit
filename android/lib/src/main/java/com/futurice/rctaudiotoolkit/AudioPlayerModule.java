@@ -373,8 +373,19 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         }
 
         try {
+
             player.pause();
+
+            WritableMap info = getInfo(player);
+
+            WritableMap data = new WritableNativeMap();
+            data.putString("message", "Playback paused");
+            data.putMap("info", info);
+
+            emitEvent(playerId, "pause", data);
+
             callback.invoke(null, getInfo(player));
+
         } catch (Exception e) {
             callback.invoke(errObj("pause", e.toString()));
         }
