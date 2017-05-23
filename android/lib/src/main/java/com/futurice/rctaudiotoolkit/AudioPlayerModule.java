@@ -523,8 +523,12 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
                 if(player != null) {
 
                     player.pause();
+
+                    WritableMap info = this.getInfo(player);
                     WritableMap data = new WritableNativeMap();
-                    data.putString("message", "Lost Audio Focus");
+                    data.putString("message", "Lost audio focus, playback paused");
+                    data.putMap("info", info);
+
                     this.emitEvent(this.lastPlayerId, "pause", data);
                 }
                 break;
