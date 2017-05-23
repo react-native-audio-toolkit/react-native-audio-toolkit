@@ -96,6 +96,9 @@ class Player extends EventEmitter {
         this._state = MediaStates.PAUSED;
         this._storeInfo(data.info);
         break;
+      case 'forcePause':
+        this.pause();
+        break;
       case 'looped':
         this._position = 0;
         this._lastSync = Date.now();
