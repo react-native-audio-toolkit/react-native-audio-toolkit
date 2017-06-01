@@ -130,19 +130,6 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         String fileNameWithoutExt;
         String extPath;
 
-        // Try finding file in Android "raw" resources
-        if (path.lastIndexOf('.') != -1) {
-            fileNameWithoutExt = path.substring(0, path.lastIndexOf('.'));
-        } else {
-            fileNameWithoutExt = path;
-        }
-
-        int resId = this.context.getResources().getIdentifier(fileNameWithoutExt,
-            "raw", this.context.getPackageName());
-        if (resId != 0) {
-            return Uri.parse("android.resource://" + this.context.getPackageName() + "/" + resId);
-        }
-
         // Try finding file in app data directory
         extPath = new ContextWrapper(this.context).getFilesDir() + "/" + path;
         file = new File(extPath);
@@ -161,6 +148,19 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         file = new File(path);
         if (file.exists()) {
             return Uri.fromFile(file);
+        }
+        
+        // Try finding file in Android "raw" resources
+        if (path.lastIndexOf('.') != -1) {
+            fileNameWithoutExt = path.substring(0, path.lastIndexOf('.'));
+        } else {
+            fileNameWithoutExt = path;
+        }
+
+        int resId = this.context.getResources().getIdentifier(fileNameWithoutExt,
+            "raw", this.context.getPackageName());
+        if (resId != 0) {
+            return Uri.parse("android.resource://" + this.context.getPackageName() + "/" + resId);
         }
 
         // Otherwise pass whole path string as URI and hope for the best
