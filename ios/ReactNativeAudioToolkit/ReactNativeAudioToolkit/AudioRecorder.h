@@ -8,7 +8,7 @@
 //  Licensed under the MIT license. For more information, see LICENSE.
 
 #import <Foundation/Foundation.h>
-#import "RCTBridgeModule.h"
+#import <React/RCTBridgeModule.h>
 
 @interface AudioRecorder : NSObject <RCTBridgeModule>
 
