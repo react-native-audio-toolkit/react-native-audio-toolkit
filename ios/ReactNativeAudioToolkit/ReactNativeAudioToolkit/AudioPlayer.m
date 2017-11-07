@@ -201,13 +201,23 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)playerId
                        context:(void *)context {
     if ([keyPath isEqualToString:@"currentItem.loadedTimeRanges"]) {
         ReactPlayer *player = (ReactPlayer *)object;
-        [self invokeCallbackForPlayer:player];
+        [self invokeCallbackForPlayerOnBuffering:player];
     }
 }
 
-- (void)invokeCallbackForPlayer:(ReactPlayer *)player {
+- (void)invokeCallbackForPlayerOnBuffering:(ReactPlayer *)player {
     NSNumber *playerId = [self keyForPlayer:player];
     RCTResponseSenderBlock callback = self.callbackPool[playerId];
+
+    CMTimeRange timeRange = player.currentItem.loadedTimeRanges.firstObject.CMTimeRangeValue;
+    Float64 loadedSeconds = CMTimeGetSeconds(timeRange.duration);
+
+    NSString *eventName = [NSString stringWithFormat:@"RCTAudioPlayerEvent:%@", playerId];
+    [self.bridge.eventDispatcher sendAppEventWithName:eventName
+                                                 body:@{@"event": @"buffering",
+                                                        @"data" : @{@"loadedSeconds": @(loadedSeconds)}
+                                                        }];
+
 
     // If theres no callback that means we've already called the callback
     // for this player, and have since disposed of it.
@@ -215,8 +225,6 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)playerId
         return;
     }
 
-    CMTimeRange timeRange = player.currentItem.loadedTimeRanges.firstObject.CMTimeRangeValue;
-    Float64 loadedSeconds = CMTimeGetSeconds(timeRange.duration);
     if (loadedSeconds > 10) {
         callback(@[[NSNull null]]);
         self.callbackPool[playerId] = nil;

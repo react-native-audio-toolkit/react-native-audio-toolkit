@@ -1,15 +1,16 @@
 'use strict';
 
-let MediaStates = {
+const MediaStates = {
   DESTROYED: -2,
   ERROR: -1,
   IDLE: 0,
   PREPARING: 1,
   PREPARED: 2,
-  SEEKING: 3,
+  BUFFERING: 3,
+  SEEKING: 4,
   PLAYING: 4,
-  RECORDING: 4,
-  PAUSED: 5
+  RECORDING: 5,
+  PAUSED: 6
 };
 
 export default MediaStates;
