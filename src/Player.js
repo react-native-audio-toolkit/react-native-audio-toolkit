@@ -182,14 +182,17 @@ class Player extends EventEmitter {
     return this;
   }
 
-  stop(callback = _.noop) {
-    RCTAudioPlayer.stop(this._playerId, (err, results) => {
-      this._updateState(err, MediaStates.PREPARED);
-      this._position = -1;
-      callback(err);
-    });
-
-    return this;
+  stop() {
+    return new Promise((resolve, reject) => {
+      RCTAudioPlayer.stop(this._playerId, (err, results) => {
+        this._updateState(err, MediaStates.PREPARED);
+        this._position = -1;
+        if (err)
+          return reject(err);
+        else
+          return resolve();
+      });
+    })
   }
 
   destroy(callback = _.noop) {
