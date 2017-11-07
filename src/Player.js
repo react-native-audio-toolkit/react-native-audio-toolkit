@@ -89,6 +89,12 @@ class Player extends EventEmitter {
     // console.log('event: ' + event + ', data: ' + JSON.stringify(data));
     switch (event) {
       case 'buffering':
+        // NOTE: IOS RETURNS "loadedSeconds"
+        // ANDROID RETURNS "percent"
+        if ( data.percent ) {
+          data = { loadedSeconds: Math.floor(this._duration * data.percent / 100) }
+        }
+
         if ( MediaStates[this._state] <= MediaStates.BUFFERING )
           this._updateState(null, MediaStates.BUFFERING, [data], true);
         else
