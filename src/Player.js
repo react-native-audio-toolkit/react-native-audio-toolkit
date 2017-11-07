@@ -83,7 +83,7 @@ class Player extends EventEmitter {
         break;
       case 'ended':
         this._updateState(null, MediaStates.PREPARED);
-        this._position = -1;
+        this._position = 0;
         break;
       case 'info':
         // TODO

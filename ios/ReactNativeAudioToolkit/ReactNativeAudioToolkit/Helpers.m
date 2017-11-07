@@ -25,11 +25,11 @@
 
 + (NSDictionary *)recorderSettingsFromOptions:(NSDictionary *)options {
     
-    NSString *formatString = [options objectForKey:@"format"];
-    NSString *qualityString = [options objectForKey:@"quality"];
-    NSNumber *sampleRate = [options objectForKey:@"sampleRate"];
-    NSNumber *channels = [options objectForKey:@"channels"];
-    NSNumber *bitRate = [options objectForKey:@"bitrate"];
+    NSString *formatString = options[@"format"];
+    NSString *qualityString = options[@"quality"];
+    NSNumber *sampleRate = options[@"sampleRate"];
+    NSNumber *channels = options[@"channels"];
+    NSNumber *bitRate = options[@"bitrate"];
     
     // Assign default values if nil and map otherwise
     sampleRate = sampleRate ? sampleRate : @44100;
@@ -38,26 +38,26 @@
     
     
     // "aac" or "mp4"
-    NSNumber *format = [NSNumber numberWithInt:kAudioFormatMPEG4AAC];
+    NSNumber *format = @(kAudioFormatMPEG4AAC);
     if (formatString) {
         if ([formatString isEqualToString:@"ac3"]) {
-            format = [NSNumber numberWithInt:kAudioFormatMPEG4AAC];
+            format = @(kAudioFormatMPEG4AAC);
         }
     }
     
     
-    NSNumber *quality = [NSNumber numberWithInt:AVAudioQualityMedium];
+    NSNumber *quality = @(AVAudioQualityMedium);
     if (qualityString) {
         if ([qualityString isEqualToString:@"min"]) {
-            quality = [NSNumber numberWithInt:AVAudioQualityMin];
+            quality = @(AVAudioQualityMin);
         } else if ([qualityString isEqualToString:@"low"]) {
-            quality = [NSNumber numberWithInt:AVAudioQualityLow];
+            quality = @(AVAudioQualityLow);
         } else if ([qualityString isEqualToString:@"medium"]) {
-            quality = [NSNumber numberWithInt:AVAudioQualityMedium];
+            quality = @(AVAudioQualityMedium);
         } else if ([qualityString isEqualToString:@"high"]) {
-            quality = [NSNumber numberWithInt:AVAudioQualityHigh];
+            quality = @(AVAudioQualityHigh);
         } else if ([qualityString isEqualToString:@"max"]) {
-            quality = [NSNumber numberWithInt:AVAudioQualityMax];
+            quality = @(AVAudioQualityMax);
         }
     }
     
@@ -68,9 +68,9 @@
     [recordSettings setValue:bitRate forKey:AVEncoderBitRateKey];
     //[recordSettings setValue:quality forKey:AVEncoderAudioQualityKey];
     
-    [recordSettings setValue :[NSNumber numberWithInt:16] forKey:AVLinearPCMBitDepthKey];
-    [recordSettings setValue :[NSNumber numberWithBool:NO] forKey:AVLinearPCMIsBigEndianKey];
-    [recordSettings setValue :[NSNumber numberWithBool:NO] forKey:AVLinearPCMIsFloatKey];
+    [recordSettings setValue :@(16) forKey:AVLinearPCMBitDepthKey];
+    [recordSettings setValue :@(NO) forKey:AVLinearPCMIsBigEndianKey];
+    [recordSettings setValue :@(NO) forKey:AVLinearPCMIsFloatKey];
     
     return recordSettings;
 }
