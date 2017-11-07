@@ -217,7 +217,7 @@ class Player extends EventEmitter {
   }
 
   seek(position = 0, callback = _.noop) {
-    // Store old state, but not if it was already SEEKING
+    // NOTE: STORE OLD STATE, BUT NOT IF IT WAS ALREADY SEEKING
     if (this._state != MediaStates.SEEKING) {
       this._preSeekState = this._state;
     }

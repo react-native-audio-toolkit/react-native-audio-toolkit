@@ -7,10 +7,10 @@ const MediaStates = {
   PREPARING: 1,
   PREPARED: 2,
   BUFFERING: 3,
-  SEEKING: 4,
   PLAYING: 4,
-  RECORDING: 5,
-  PAUSED: 6
+  SEEKING: 5,
+  RECORDING: 6,
+  PAUSED: 7
 };
 
 export default MediaStates;
