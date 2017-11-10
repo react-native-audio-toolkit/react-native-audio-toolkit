@@ -149,7 +149,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         if (file.exists()) {
             return Uri.fromFile(file);
         }
-        
+
         // Try finding file in Android "raw" resources
         if (path.lastIndexOf('.') != -1) {
             fileNameWithoutExt = path.substring(0, path.lastIndexOf('.'));
@@ -444,7 +444,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         WritableMap data = new WritableNativeMap();
         data.putString("message", "Status update for media stream buffering");
         data.putInt("percent", percent);
-        emitEvent(playerId, "progress", data);
+        emitEvent(playerId, "buffering", data);
     }
 
     @Override

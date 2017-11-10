@@ -50,40 +50,62 @@ class Player extends EventEmitter {
     this._duration = -1;
     this._position = -1;
     this._lastSync = -1;
+    this._loadedSeconds = -1;
     this._looping = false;
   }
 
-  _storeInfo(info) {
+  _storeInfo(info, skipSetLastSync = false) {
     if (!info) {
       return;
     }
 
-    this._duration = info.duration;
-    this._position = info.position;
-    this._lastSync = Date.now();
+    if ( info.duration != null )
+      this._duration = info.duration;
+
+    if ( info.position != null )
+      this._position = info.position;
+
+    if ( info.loadedSeconds != null )
+      this._loadedSeconds = info.loadedSeconds;
+
+    if ( !skipSetLastSync )
+      this._lastSync = Date.now();
   }
 
-  _updateState(err, state, results) {
+  // NOTE: "results" MUST BE AN ARRAY. IT CAN BE INVOKED BY "EventEmitter" CALLBACKS
+  _updateState(err, state, results, skipSetLastSync) {
     this._state = err ? MediaStates.ERROR : state;
 
     if (err || !results) {
       return;
     }
 
-    // Use last truthy value from results array as new media info
-    let info = _.last(_.filter(results, _.identity));
-    this._storeInfo(info);
+    // NOTE: Use last truthy value from results array as new media info
+    const info = _.last(_.filter(results, _.identity));
+    this._storeInfo(info, skipSetLastSync);
   }
 
   _handleEvent(event, data) {
-    //console.log('event: ' + event + ', data: ' + JSON.stringify(data));
+    // console.log('event: ' + event + ', data: ' + JSON.stringify(data));
     switch (event) {
+      case 'buffering':
+        // NOTE: IOS RETURNS "loadedSeconds"
+        // ANDROID RETURNS "percent"
+        if ( data.percent ) {
+          data = { loadedSeconds: Math.floor(this._duration * data.percent / 100) }
+        }
+
+        if ( MediaStates[this._state] <= MediaStates.BUFFERING )
+          this._updateState(null, MediaStates.BUFFERING, [data], true);
+        else
+          this._storeInfo(data, true)
+        break;
       case 'progress':
         // TODO
         break;
       case 'ended':
         this._updateState(null, MediaStates.PREPARED);
-        this._position = -1;
+        this._position = 0;
         break;
       case 'info':
         // TODO
@@ -94,7 +116,7 @@ class Player extends EventEmitter {
         break;
       case 'pause':
         this._state = MediaStates.PAUSED;
-        this._storeInfo(data.info);
+        this._storeInfo(data);
         break;
       case 'forcePause':
         this.pause();
@@ -182,14 +204,17 @@ class Player extends EventEmitter {
     return this;
   }
 
-  stop(callback = _.noop) {
-    RCTAudioPlayer.stop(this._playerId, (err, results) => {
-      this._updateState(err, MediaStates.PREPARED);
-      this._position = -1;
-      callback(err);
-    });
-
-    return this;
+  stop() {
+    return new Promise((resolve, reject) => {
+      RCTAudioPlayer.stop(this._playerId, (err, results) => {
+        this._updateState(err, MediaStates.PREPARED);
+        this._position = -1;
+        if (err)
+          return reject(err);
+        else
+          return resolve();
+      });
+    })
   }
 
   destroy(callback = _.noop) {
@@ -198,7 +223,7 @@ class Player extends EventEmitter {
   }
 
   seek(position = 0, callback = _.noop) {
-    // Store old state, but not if it was already SEEKING
+    // NOTE: STORE OLD STATE, BUT NOT IF IT WAS ALREADY SEEKING
     if (this._state != MediaStates.SEEKING) {
       this._preSeekState = this._state;
     }
@@ -260,6 +285,7 @@ class Player extends EventEmitter {
   get volume() { return this._volume; }
   get looping() { return this._looping; }
   get duration() { return this._duration; }
+  get loadedSeconds() { return this._loadedSeconds; }
 
   get state()      { return this._state; }
   get canPlay()    { return this._state >= MediaStates.PREPARED; }
