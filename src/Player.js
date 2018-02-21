@@ -241,18 +241,11 @@ class Player extends EventEmitter {
   }
 
   get currentTime() {
-    let pos = -1;
+    RCTAudioPlayer.updateCurrentTime(this._playerId, (err, results) => {
+      this._updateState(err, this._state, [results]);
+      callback(err);
+    });
 
-    if (this._position < 0) {
-      return -1;
-    }
-
-    if (this._state === MediaStates.PLAYING) {
-      pos = this._position + (Date.now() - this._lastSync);
-      pos = Math.min(pos, this._duration);
-
-      return pos;
-    }
     return this._position;
   }
 

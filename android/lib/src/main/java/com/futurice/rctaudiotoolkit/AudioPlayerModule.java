@@ -425,6 +425,31 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         }
     }
 
+    @ReactMethod
+    public void updateCurrentTime(Integer playerId, Callback callback) {
+        MediaPlayer player = this.playerPool.get(playerId);
+        if (player == null) {
+            callback.invoke(errObj("notfound", "playerId " + playerId + " not found."));
+            return;
+        }
+
+        try {
+
+            WritableMap info = getInfo(player);
+
+            WritableMap data = new WritableNativeMap();
+            data.putString("message", "Update current time");
+            data.putMap("info", info);
+
+            emitEvent(playerId, "updateCurrentTime", data);
+
+            callback.invoke(null, getInfo(player));
+
+        } catch (Exception e) {
+            callback.invoke(errObj("updateCurrentTime", e.toString()));
+        }
+    }
+
     // Find playerId matching player from playerPool
     private Integer getPlayerId(MediaPlayer player) {
         for (Entry<Integer, MediaPlayer> entry : playerPool.entrySet()) {

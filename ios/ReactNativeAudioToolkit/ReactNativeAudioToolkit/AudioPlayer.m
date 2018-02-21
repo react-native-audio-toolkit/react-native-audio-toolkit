@@ -327,6 +327,20 @@ RCT_EXPORT_METHOD(resume:(nonnull NSNumber*)playerId withCallback:(RCTResponseSe
     callback(@[[NSNull null]]);
 }
 
+RCT_EXPORT_METHOD(updateCurrentTime:(nonnull NSNumber*)playerId withCallback:(RCTResponseSenderBlock)callback) {
+    AVPlayer* player = [self playerForKey:playerId];
+    
+    if (!player) {
+        NSDictionary* dict = [Helpers errObjWithCode:@"notfound"
+                                         withMessage:[NSString stringWithFormat:@"playerId %@ not found.", playerId]];
+        callback(@[dict]);
+        return;
+    }
+
+    callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration) * 1000),
+                                @"position": @(CMTimeGetSeconds(player.currentTime) * 1000)}]);
+}
+
 
 -(void)itemDidFinishPlaying:(NSNotification *) notification {
     NSNumber *playerId = ((ReactPlayerItem *)notification.object).reactPlayerId;
