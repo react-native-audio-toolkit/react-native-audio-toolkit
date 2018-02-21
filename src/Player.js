@@ -243,7 +243,6 @@ class Player extends EventEmitter {
   get currentTime() {
     RCTAudioPlayer.updateCurrentTime(this._playerId, (err, results) => {
       this._updateState(err, this._state, [results]);
-      callback(err);
     });
 
     return this._position;
