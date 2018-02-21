@@ -242,8 +242,7 @@ class Player extends EventEmitter {
 
   get currentTime() {
     RCTAudioPlayer.updateCurrentTime(this._playerId, (err, results) => {
-      const info = _.last(_.filter(results, _.identity));
-      this._storeInfo(info);
+      this._storeInfo(results);
     });
 
     return this._position;
