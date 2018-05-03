@@ -11,7 +11,7 @@ an actual Android/iOS device:
     npm install --save react-native-audio-toolkit
     ```
 
-* Follow the platform specific steps for each platform you wish to support:
+* Follow the platform specific steps for each platform you wish to support. Note: `react-native link` will not work correctly for android and you'll still have to manually do step 1 below in order to avoid "Configuration with name 'default' not found."
 
 ### Android setup
 
