@@ -157,6 +157,18 @@ RCT_EXPORT_METHOD(stop:(nonnull NSNumber *)recorderId withCallback:(RCTResponseS
     callback(@[[NSNull null]]);
 }
 
+RCT_EXPORT_METHOD(pause:(nonnull NSNumber *)recorderId withCallback:(RCTResponseSenderBlock)callback) {
+    AVAudioRecorder *recorder = [[self recorderPool] objectForKey:recorderId];
+    if (recorder) {
+        [recorder pause];
+    } else {
+        NSDictionary* dict = [Helpers errObjWithCode:@"notfound" withMessage:@"Recorder with that id was not found"];
+        callback(@[dict]);
+        return;
+    }
+    callback(@[[NSNull null]]);
+}
+
 RCT_EXPORT_METHOD(destroy:(nonnull NSNumber *)recorderId withCallback:(RCTResponseSenderBlock)callback) {
     [self destroyRecorderWithId:recorderId];
     callback(@[[NSNull null]]);

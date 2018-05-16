@@ -1,6 +1,8 @@
 package com.futurice.rctaudiotoolkit;
 
+import android.annotation.TargetApi;
 import android.media.MediaRecorder;
+import android.os.Build;
 import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -102,7 +104,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
     private int encoderFromName(String name) {
         switch (name) {
             case "aac":
-                return MediaRecorder.OutputFormat.AAC_ADTS;
+                return MediaRecorder.AudioEncoder.AAC;
             case "mp4":
                 return MediaRecorder.AudioEncoder.HE_AAC;
             case "webm":
@@ -265,6 +267,36 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
 
         try {
             recorder.stop();
+            if (this.recorderAutoDestroy.get(recorderId)) {
+                Log.d(LOG_TAG, "Autodestroying recorder...");
+                destroy(recorderId);
+            }
+            callback.invoke();
+        } catch (Exception e) {
+            callback.invoke(errObj("stopfail", e.toString()));
+        }
+    }
+
+    @ReactMethod
+    public void pause(Integer recorderId, Callback callback) {
+        if (android.os.Build.VERSION.SDK_INT < 24) {
+            callback.invoke(errObj("notsupported", "Android version dos't support pause"));
+            return;
+        }
+        pause24(recorderId,callback);
+    }
+
+
+    @TargetApi(24)
+    private void pause24(Integer recorderId, Callback callback) {
+        MediaRecorder recorder = this.recorderPool.get(recorderId);
+        if (recorder == null) {
+            callback.invoke(errObj("notfound", "recorderId " + recorderId + "not found."));
+            return;
+        }
+
+        try {
+            recorder.pause();
             if (this.recorderAutoDestroy.get(recorderId)) {
                 Log.d(LOG_TAG, "Autodestroying recorder...");
                 destroy(recorderId);

@@ -119,6 +119,19 @@ class Recorder extends EventEmitter {
     return this;
   }
 
+  pause(callback = _.noop) {
+    if (this._state >= MediaStates.RECORDING) {
+      RCTAudioRecorder.pause(this._recorderId, (err) => {
+        this._updateState(err, MediaStates.PAUSED);
+        callback(err);
+      });
+    } else {
+      setTimeout(callback, 0);
+    }
+
+    return this;
+  }
+
   toggleRecord(callback = _.noop) {
     if (this._state === MediaStates.RECORDING) {
       this.stop((err) => {
