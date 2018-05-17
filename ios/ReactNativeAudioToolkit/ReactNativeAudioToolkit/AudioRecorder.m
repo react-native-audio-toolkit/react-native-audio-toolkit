@@ -61,7 +61,7 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)recorderId
                                          withMessage:@"Provided path was empty"];
         callback(@[dict]);
         return;
-    } else if ([[self recorderPool] objectForKey:recorderId]) {
+    } else if (self.recorderPool[recorderId]) {
         NSDictionary* dict = [Helpers errObjWithCode:@"invalidpath"
                                          withMessage:@"Recorder with that id already exists"];
         callback(@[dict]);
@@ -115,7 +115,7 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)recorderId
         return;
     }
     recorder.delegate = self;
-    [[self recorderPool] setObject:recorder forKey:recorderId];
+    self.recorderPool[recorderId] = recorder;
     
     BOOL success = [recorder prepareToRecord];
     if (!success) {
@@ -130,7 +130,7 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)recorderId
 }
 
 RCT_EXPORT_METHOD(record:(nonnull NSNumber *)recorderId withCallback:(RCTResponseSenderBlock)callback) {
-    AVAudioRecorder *recorder = [[self recorderPool] objectForKey:recorderId];
+    AVAudioRecorder *recorder = self.recorderPool[recorderId];
     if (recorder) {
         if (![recorder record]) {
             NSDictionary* dict = [Helpers errObjWithCode:@"startfail" withMessage:@"Failed to start recorder"];
@@ -146,7 +146,7 @@ RCT_EXPORT_METHOD(record:(nonnull NSNumber *)recorderId withCallback:(RCTRespons
 }
 
 RCT_EXPORT_METHOD(stop:(nonnull NSNumber *)recorderId withCallback:(RCTResponseSenderBlock)callback) {
-    AVAudioRecorder *recorder = [[self recorderPool] objectForKey:recorderId];
+    AVAudioRecorder *recorder = self.recorderPool[recorderId];
     if (recorder) {
         [recorder stop];
     } else {
@@ -184,7 +184,7 @@ RCT_EXPORT_METHOD(destroy:(nonnull NSNumber *)recorderId withCallback:(RCTRespon
 
 - (void)destroyRecorderWithId:(NSNumber *)recorderId {
     if ([[[self recorderPool] allKeys] containsObject:recorderId]) {
-        AVAudioRecorder *recorder = [[self recorderPool] objectForKey:recorderId];
+        AVAudioRecorder *recorder = self.recorderPool[recorderId];
         if (recorder) {
             [recorder stop];
             [[self recorderPool] removeObjectForKey:recorderId];

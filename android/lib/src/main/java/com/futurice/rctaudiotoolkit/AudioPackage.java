@@ -11,6 +11,9 @@ import java.util.Collections;
 import java.util.List;
 
 public class AudioPackage implements ReactPackage {
+    public AudioPackage() {
+    }
+
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         List<NativeModule> modules = new ArrayList<>();
