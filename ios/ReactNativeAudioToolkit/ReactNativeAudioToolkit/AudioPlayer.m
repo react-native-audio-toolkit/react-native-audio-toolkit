@@ -179,6 +179,13 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)playerId
             player.autoDestroy = [autoDestroy boolValue];
         }
 
+        // NOTE: PREFERRED BUFFERING TIME WAIT "500 SECONDS" AND "DO NOT WAIT FOR PLAYBACK"
+        float version = [[[UIDevice currentDevice] systemVersion] floatValue];
+        if (version >= 10.0) {
+            player.currentItem.preferredForwardBufferDuration = 500;
+            player.automaticallyWaitsToMinimizeStalling = false;
+        }
+
         self.playerPool[playerId] = player;
         [self setLastPlayerId:playerId];
 
@@ -229,31 +236,8 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)playerId
         return;
     }
 
-    //make sure loadedTimeRanges is not null
-    while (player.currentItem.loadedTimeRanges.firstObject == nil){
-        [NSThread sleepForTimeInterval:0.01f];
-    }
-
-    //wait until 10 seconds are buffered then play
-    float version = [[[UIDevice currentDevice] systemVersion] floatValue];
-    if (version >= 10.0) {
-        player.currentItem.preferredForwardBufferDuration = 500;
-    }
-    if (version >= 10.0) {
-        player.automaticallyWaitsToMinimizeStalling = false;
-    }
-    Float64 durationSeconds = 0;
-    while (durationSeconds < 10){
-        NSValue *val = player.currentItem.loadedTimeRanges.firstObject;
-        CMTimeRange timeRange;
-        [val getValue:&timeRange];
-        durationSeconds = CMTimeGetSeconds(timeRange.duration);
-        [NSThread sleepForTimeInterval:0.01f];
-    }
-
     // Callback when ready / failed
-    if (player.currentItem.status == AVPlayerStatusReadyToPlay) {
-        player.automaticallyWaitsToMinimizeStalling = false;
+    if ( loadedSeconds >= 10 && player.currentItem.status == AVPlayerStatusReadyToPlay) {
         callback(@[[NSNull null]]);
         self.callbackPool[playerId] = nil;
     } else if (player.status == AVPlayerStatusFailed) {
