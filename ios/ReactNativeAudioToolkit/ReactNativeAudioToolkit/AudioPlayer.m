@@ -154,7 +154,7 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId
     
     // Prepare the player
     // Wait until player is ready
-    while (player.status == AVPlayerStatusUnknown) {
+    while (player.currentItem.status == AVPlayerStatusUnknown) {
         [NSThread sleepForTimeInterval:0.01f];
     }
     
@@ -164,15 +164,9 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId
     }
     
     //wait until 10 seconds are buffered then play
-    float version = [[[UIDevice currentDevice] systemVersion] floatValue];
-    if (version >= 10.0) {
-        player.currentItem.preferredForwardBufferDuration = 500;
-    }
-    if (version >= 10.0) {
-        player.automaticallyWaitsToMinimizeStalling = false;
-    }
+    player.currentItem.preferredForwardBufferDuration = 500;
     Float64 durationSeconds = 0;
-    while (durationSeconds < 10){
+    while (durationSeconds < 10) {
         NSValue *val = player.currentItem.loadedTimeRanges.firstObject;
         CMTimeRange timeRange;
         [val getValue:&timeRange];
@@ -249,7 +243,7 @@ RCT_EXPORT_METHOD(play:(nonnull NSNumber*)playerId withCallback:(RCTResponseSend
     callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration) * 1000),
                                 @"position": @(CMTimeGetSeconds(player.currentTime) * 1000)}]);
     
-
+    
 }
 
 RCT_EXPORT_METHOD(set:(nonnull NSNumber*)playerId withOpts:(NSDictionary*)options withCallback:(RCTResponseSenderBlock)callback) {
@@ -307,7 +301,7 @@ RCT_EXPORT_METHOD(pause:(nonnull NSNumber*)playerId withCallback:(RCTResponseSen
     }
     
     [player pause];
-
+    
     callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration) * 1000),
                                 @"position": @(CMTimeGetSeconds(player.currentTime) * 1000)}]);
 }
@@ -362,9 +356,10 @@ RCT_EXPORT_METHOD(resume:(nonnull NSNumber*)playerId withCallback:(RCTResponseSe
     if (player) {
         [player pause];
         [[self playerPool] removeObjectForKey:playerId];
-
+        
     }
 }
 
 
 @end
+
