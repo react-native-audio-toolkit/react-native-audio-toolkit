@@ -75,7 +75,7 @@
             if ([fm fileExistsAtPath:mainBundle isDirectory:&isDir]) {
                 url = [NSURL fileURLWithPath:mainBundle];
             } else {
-                url = [NSURL URLWithString:path];
+                return nil;
             }
             
         }
