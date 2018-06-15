@@ -114,6 +114,7 @@ class Recorder extends EventEmitter {
       });
     } else {
       setTimeout(callback, 0);
+      this.destroy();
     }
 
     return this;
