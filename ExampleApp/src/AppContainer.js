@@ -1,19 +1,9 @@
+//@flow
 import React from 'react';
-import {
-  Text,
-  View,
-  StyleSheet,
-  Switch,
-  Slider
-} from 'react-native';
-import Button from 'react-native-button';
+import {Slider, StyleSheet, Switch, Text, TouchableOpacity, View} from 'react-native';
+import {Player, Recorder} from 'react-native-audio-toolkit';
 
-import {
-  Player,
-  Recorder,
-  MediaStates
-} from 'react-native-audio-toolkit';
-
+//let filename = 'https://archive.org/download/tsp1996-09-17.flac16/tsp1996-09-17d1t09.mp3';
 let filename = 'test.mp4';
 
 class AppContainer extends React.Component {
@@ -28,26 +18,27 @@ class AppContainer extends React.Component {
       playButtonDisabled: true,
       recordButtonDisabled: true,
 
-      loopButtonStatus: false,
+      isLoopingOn: false,
       progress: 0,
 
-      error: null
+      error: null,
     };
   }
 
   componentWillMount() {
     this.player = null;
     this.recorder = null;
-    this.lastSeek = 0;
 
     this._reloadPlayer();
     this._reloadRecorder();
 
+    // Refresh Play progressbar
+    const frequencyHz = 5;
     this._progressInterval = setInterval(() => {
-      if (this.player && this._shouldUpdateProgressBar()) {// && !this._dragging) {
+      if (this.player && this.player.isPlaying) {
         this.setState({progress: Math.max(0, this.player.currentTime) / this.player.duration});
       }
-    }, 100);
+    }, 1000 / frequencyHz);
   }
 
   componentWillUnmount() {
@@ -56,36 +47,20 @@ class AppContainer extends React.Component {
     clearInterval(this._progressInterval);
   }
 
-  _shouldUpdateProgressBar() {
-    // Debounce progress bar update by 200 ms
-    return Date.now() - this.lastSeek > 200;
-  }
-
-  _updateState(err) {
-    this.setState({
-      playPauseButton:      this.player    && this.player.isPlaying     ? 'Pause' : 'Play',
-      recordButton:         this.recorder  && this.recorder.isRecording ? 'Stop' : 'Record',
-
-      stopButtonDisabled:   !this.player   || !this.player.canStop,
-      playButtonDisabled:   !this.player   || !this.player.canPlay || this.recorder.isRecording,
-      recordButtonDisabled: !this.recorder || (this.player         && !this.player.isStopped),
-    });
-  }
-
   _playPause() {
     this.player.playPause((err, playing) => {
       if (err) {
         this.setState({
-          error: err.message
+          error: err.message,
         });
       }
-      this._updateState();
+      this.forceUpdate();
     });
   }
 
   _stop() {
     this.player.stop(() => {
-      this._updateState();
+      this.forceUpdate();
     });
   }
 
@@ -94,12 +69,10 @@ class AppContainer extends React.Component {
       return;
     }
 
-    this.lastSeek = Date.now();
-
     let position = percentage * this.player.duration;
 
     this.player.seek(position, () => {
-      this._updateState();
+      this.forceUpdate();
     });
   }
 
@@ -109,7 +82,7 @@ class AppContainer extends React.Component {
     }
 
     this.player = new Player(filename, {
-      autoDestroy: false
+      autoDestroy: false,
     }).prepare((err) => {
       if (err) {
         console.log('error at _reloadPlayer():');
@@ -118,16 +91,16 @@ class AppContainer extends React.Component {
         this.player.looping = this.state.loopButtonStatus;
       }
 
-      this._updateState();
+      this.forceUpdate();
     });
 
-    this._updateState();
+    this.forceUpdate();
 
     this.player.on('ended', () => {
-      this._updateState();
+      this.forceUpdate();
     });
     this.player.on('pause', () => {
-      this._updateState();
+      this.forceUpdate();
     });
   }
 
@@ -140,12 +113,12 @@ class AppContainer extends React.Component {
       bitrate: 256000,
       channels: 2,
       sampleRate: 44100,
-      quality: 'max'
+      quality: 'max',
       //format: 'ac3', // autodetected
       //encoder: 'aac', // autodetected
     });
 
-    this._updateState();
+    this.forceUpdate();
   }
 
   _toggleRecord() {
@@ -156,7 +129,7 @@ class AppContainer extends React.Component {
     this.recorder.toggleRecord((err, stopped) => {
       if (err) {
         this.setState({
-          error: err.message
+          error: err.message,
         });
       }
       if (stopped) {
@@ -164,13 +137,14 @@ class AppContainer extends React.Component {
         this._reloadRecorder();
       }
 
-      this._updateState();
+      this.forceUpdate();
     });
   }
 
   _toggleLooping(value) {
+    console.log(value)
     this.setState({
-      loopButtonStatus: value
+      isLoopingOn: value,
     });
     if (this.player) {
       this.player.looping = value;
@@ -178,86 +152,126 @@ class AppContainer extends React.Component {
   }
 
   render() {
+    console.log(this.player.state);
+    const playPauseButtonText = this.player && this.player.isPlaying ? 'Stop' : 'Play';
+    const playButtonDisabled = !this.player || !this.player.canPlay || this.recorder.isRecording;
+    const stopButtonDisabled = !this.player || !this.player.canStop;
+    const recordButtonText = this.recorder && this.recorder.isRecording ? 'Pause' : 'Record';
+    const recordButtonDisabled = !this.recorder || (this.player && !this.player.isStopped);
+
     return (
-      <View>
-        <View>
-          <Text style={styles.title}>
-            Playback
-          </Text>
+      <View style={styles.container}>
+        <Text style={styles.partTitle}> Playback </Text>
+        <View style={styles.partContainer}>
+          <Text style={styles.subTitle}>Controllers</Text>
+          <View style={styles.buttonContainer}>
+            <Button
+              title={playPauseButtonText}
+              disabled={playButtonDisabled}
+              onPress={() => this._playPause()}
+            />
+
+            <Button
+              title="Stop"
+              disabled={stopButtonDisabled}
+              onPress={() => this._stop()}
+            />
+
+            <View>
+              <Switch
+                value={this.state.isLoopingOn}
+                onValueChange={(value) => this._toggleLooping(value)}
+              />
+              <Text>Toggle{'\n'} Looping</Text>
+            </View>
+          </View>
+
+          <Text style={styles.subTitle}>Seek bar</Text>
+          <Slider
+            style={{marginTop: 20}}
+            step={0.0001}
+            disabled={playButtonDisabled}
+            value={this.state.progress}
+            onValueChange={() => this._seek()}
+          />
         </View>
-        <View style={styles.buttonContainer}>
-          <Button disabled={this.state.playButtonDisabled} style={styles.button} onPress={() => this._playPause()}>
-            {this.state.playPauseButton}
-          </Button>
-          <Button disabled={this.state.stopButtonDisabled} style={styles.button} onPress={() => this._stop()}>
-            Stop
-          </Button>
+
+        <Text style={styles.partTitle}> Recording </Text>
+        <View style={styles.partContainer}>
+          <View style={styles.buttonContainer}>
+            <Button
+              title={recordButtonText}
+              disabled={recordButtonDisabled}
+              onPress={() => this._toggleRecord()}
+            />
+
+          </View>
         </View>
-        <View style={styles.settingsContainer}>
-          <Switch
-          onValueChange={(value) => this._toggleLooping(value)}
-          value={this.state.loopButtonStatus} />
-          <Text>Toggle Looping</Text>
-        </View>
-        <View style={styles.slider}>
-          <Slider step={0.0001} disabled={this.state.playButtonDisabled} onValueChange={(percentage) => this._seek(percentage)} value={this.state.progress}/>
-        </View>
-        <View>
-          <Text style={styles.title}>
-            Recording
-          </Text>
-        </View>
-        <View style={styles.buttonContainer}>
-          <Button disabled={this.state.recordButtonDisabled} style={styles.button} onPress={() => this._toggleRecord()}>
-            {this.state.recordButton}
-          </Button>
-        </View>
-        <View>
-          <Text style={styles.errorMessage}>{this.state.error}</Text>
-        </View>
+
+        <Text style={styles.errorMessage}>{this.state.error}</Text>
       </View>
     );
   }
 }
 
-var styles = StyleSheet.create({
-  button: {
+type ButtonStyle = {
+  title: string,
+  style?: any,
+  disabled?: boolean,
+  onPress: () => any,
+};
+
+const Button = (props: ButtonStyle) =>
+  <TouchableOpacity
+    style={[{backgroundColor: 'lightgrey', padding: 20}, props.style]}
+    onPress={props.disabled ? undefined : props.onPress}
+  >
+    <Text style={{color: props.disabled ? "grey" : "blue"}}>
+      {props.title}
+    </Text>
+  </TouchableOpacity>;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'stretch',
     padding: 20,
-    fontSize: 20,
+  },
+  partTitle: {
+    marginTop: 10,
+    alignSelf: 'flex-start',
+    fontSize: 19,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    padding: 10,
+  },
+  partContainer: {
     backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: 'darkgray',
+    paddingHorizontal: 10,
+    paddingVertical: 20,
+  },
+  subTitle: {
+    marginTop: 10,
+    fontSize: 16,
+  },
+  buttonContainer: {
+    padding: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
   },
   slider: {
     height: 10,
     margin: 10,
   },
-  buttonContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  settingsContainer: {
-    flex: 1,
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  container: {
-    borderRadius: 4,
-    borderWidth: 0.5,
-    borderColor: '#d6d7da',
-  },
-  title: {
-    fontSize: 19,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    padding: 20,
-  },
   errorMessage: {
     fontSize: 15,
     textAlign: 'center',
     padding: 10,
-    color: 'red'
-  }
+    color: 'red',
+  },
 });
 
 export default AppContainer;
