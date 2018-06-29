@@ -1,11 +1,9 @@
 package com.futurice.rctaudiotoolkit;
 
-import android.content.ContextWrapper;
 import android.media.MediaRecorder;
-import android.net.Uri;
-import android.os.Build;
+import android.text.TextUtils;
 import android.util.Log;
-import android.webkit.URLUtil;
+import android.util.SparseArray;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
@@ -17,25 +15,27 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 
 public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         MediaRecorder.OnInfoListener, MediaRecorder.OnErrorListener {
+
     private static final String LOG_TAG = "AudioRecorderModule";
 
-    Map<Integer, MediaRecorder> recorderPool = new HashMap<>();
-    Map<Integer, Boolean> recorderAutoDestroy = new HashMap<>();
+    private static final Callback NOP = new Callback() {
+        @Override
+        public void invoke(Object... args) {
+            // Do nothing
+        }
+    };
 
+    private SparseArray<RecordSession> sessionPool = new SparseArray<>();
     private ReactApplicationContext context;
 
     public AudioRecorderModule(ReactApplicationContext reactContext) {
         super(reactContext);
-        this.context = reactContext;
+        context = reactContext;
     }
 
     @Override
@@ -43,14 +43,34 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         return "RCTAudioRecorder";
     }
 
-    private void emitEvent(Integer recorderId, String event, WritableMap data) {
-        WritableMap payload = new WritableNativeMap();
-        payload.putString("event", event);
-        payload.putMap("data", data);
+    @Override
+    public void onInfo(MediaRecorder recorder, int what, int extra) {
+        // TODO: translate these codes into english
+        WritableMap info = new WritableNativeMap();
+        info.putInt("what", what);
+        info.putInt("extra", extra);
 
-        this.context
-                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                .emit("RCTAudioRecorderEvent:" + recorderId, payload);
+        WritableMap data = new WritableNativeMap();
+        data.putMap("info", info);
+        data.putString("message", "Android MediaRecorder info");
+
+        emitEvent(getRecorderId(recorder), "info", data);
+    }
+
+    @Override
+    public void onError(MediaRecorder recorder, int what, int extra) {
+        // TODO: translate these codes into english
+        WritableMap err = new WritableNativeMap();
+        err.putInt("what", what);
+        err.putInt("extra", extra);
+
+        WritableMap data = new WritableNativeMap();
+        data.putMap("err", err);
+        data.putString("message", "Android MediaRecorder error");
+
+        Integer recorderId = getRecorderId(recorder);
+        emitEvent(recorderId, "error", data);
+        destroy(recorderId, NOP);
     }
 
     private WritableMap errObj(final String code, final String message) {
@@ -73,164 +93,53 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         return err;
     }
 
-    private int formatFromName(String name) {
-        switch (name) {
-            case "aac":
-                return MediaRecorder.OutputFormat.AAC_ADTS;
-            case "mp4":
-                return MediaRecorder.OutputFormat.MPEG_4;
-            case "webm":
-            case "ogg":
-                return MediaRecorder.OutputFormat.WEBM;
-            case "amr":
-                return MediaRecorder.OutputFormat.AMR_WB;
-            default:
-                Log.e(LOG_TAG, "Format with name " + name + " not found.");
-                return MediaRecorder.OutputFormat.DEFAULT;
+    private void emitEvent(Integer recorderId, String event, WritableMap data) {
+        WritableMap payload = new WritableNativeMap();
+        payload.putString("event", event);
+        payload.putMap("data", data);
+
+        context.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit("RCTAudioRecorderEvent:" + recorderId, payload);
+    }
+
+    /**
+     * Find recorderSession matching recorder from sessionPool
+     *
+     * @param recorder
+     * @return
+     */
+    private Integer getRecorderId(MediaRecorder recorder) {
+        for (int i = 0; i < sessionPool.size(); i++) {
+            RecordSession session = sessionPool.valueAt(i);
+            if (Objects.equals(recorder, session.recorder)) {
+                return session.id;
+            }
         }
-    }
-
-    private int formatFromPath(String path) {
-        String ext = path.substring(path.lastIndexOf('.') + 1);
-
-        return formatFromName(ext);
-    }
-
-    private int encoderFromName(String name) {
-        switch (name) {
-            case "aac":
-                return MediaRecorder.AudioEncoder.AAC;
-            case "mp4":
-                return MediaRecorder.AudioEncoder.HE_AAC;
-            case "webm":
-            case "ogg":
-                return MediaRecorder.AudioEncoder.VORBIS;
-            case "amr":
-                return MediaRecorder.AudioEncoder.AMR_WB;
-            default:
-                Log.e(LOG_TAG, "Encoder with name " + name + " not found.");
-                return MediaRecorder.AudioEncoder.DEFAULT;
-        }
-    }
-
-    private int encoderFromPath(String path) {
-        String ext = path.substring(path.lastIndexOf('.') + 1);
-
-        return encoderFromName(ext);
-    }
-
-    private Uri uriFromPath(String path) {
-        Uri uri = null;
-
-        if (URLUtil.isValidUrl(path)) {
-            uri = Uri.parse(path);
-        } else {
-            String extPath = new ContextWrapper(this.context).getFilesDir() + "/" + path;
-            //String extPath = Environment.getExternalStorageDirectory() + "/" + path;
-
-            File file = new File(extPath);
-            uri = Uri.fromFile(file);
-        }
-
-        return uri;
-    }
-
-    @ReactMethod
-    public void destroy(Integer recorderId, Callback callback) {
-        MediaRecorder recorder = this.recorderPool.get(recorderId);
-
-        if (recorder != null) {
-            recorder.release();
-            this.recorderPool.remove(recorderId);
-            this.recorderAutoDestroy.remove(recorderId);
-
-            WritableMap data = new WritableNativeMap();
-            data.putString("message", "Destroyed recorder");
-
-            emitEvent(recorderId, "info", data);
-        }
-
-        if (callback != null) {
-            callback.invoke();
-        }
-    }
-
-    private void destroy(Integer recorderId) {
-        this.destroy(recorderId, null);
+        return null;
     }
 
     @ReactMethod
     public void prepare(Integer recorderId, String path, ReadableMap options, Callback callback) {
-        if (path == null || path.isEmpty()) {
+        if (TextUtils.isEmpty(path)) {
             callback.invoke(errObj("invalidpath", "Provided path was empty"));
             return;
         }
 
         // Release old recorder if exists
-        Log.d(LOG_TAG, "Releasing old recorder...");
-        destroy(recorderId);
-
-        Uri uri = uriFromPath(path);
-
-        Log.d(LOG_TAG, uri.getPath());
-
-        //MediaRecorder recorder = MediaRecorder.create(this.context, uri, null, attributes);
-        MediaRecorder recorder = new MediaRecorder();
-
-        // TODO: allow configuring?
-        recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-
-        int format = formatFromPath(path);
-        int encoder = encoderFromPath(path);
-        int bitrate = 128000;
-        int channels = 2;
-        int sampleRate = 44100;
-
-        if (options.hasKey("format")) {
-            format = formatFromName(options.getString("format"));
-        }
-        if (options.hasKey("encoder")) {
-            encoder = encoderFromName(options.getString("encoder"));
-        }
-        if (options.hasKey("bitrate")) {
-            bitrate = options.getInt("bitrate");
-        }
-        if (options.hasKey("channels")) {
-            channels = options.getInt("channels");
-        }
-        if (options.hasKey("sampleRate")) {
-            sampleRate = options.getInt("sampleRate");
+        RecordSession oldSession = sessionPool.get(recorderId);
+        if (oldSession != null) {
+            Log.d(LOG_TAG, "Releasing old recorder session...");
+            destroy(oldSession.id, NOP);
         }
 
-        recorder.setOutputFormat(format);
-        recorder.setAudioEncoder(encoder);
-        recorder.setAudioEncodingBitRate(bitrate);
-        recorder.setAudioChannels(channels);
-        recorder.setAudioSamplingRate(sampleRate);
-
-        Log.d(LOG_TAG, "Recorder using options: (format: " + format + ") (encoder: " + encoder + ") "
-                + "(bitrate: " + bitrate + ") (channels: " + channels + ") (sampleRate: " + sampleRate + ")");
-
-        recorder.setOutputFile(uri.getPath());
-
-        recorder.setOnErrorListener(this);
-        recorder.setOnInfoListener(this);
-
-        this.recorderPool.put(recorderId, recorder);
-
-        // Auto destroy recorder by default
-        boolean autoDestroy = true;
-
-        if (options.hasKey("autoDestroy")) {
-            autoDestroy = options.getBoolean("autoDestroy");
-        }
-
-        this.recorderAutoDestroy.put(recorderId, autoDestroy);
+        RecordSession session = new RecordSession(context, recorderId, path, options);
+        session.recorder.setOnErrorListener(this);
+        session.recorder.setOnInfoListener(this);
+        sessionPool.put(recorderId, session);
 
         try {
-            recorder.prepare();
-
-            callback.invoke(null, uri.getPath());
+            session.prepare();
+            callback.invoke(null, session.uri.getPath());
         } catch (IOException e) {
             callback.invoke(errObj("preparefail", e.toString()));
         }
@@ -238,7 +147,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
 
     @ReactMethod
     public void record(Integer recorderId, Callback callback) {
-        MediaRecorder recorder = this.recorderPool.get(recorderId);
+        RecordSession recorder = sessionPool.get(recorderId);
         if (recorder == null) {
             callback.invoke(errObj("notfound", "recorderId " + recorderId + "not found."));
             return;
@@ -246,7 +155,6 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
 
         try {
             recorder.start();
-            Log.d(LOG_TAG, "Recoding");
             callback.invoke();
         } catch (Exception e) {
             callback.invoke(errObj("startfail", e.toString()));
@@ -255,50 +163,40 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
 
     @ReactMethod
     public void pause(Integer recorderId, Callback callback) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            MediaRecorder recorder = this.recorderPool.get(recorderId);
-            if (recorder == null) {
-                callback.invoke(errObj("notfound", "recorderId " + recorderId + "not found."));
-                return;
-            }
-
-            try {
-                recorder.pause();
-                callback.invoke();
-            } catch (Exception e) {
-                callback.invoke(errObj("pausefail", e.toString()));
-            }
-        } else {
-            callback.invoke(errObj("notsupported", "Android version dos't support pause"));
+        RecordSession recorder = sessionPool.get(recorderId);
+        if (recorder == null) {
+            callback.invoke(errObj("notfound", "recorderId " + recorderId + "not found."));
+            return;
         }
 
+        try {
+            recorder.pause();
+            callback.invoke();
+        } catch (Exception e) {
+            callback.invoke(errObj("pausefail", e.toString()));
+            return;
+        }
     }
-
 
     @ReactMethod
     public void resume(Integer recorderId, Callback callback) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            MediaRecorder recorder = this.recorderPool.get(recorderId);
-            if (recorder == null) {
-                callback.invoke(errObj("notfound", "recorderId " + recorderId + "not found."));
-                return;
-            }
+        RecordSession recorder = sessionPool.get(recorderId);
+        if (recorder == null) {
+            callback.invoke(errObj("notfound", "recorderId " + recorderId + "not found."));
+            return;
+        }
 
-            try {
-                recorder.resume();
-                Log.d(LOG_TAG, "resume");
-                callback.invoke();
-            } catch (Exception e) {
-                callback.invoke(errObj("resumefail", e.toString()));
-            }
-        } else {
-            callback.invoke(errObj("notsupported", "Android version dos't support pause"));
+        try {
+            recorder.resume();
+            callback.invoke();
+        } catch (Exception e) {
+            callback.invoke(errObj("resumefail", e.toString()));
         }
     }
 
     @ReactMethod
     public void stop(Integer recorderId, Callback callback) {
-        MediaRecorder recorder = this.recorderPool.get(recorderId);
+        RecordSession recorder = sessionPool.get(recorderId);
         if (recorder == null) {
             callback.invoke(errObj("notfound", "recorderId " + recorderId + "not found."));
             return;
@@ -306,60 +204,27 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
 
         try {
             recorder.stop();
-            Log.d(LOG_TAG, "Stopped");
-            if (this.recorderAutoDestroy.get(recorderId)) {
-                Log.d(LOG_TAG, "Autodestroying recorder...");
-                destroy(recorderId);
-            }
             callback.invoke();
         } catch (Exception e) {
             callback.invoke(errObj("stopfail", e.toString()));
         }
     }
 
-    // Find recorderId matching recorder from recorderPool
-    private Integer getRecorderId(MediaRecorder recorder) {
-        for (Entry<Integer, MediaRecorder> entry : recorderPool.entrySet()) {
-            if (Objects.equals(recorder, entry.getValue())) {
-                return entry.getKey();
-            }
+    @ReactMethod
+    public void destroy(Integer recorderId, Callback callback) {
+        RecordSession session = sessionPool.get(recorderId);
+        if (session == null) {
+            callback.invoke(errObj("notfound", "recorderId " + recorderId + "not found."));
+            return;
         }
 
-        return null;
-    }
-
-    @Override
-    public void onError(MediaRecorder recorder, int what, int extra) {
-        Integer recorderId = getRecorderId(recorder);
-
-        // TODO: translate these codes into english
-        WritableMap err = new WritableNativeMap();
-        err.putInt("what", what);
-        err.putInt("extra", extra);
+        session.destroy();
+        sessionPool.remove(recorderId);
 
         WritableMap data = new WritableNativeMap();
-        data.putMap("err", err);
-        data.putString("message", "Android MediaRecorder error");
-
-        emitEvent(recorderId, "error", data);
-
-        destroy(recorderId);
-    }
-
-    @Override
-    public void onInfo(MediaRecorder recorder, int what, int extra) {
-        Integer recorderId = getRecorderId(recorder);
-
-        // TODO: translate these codes into english
-        WritableMap info = new WritableNativeMap();
-        info.putInt("what", what);
-        info.putInt("extra", extra);
-
-        WritableMap data = new WritableNativeMap();
-        data.putMap("info", info);
-        data.putString("message", "Android MediaRecorder info");
-
+        data.putString("message", "Destroyed recorder");
         emitEvent(recorderId, "info", data);
 
+        callback.invoke();
     }
 }
