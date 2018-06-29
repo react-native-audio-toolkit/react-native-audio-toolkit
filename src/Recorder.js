@@ -2,9 +2,9 @@
 import {DeviceEventEmitter, NativeAppEventEmitter, NativeModules, Platform} from 'react-native';
 import async from 'async';
 import EventEmitter from 'eventemitter3';
+import type {MediaStateType} from "./MediaStates";
 import MediaStates from './MediaStates';
 import type {Callback, CallbackWithBoolean, CallbackWithPath, FsPath} from "./TypeDefs";
-import type {MediaStateType} from "./MediaStates";
 
 const RCTAudioRecorder = NativeModules.AudioRecorder;
 
@@ -155,31 +155,6 @@ export default class Recorder extends EventEmitter {
   }
 
   /**
-   * Stop recording and save the file.
-   * Callback is called after recording has stopped or with error object.
-   * The recorder is destroyed after calling stop and should no longer be used.
-   *
-   * @param callback
-   * @return Promise<void>
-   */
-  stop(callback: ?Callback): Promise<void> {
-    const promise = new Promise((resolve, reject) => {
-      if (this._state >= MediaStates.RECORDING) {
-        RCTAudioRecorder.stop(this._recorderId, err => {
-          this._updateState(err, MediaStates.DESTROYED);
-          err ? reject(err) : resolve();
-        });
-      } else {
-        setTimeout(resolve(), 0);
-      }
-    });
-
-    return !callback
-      ? promise
-      : promise.then(callback).catch(callback);
-  }
-
-  /**
    * Pause record
    *
    * @param callback
@@ -197,9 +172,61 @@ export default class Recorder extends EventEmitter {
           }
         });
       } else {
-        setTimeout(resolve, 0);
+        resolve();
       }
     }));
+
+    return !callback
+      ? promise
+      : promise.then(callback).catch(callback);
+  }
+
+  /**
+   * Resume paused record
+   *
+   * @param callback
+   * @return {any}
+   */
+  resume(callback: Callback): Promise<void> {
+    const promise = new Promise(((resolve, reject) => {
+      if (this.isPaused) {
+        RCTAudioRecorder.resume(this._recorderId, (err) => {
+          if (err) {
+            reject(err);
+          } else {
+            this._updateState(err, MediaStates.RECORDING);
+            resolve();
+          }
+        });
+      } else {
+        resolve();
+      }
+    }));
+
+    return !callback
+      ? promise
+      : promise.then(callback).catch(callback);
+  }
+
+  /**
+   * Stop recording and save the file.
+   * Callback is called after recording has stopped or with error object.
+   * The recorder is destroyed after calling stop and should no longer be used.
+   *
+   * @param callback
+   * @return Promise<void>
+   */
+  stop(callback: ?Callback): Promise<void> {
+    const promise = new Promise((resolve, reject) => {
+      if (this._state >= MediaStates.RECORDING) {
+        RCTAudioRecorder.stop(this._recorderId, err => {
+          this._updateState(err, MediaStates.DESTROYED);
+          err ? reject(err) : resolve();
+        });
+      } else {
+        resolve();
+      }
+    });
 
     return !callback
       ? promise
@@ -216,6 +243,32 @@ export default class Recorder extends EventEmitter {
         this.stop(err => err ? reject(err) : resolve(true));
       } else {
         this.record((err, path) => err ? reject(err) : resolve(false));
+      }
+    });
+
+    return !callback
+      ? promise
+      : promise.then((result) => callback(null, result)).catch(callback);
+  }
+
+
+  /**
+   * Helper class to pause and resume recording
+   * @param callback
+   * @return Promise<boolean>
+   */
+  toggleRecordPause(callback: CallbackWithBoolean): Promise<boolean> {
+    const promise = new Promise((resolve, reject) => {
+      if (this.isRecording) {
+        this.pause(err => err ? reject(err) : resolve(true));
+      } else if (this.isPaused) {
+        if (Platform.OS === 'ios') {
+          this.record(err => err ? reject(err) : resolve(false));
+        } else {
+          this.resume(err => err ? reject(err) : resolve(false));
+        }
+      } else {
+        this.record(err => err ? reject(err) : resolve(false));
       }
     });
 
@@ -256,6 +309,10 @@ export default class Recorder extends EventEmitter {
 
   get isRecording(): boolean {
     return this._state === MediaStates.RECORDING;
+  }
+
+  get isPaused(): boolean {
+    return this._state === MediaStates.PAUSED;
   }
 
   get isPrepared(): boolean {

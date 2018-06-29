@@ -107,16 +107,14 @@ class AppContainer extends React.Component<{}, State> {
   };
 
   _toggleRecordPause = async () => {
-    const isStopped = await this.recorder.toggleRecord();
-    if (isStopped) {
-      await this._reloadPlayer();
-      await this._reloadRecorder();
-    }
+    await this.recorder.toggleRecordPause();
     this.forceUpdate();
   };
 
   _stopRecord = async () => {
     await this.recorder.stop();
+    await this._reloadPlayer();
+    await this._reloadRecorder();
     this.forceUpdate();
   };
 
@@ -134,9 +132,14 @@ class AppContainer extends React.Component<{}, State> {
     const playPauseButtonText = this.player && this.player.isPlaying ? 'Pause' : 'Play';
     const playButtonDisabled = !this.player || !this.player.canPlay || this.recorder.isRecording;
     const stopButtonDisabled = !this.player || !this.player.canStop;
-    const recordButtonText = this.recorder && this.recorder.isRecording ? 'Pause' : 'Record';
+    const recordButtonText = this.recorder
+    && this.recorder.isRecording
+      ? 'Pause'
+      : this.recorder.isPaused
+        ? 'Resume'
+        : 'Record';
     const recordButtonDisabled = !this.recorder || (this.player && !this.player.isStopped);
-    const isStopRecordAvailable = this.recorder && this.recorder.isRecording;
+    const isStopRecordAvailable = this.recorder && (this.recorder.isRecording || this.recorder.isPaused);
 
     return (
       <View style={styles.container}>

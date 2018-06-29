@@ -1,30 +1,24 @@
 package com.futurice.rctaudiotoolkit;
 
-import android.annotation.TargetApi;
-import android.media.MediaRecorder;
-import android.os.Build;
-import android.os.Environment;
-import android.support.annotation.Nullable;
-import android.util.Log;
-import android.net.Uri;
-import android.webkit.URLUtil;
 import android.content.ContextWrapper;
+import android.media.MediaRecorder;
+import android.net.Uri;
+import android.os.Build;
+import android.util.Log;
+import android.webkit.URLUtil;
 
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
-import java.io.IOException;
 import java.io.File;
-import java.lang.Thread;
-import java.net.URISyntaxException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -95,6 +89,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
                 return MediaRecorder.OutputFormat.DEFAULT;
         }
     }
+
     private int formatFromPath(String path) {
         String ext = path.substring(path.lastIndexOf('.') + 1);
 
@@ -117,6 +112,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
                 return MediaRecorder.AudioEncoder.DEFAULT;
         }
     }
+
     private int encoderFromPath(String path) {
         String ext = path.substring(path.lastIndexOf('.') + 1);
 
@@ -213,7 +209,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         recorder.setAudioSamplingRate(sampleRate);
 
         Log.d(LOG_TAG, "Recorder using options: (format: " + format + ") (encoder: " + encoder + ") "
-                    + "(bitrate: " + bitrate + ") (channels: " + channels + ") (sampleRate: " + sampleRate + ")");
+                + "(bitrate: " + bitrate + ") (channels: " + channels + ") (sampleRate: " + sampleRate + ")");
 
         recorder.setOutputFile(uri.getPath());
 
@@ -250,10 +246,53 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
 
         try {
             recorder.start();
-
+            Log.d(LOG_TAG, "Recoding");
             callback.invoke();
         } catch (Exception e) {
             callback.invoke(errObj("startfail", e.toString()));
+        }
+    }
+
+    @ReactMethod
+    public void pause(Integer recorderId, Callback callback) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            MediaRecorder recorder = this.recorderPool.get(recorderId);
+            if (recorder == null) {
+                callback.invoke(errObj("notfound", "recorderId " + recorderId + "not found."));
+                return;
+            }
+
+            try {
+                recorder.pause();
+                callback.invoke();
+            } catch (Exception e) {
+                callback.invoke(errObj("pausefail", e.toString()));
+            }
+        } else {
+            callback.invoke(errObj("notsupported", "Android version dos't support pause"));
+        }
+
+    }
+
+
+    @ReactMethod
+    public void resume(Integer recorderId, Callback callback) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            MediaRecorder recorder = this.recorderPool.get(recorderId);
+            if (recorder == null) {
+                callback.invoke(errObj("notfound", "recorderId " + recorderId + "not found."));
+                return;
+            }
+
+            try {
+                recorder.resume();
+                Log.d(LOG_TAG, "resume");
+                callback.invoke();
+            } catch (Exception e) {
+                callback.invoke(errObj("resumefail", e.toString()));
+            }
+        } else {
+            callback.invoke(errObj("notsupported", "Android version dos't support pause"));
         }
     }
 
@@ -267,36 +306,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
 
         try {
             recorder.stop();
-            if (this.recorderAutoDestroy.get(recorderId)) {
-                Log.d(LOG_TAG, "Autodestroying recorder...");
-                destroy(recorderId);
-            }
-            callback.invoke();
-        } catch (Exception e) {
-            callback.invoke(errObj("stopfail", e.toString()));
-        }
-    }
-
-    @ReactMethod
-    public void pause(Integer recorderId, Callback callback) {
-        if (android.os.Build.VERSION.SDK_INT < 24) {
-            callback.invoke(errObj("notsupported", "Android version dos't support pause"));
-            return;
-        }
-        pause24(recorderId,callback);
-    }
-
-
-    @TargetApi(24)
-    private void pause24(Integer recorderId, Callback callback) {
-        MediaRecorder recorder = this.recorderPool.get(recorderId);
-        if (recorder == null) {
-            callback.invoke(errObj("notfound", "recorderId " + recorderId + "not found."));
-            return;
-        }
-
-        try {
-            recorder.pause();
+            Log.d(LOG_TAG, "Stopped");
             if (this.recorderAutoDestroy.get(recorderId)) {
                 Log.d(LOG_TAG, "Autodestroying recorder...");
                 destroy(recorderId);
