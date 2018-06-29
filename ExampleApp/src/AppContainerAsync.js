@@ -107,7 +107,12 @@ class AppContainer extends React.Component<{}, State> {
   };
 
   _toggleRecordPause = async () => {
-
+    const isStopped = await this.recorder.toggleRecord();
+    if (isStopped) {
+      await this._reloadPlayer();
+      await this._reloadRecorder();
+    }
+    this.forceUpdate();
   };
 
   _stopRecord = async () => {

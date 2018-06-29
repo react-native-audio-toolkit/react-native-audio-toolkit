@@ -1,19 +1,31 @@
-Setup
-=====
+# Setup
 
 Expecting you have the React Native development environment in place, are
 starting with a React Native hello world project and have managed to run it on
 an actual Android/iOS device:
 
-* Install library via npm
 
-    ```
-    npm install --save react-native-audio-toolkit
-    ```
+## Install library
 
-* Follow the platform specific steps for each platform you wish to support:
+```
+npm install --save react-native-audio-toolkit
+```
 
-### Android setup
+
+## Link native library
+
+
+### Automatic link
+* Adds native library depencency for each platform automatically
+```
+react-native link react-native-audio-toolkit
+```
+
+### Manual link
+
+* If automatic linking doesn't work well, you can follow the platform specific steps for each platform you wish to support:
+
+#### Android setup
 
 1. Append dependency to end of `android/settings.gradle` file
 
@@ -21,7 +33,7 @@ an actual Android/iOS device:
     ...
 
     include ':react-native-audio-toolkit'
-    project(':react-native-audio-toolkit').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-audio-toolkit/android/lib')
+    project(':react-native-audio-toolkit').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-audio-toolkit/android')
     ```
 
 2. Add dependency to `android/app/build.gradle`
@@ -57,7 +69,22 @@ an actual Android/iOS device:
     }
     ```
 
-4. (optional) If you wish to record audio, add the following permissions to
+#### iOS setup
+
+1. Right click `Libraries`, click `Add Files to "ExampleApp"`
+
+2. Select `node_modules/react-native-audio-toolkit/ios/ReactNativeAudioToolkit/ReactNativeAudioToolkit.xcodeproj`
+
+3. Select your app from the Project Navigator, click on the `Build Phases` tab.
+    Expand `Link Binary With Libraries`. Click the plus and add
+    `libReactNativeAudioToolkit.a` from under Workspace.
+
+
+### Add Record permissions (Optional)
+
+If you wish to record audio, add the following permissions
+
+1. Android
     `android/app/src/main/AndroidManifest.xml`
 
     ```xml
@@ -75,17 +102,15 @@ an actual Android/iOS device:
     TODO: Android 6.0 permissions model once supported by React Native:
     https://facebook.github.io/react-native/docs/known-issues.html#android-m-permissions
 
-### iOS setup
+2. iOS
+Add NSMicrophoneUsageDescription in info.plist
+```
+<key>NSMicrophoneUsageDescription</key>
+<string>Your description</string>
+```
 
-1. Right click `Libraries`, click `Add Files to "ExampleApp"`
 
-2. Select `node_modules/react-native-audio-toolkit/ios/ReactNativeAudioToolkit/ReactNativeAudioToolkit.xcodeproj`
-
-3. Select your app from the Project Navigator, click on the `Build Phases` tab.
-    Expand `Link Binary With Libraries`. Click the plus and add
-    `libReactNativeAudioToolkit.a` from under Workspace.
-
-### Play some media!
+## Play some media!
 
 * Include the JavaScript library:
 
