@@ -1,33 +1,28 @@
 package com.futurice.rctaudiotoolkit;
 
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.PlaybackParams;
-import android.media.AudioAttributes;
-import android.media.AudioAttributes.Builder;
+import android.net.Uri;
 import android.os.Environment;
 import android.os.PowerManager;
-import android.support.annotation.Nullable;
 import android.util.Log;
-import android.net.Uri;
-import android.content.ContextWrapper;
 
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
-import java.io.IOException;
 import java.io.File;
-import java.lang.Thread;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -149,7 +144,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         if (file.exists()) {
             return Uri.fromFile(file);
         }
-        
+
         // Try finding file in Android "raw" resources
         if (path.lastIndexOf('.') != -1) {
             fileNameWithoutExt = path.substring(0, path.lastIndexOf('.'));
@@ -158,7 +153,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         }
 
         int resId = this.context.getResources().getIdentifier(fileNameWithoutExt,
-            "raw", this.context.getPackageName());
+                "raw", this.context.getPackageName());
         if (resId != 0) {
             return Uri.parse("android.resource://" + this.context.getPackageName() + "/" + resId);
         }
@@ -262,12 +257,10 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         player.setOnCompletionListener(this);
         player.setOnSeekCompleteListener(this);
         player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() { // Async preparing, so we need to run the callback after preparing has finished
-
             @Override
             public void onPrepared(MediaPlayer player) {
                 callback.invoke(null, getInfo(player));
             }
-
         });
 
         this.playerPool.put(playerId, player);
@@ -344,7 +337,6 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
 
         callback.invoke();
     }
-
 
     @ReactMethod
     public void play(Integer playerId, Callback callback) {
@@ -436,7 +428,6 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         return null;
     }
 
-
     @Override
     public void onBufferingUpdate(MediaPlayer player, int percent) {
         Integer playerId = getPlayerId(player);
@@ -524,10 +515,8 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     }
 
     // Audio Focus
-    public void onAudioFocusChange(int focusChange)
-    {
-        switch (focusChange)
-        {
+    public void onAudioFocusChange(int focusChange) {
+        switch (focusChange) {
             case AudioManager.AUDIOFOCUS_LOSS:
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
                 //MediaPlayer player = this.playerPool.get(this.lastPlayerId);
@@ -538,7 +527,6 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
                 break;
         }
     }
-
 
     // Utils
     public static boolean equals(Object a, Object b) {

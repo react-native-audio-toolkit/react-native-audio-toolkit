@@ -7,12 +7,19 @@
     "url": "https://github.com/futurice/react-native-audio-toolkit"
   },
   "scripts": {
-    "start": "node node_modules/react-native/local-cli/cli.js start"
+    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "flow": "flow"
   },
   "license": "MIT",
   "dependencies": {
     "async": "^2.0.0",
     "eventemitter3": "^1.2.0",
     "lodash": "^4.13.1"
+  },
+  "devDependencies": {
+    "babel-jest": "23.2.0",
+    "babel-preset-react-native": "4.0.0",
+    "jest": "23.2.0",
+    "flow-bin": "^0.67.0"
   }
 }

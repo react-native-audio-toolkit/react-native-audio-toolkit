@@ -1,6 +1,6 @@
-'use strict';
+//@flow
 
-let MediaStates = {
+const MediaStates = {
   DESTROYED: -2,
   ERROR: -1,
   IDLE: 0,
@@ -9,7 +9,8 @@ let MediaStates = {
   SEEKING: 3,
   PLAYING: 4,
   RECORDING: 4,
-  PAUSED: 5
+  PAUSED: 5,
 };
 
 export default MediaStates;
+export type MediaStateType = $Values<typeof MediaStates>;

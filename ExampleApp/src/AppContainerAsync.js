@@ -4,31 +4,25 @@ import {Slider, StyleSheet, Switch, Text, TouchableOpacity, View} from 'react-na
 import {Player, Recorder} from 'react-native-audio-toolkit';
 
 const remoteSoundUrl = 'https://archive.org/download/tsp1996-09-17.flac16/tsp1996-09-17d1t09.mp3';
-let filename = 'test.mp4';
+const recordFileName = 'myRecord.mp4';
 
-class AppContainer extends React.Component {
-  constructor() {
-    super();
+type State = {
+  isLoopingOn: boolean,
+  progress: number,
+  error?: string,
+}
 
-    this.state = {
-      playPauseButton: 'Preparing...',
-      recordButton: 'Preparing...',
+class AppContainer extends React.Component<{}, State> {
+  state: State = {
+    isLoopingOn: false,
+    progress: 0,
+  };
 
-      stopButtonDisabled: true,
-      playButtonDisabled: true,
-      recordButtonDisabled: true,
-
-      isLoopingOn: false,
-      progress: 0,
-
-      error: null,
-    };
-  }
+  player: ?Player;
+  recorder: ?Recorder;
+  _progressInterval: IntervalID;
 
   componentWillMount() {
-    this.player = null;
-    this.recorder = null;
-
     this._reloadPlayer();
     this._reloadRecorder();
 
@@ -42,126 +36,106 @@ class AppContainer extends React.Component {
   }
 
   componentWillUnmount() {
-    //console.log('unmount');
-    // TODO
     clearInterval(this._progressInterval);
   }
 
-  _playPause() {
-    this.player.playPause((err, playing) => {
-      if (err) {
-        this.setState({
-          error: err.message,
-        });
-      }
-      this.forceUpdate();
-    });
-  }
+  /////////// Player
 
-  _stop() {
-    this.player.stop(() => {
-      this.forceUpdate();
-    });
-  }
+  _reloadPlayer = async () => {
+    if (this.player) {
+      await this.player.destroy();
+    }
+    this.player = new Player(remoteSoundUrl, {autoDestroy: false});
+    this.player.looping = this.state.isLoopingOn;
 
-  _seek(percentage) {
-    if (!this.player) {
+    try {
+      await this.player.prepare();
+    } catch (err) {
+      console.warn('error at _reloadPlayer():', err);
       return;
     }
 
-    let position = percentage * this.player.duration;
-
-    this.player.seek(position, () => {
-      this.forceUpdate();
-    });
-  }
-
-  _reloadPlayer() {
-    if (this.player) {
-      this.player.destroy();
-    }
-
-    this.player = new Player(filename, {
-      autoDestroy: false,
-    });
-
-    this.player.prepare((err) => {
-      if (err) {
-        console.log('error at _reloadPlayer():');
-        console.log(err);
-      } else {
-        this.player.looping = this.state.loopButtonStatus;
-      }
-      this.forceUpdate();
-    });
-
+    this.player.on('ended', () => this.forceUpdate());
+    this.player.on('pause', () => this.forceUpdate());
     this.forceUpdate();
+  };
 
-    this.player.on('ended', () => {
+  _playPause = async () => {
+    if (this.player) {
+      await this.player.playPause();
       this.forceUpdate();
-    });
-    this.player.on('pause', () => {
-      this.forceUpdate();
-    });
-  }
+    }
+  };
 
-  _reloadRecorder() {
+  _stop = async () => {
+    if (this.player) {
+      await this.player.stop();
+      this.forceUpdate();
+    }
+  };
+
+  _seek = async (percentage: number) => {
+    if (this.player) {
+      let position = percentage * this.player.duration;
+      await this.player.seek(position);
+      this.forceUpdate();
+    }
+  };
+
+  _toggleLooping = (isLoopingOn) => {
+    this.setState({isLoopingOn});
+    if (this.player) {
+      this.player.looping = isLoopingOn;
+    }
+  };
+
+  /////////// Recorder
+
+  _reloadRecorder = async () => {
     if (this.recorder) {
-      this.recorder.destroy();
+      await this.recorder.destroy();
     }
 
-    this.recorder = new Recorder(remoteSoundUrl, {
+    this.recorder = new Recorder(recordFileName, {
       bitrate: 256000,
       channels: 2,
       sampleRate: 44100,
       quality: 'max',
-      //format: 'ac3', // autodetected
-      //encoder: 'aac', // autodetected
     });
 
     this.forceUpdate();
-  }
+  };
 
-  _toggleRecord() {
-    if (this.player) {
-      this.player.destroy();
-    }
+  _toggleRecordPause = async () => {
 
-    this.recorder.toggleRecord((err, stopped) => {
-      if (err) {
-        this.setState({
-          error: err.message,
-        });
+  };
+
+  _stopRecord = async () => {
+    await this.recorder.stop();
+    this.forceUpdate();
+  };
+
+  _errorCapturer = (func: (any) => any) => {
+    return (...args) => {
+      try {
+        func(...args);
+      } catch (err) {
+        this.setState({error: err.message});
       }
-      if (stopped) {
-        this._reloadPlayer();
-        this._reloadRecorder();
-      }
-
-      this.forceUpdate();
-    });
-  }
-
-  _toggleLooping(value) {
-    console.log(value);
-    this.setState({
-      isLoopingOn: value,
-    });
-    if (this.player) {
-      this.player.looping = value;
-    }
-  }
+    };
+  };
 
   render() {
-    console.log(this.player.state);
-    const playPauseButtonText = this.player && this.player.isPlaying ? 'Stop' : 'Play';
+    const playPauseButtonText = this.player && this.player.isPlaying ? 'Pause' : 'Play';
     const playButtonDisabled = !this.player || !this.player.canPlay || this.recorder.isRecording;
     const stopButtonDisabled = !this.player || !this.player.canStop;
     const recordButtonText = this.recorder && this.recorder.isRecording ? 'Pause' : 'Record';
     const recordButtonDisabled = !this.recorder || (this.player && !this.player.isStopped);
+    const isStopRecordAvailable = this.recorder && this.recorder.isRecording;
 
     return (
       <View style={styles.container}>
+        <Text style={[styles.subTitle, {alignSelf: 'center'}]}>Async API</Text>
         <Text style={styles.partTitle}> Playback </Text>
         <View style={styles.partContainer}>
           <Text style={styles.subTitle}>Controllers</Text>
@@ -169,19 +143,19 @@ class AppContainer extends React.Component {
             <Button
               title={playPauseButtonText}
               disabled={playButtonDisabled}
-              onPress={() => this._playPause()}
+              onPress={this._errorCapturer(this._playPause)}
             />
 
             <Button
               title="Stop"
               disabled={stopButtonDisabled}
-              onPress={() => this._stop()}
+              onPress={this._errorCapturer(this._stop)}
             />
 
             <View>
               <Switch
                 value={this.state.isLoopingOn}
-                onValueChange={(value) => this._toggleLooping(value)}
+                onValueChange={this._errorCapturer(this._toggleLooping)}
               />
               <Text>Toggle{'\n'} Looping</Text>
             </View>
@@ -193,7 +167,7 @@ class AppContainer extends React.Component {
             step={0.0001}
             disabled={playButtonDisabled}
             value={this.state.progress}
-            onValueChange={() => this._seek()}
+            onValueChange={this._errorCapturer(this._seek)}
           />
         </View>
 
@@ -203,9 +177,14 @@ class AppContainer extends React.Component {
             <Button
               title={recordButtonText}
               disabled={recordButtonDisabled}
-              onPress={() => this._toggleRecord()}
+              onPress={this._errorCapturer(this._toggleRecordPause)}
             />
 
+            <Button
+              title="Stop"
+              disabled={!isStopRecordAvailable}
+              onPress={this._errorCapturer(this._stopRecord)}
+            />
           </View>
         </View>
 

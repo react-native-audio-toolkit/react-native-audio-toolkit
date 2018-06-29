@@ -3,6 +3,41 @@ react-native-audio-toolkit API
 
 Media methods
 -------------
+Both Player and Recorder methods support Callback and Promise.
+You can choose Callback or Promise each time you call the method.
+
+* Example (Promise version)
+```
+try {
+    await player.play();
+    console.log('Music playing!');
+} catch(err) {
+    console.warn(err);
+}
+```
+or
+```
+player.play()
+    .then(()=>console.log('Music playing!'))
+    .catch(err=>console.warn(err));
+```
+
+
+* Example (Callback version)
+```
+player.play((err)=>{
+    if(!err){
+        console.log('Music playing!');
+    }else{
+        console.warn(err);
+    }
+});
+
+```
+
+**CAVEAT**
+From 1.1.0, each methods will not return Player or Recorder itself.
+
 
 ### Player methods
 

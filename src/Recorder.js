@@ -1,41 +1,66 @@
-'use strict';
-
-import {
-  NativeModules,
-  DeviceEventEmitter,
-  NativeAppEventEmitter,
-  Platform
-} from 'react-native';
-
-import _ from 'lodash';
+//@flow
+import {DeviceEventEmitter, NativeAppEventEmitter, NativeModules, Platform} from 'react-native';
 import async from 'async';
 import EventEmitter from 'eventemitter3';
 import MediaStates from './MediaStates';
+import type {Callback, CallbackWithBoolean, CallbackWithPath, FsPath} from "./TypeDefs";
+import type {MediaStateType} from "./MediaStates";
 
-var RCTAudioRecorder = NativeModules.AudioRecorder;
+const RCTAudioRecorder = NativeModules.AudioRecorder;
 
-var recorderId = 0;
+export type RecorderID = number;
+let recorderId: RecorderID = 0;
 
-var defaultRecorderOptions = {
-  autoDestroy: true
+export type RecorderOptions = {
+  /** Set bitrate for the recorder, in bits per second. default: 128000 */
+  bitrate?: number,
+
+  /**  Set number of channels. default: 2 */
+  channels?: number,
+
+  /**  Set how many samples per second. default: 44100 */
+  sampleRate?: number,
+
+  /**
+   * Override format. Possible values:
+   * Cross-platform:  'mp4', 'aac'
+   * Android only:    'ogg', 'webm', 'amr'
+   * default: based on filename extension
+   */
+  format?: 'mp4' | 'aac' | 'ogg' | 'webm' | 'amr',
+
+  /** Override encoder. Android only.*/
+  encoder?: 'aac' | 'mp4' | 'webm' | 'ogg' | 'amr',
+
+  /** Quality of the recording, iOS only. (default: 'medium') */
+  quality?: 'min' | 'low' | 'medium' | 'high' | 'max'
+}
+
+const defaultRecorderOptions = {
+  autoDestroy: true,
 };
 
 /**
- * Represents a media recorder
+ * Represents a media recordemr
  * @constructor
  */
-class Recorder extends EventEmitter {
-  constructor(path, options = defaultRecorderOptions) {
-    super();
+export default class Recorder extends EventEmitter {
+  _path: string;
+  _fsPath: FsPath;
 
+  _options: RecorderOptions;
+  _recorderId: number;
+  _state: MediaStateType;
+
+  constructor(path: string, options: RecorderOptions = defaultRecorderOptions) {
+    super();
     this._path = path;
     this._options = options;
-
     this._recorderId = recorderId++;
+
     this._reset();
 
     let appEventEmitter = Platform.OS === 'ios' ? NativeAppEventEmitter : DeviceEventEmitter;
-
     appEventEmitter.addListener('RCTAudioRecorderEvent:' + this._recorderId, (payload: Event) => {
       this._handleEvent(payload.event, payload.data);
     });
@@ -43,9 +68,6 @@ class Recorder extends EventEmitter {
 
   _reset() {
     this._state = MediaStates.IDLE;
-    this._duration = -1;
-    this._position = -1;
-    this._lastSync = -1;
   }
 
   _updateState(err, state) {
@@ -53,7 +75,6 @@ class Recorder extends EventEmitter {
   }
 
   _handleEvent(event, data) {
-    //console.log('event: ' + event + ', data: ' + JSON.stringify(data));
     switch (event) {
       case 'ended':
         this._state = Math.min(this._state, MediaStates.PREPARED);
@@ -63,100 +84,186 @@ class Recorder extends EventEmitter {
         break;
       case 'error':
         this._reset();
-        //this.emit('error', data);
         break;
     }
 
     this.emit(event, data);
   }
 
-  prepare(callback = _.noop) {
-    this._updateState(null, MediaStates.PREPARING);
 
-    // Prepare recorder
-    RCTAudioRecorder.prepare(this._recorderId, this._path, this._options, (err, fsPath) => {
-      this._fsPath = fsPath;
-      this._updateState(err, MediaStates.PREPARED);
-      callback(err, fsPath);
+  /**
+   * Prepare recording to the file provided during initialization.
+   * This method is optional to call but it may be beneficial to call to make sure that
+   * recording begins immediately after calling record().
+   * Otherwise the recording is prepared when calling record() which may result in a small delay.
+   *
+   * NOTE: Assume that this wipes the destination file immediately.
+   *
+   *    When ready to record using record(), the callback is called with an empty first parameter.
+   *    Second parameter contains a path to the destination file on the filesystem.
+   *
+   * @param callback
+   * @return Promise<FsPath>
+   */
+  prepare(callback?: CallbackWithPath): Promise<FsPath> {
+    const promise = new Promise((resolve, reject) => {
+      this._updateState(null, MediaStates.PREPARING);
+
+      RCTAudioRecorder.prepare(this._recorderId, this._path, this._options, (err, fsPath) => {
+        this._fsPath = fsPath;
+        this._updateState(err, MediaStates.PREPARED);
+        if (err) {
+          reject(err);
+        } else {
+          resolve(fsPath);
+        }
+      });
     });
 
-    return this;
+    return !callback
+      ? promise
+      : promise.then(path => callback(null, path)).catch(callback);
   }
 
-  record(callback = _.noop) {
-    let tasks = [];
+  /**
+   * Start recording to file in path
+   *
+   * @param callback?
+   * @return Promise<FsPath>
+   */
+  record(callback?: CallbackWithPath): Promise<FsPath> {
+    const promise = new Promise((resolve, reject) => {
+      let tasks = [];
 
-    // Make sure recorder is prepared
-    if (this._state === MediaStates.IDLE) {
-      tasks.push((next) => {
-        this.prepare(next);
+      // Make sure recorder is prepared
+      if (this._state === MediaStates.IDLE) {
+        tasks.push(next => this.prepare(next));
+      }
+
+      // Start recording
+      tasks.push(next => RCTAudioRecorder.record(this._recorderId, next));
+
+      async.series(tasks, (err) => {
+        this._updateState(err, MediaStates.RECORDING);
+        err ? reject(err) : resolve(this._fsPath);
       });
-    }
-
-    // Start recording
-    tasks.push((next) => {
-        RCTAudioRecorder.record(this._recorderId, next);
     });
 
-    async.series(tasks, (err) => {
-      this._updateState(err, MediaStates.RECORDING);
-      callback(err);
+    return !callback
+      ? promise
+      : promise.then(path => callback(null, path)).catch(callback);
+  }
+
+  /**
+   * Stop recording and save the file.
+   * Callback is called after recording has stopped or with error object.
+   * The recorder is destroyed after calling stop and should no longer be used.
+   *
+   * @param callback
+   * @return Promise<void>
+   */
+  stop(callback: ?Callback): Promise<void> {
+    const promise = new Promise((resolve, reject) => {
+      if (this._state >= MediaStates.RECORDING) {
+        RCTAudioRecorder.stop(this._recorderId, err => {
+          this._updateState(err, MediaStates.DESTROYED);
+          err ? reject(err) : resolve();
+        });
+      } else {
+        setTimeout(resolve(), 0);
+      }
     });
 
-    return this;
+    return !callback
+      ? promise
+      : promise.then(callback).catch(callback);
   }
 
-  stop(callback = _.noop) {
-    if (this._state >= MediaStates.RECORDING) {
-      RCTAudioRecorder.stop(this._recorderId, (err) => {
-        this._updateState(err, MediaStates.DESTROYED);
-        callback(err);
-      });
-    } else {
-      setTimeout(callback, 0);
-    }
+  /**
+   * Pause record
+   *
+   * @param callback
+   * @return {any}
+   */
+  pause(callback: Callback): Promise<void> {
+    const promise = new Promise(((resolve, reject) => {
+      if (this._state >= MediaStates.RECORDING) {
+        RCTAudioRecorder.pause(this._recorderId, (err) => {
+          if (err) {
+            reject(err);
+          } else {
+            this._updateState(err, MediaStates.PAUSED);
+            resolve();
+          }
+        });
+      } else {
+        setTimeout(resolve, 0);
+      }
+    }));
 
-    return this;
+    return !callback
+      ? promise
+      : promise.then(callback).catch(callback);
   }
 
-  pause(callback = _.noop) {
-    if (this._state >= MediaStates.RECORDING) {
-      RCTAudioRecorder.pause(this._recorderId, (err) => {
-        this._updateState(err, MediaStates.PAUSED);
-        callback(err);
-      });
-    } else {
-      setTimeout(callback, 0);
-    }
+  /**
+   * @param callback
+   * @return Promise<boolean>
+   */
+  toggleRecord(callback: CallbackWithBoolean): Promise<boolean> {
+    const promise = new Promise((resolve, reject) => {
+      if (this._state === MediaStates.RECORDING) {
+        this.stop(err => err ? reject(err) : resolve(true));
+      } else {
+        this.record((err, path) => err ? reject(err) : resolve(false));
+      }
+    });
 
-    return this;
+    return !callback
+      ? promise
+      : promise.then((result) => callback(null, result)).catch(callback);
   }
 
-  toggleRecord(callback = _.noop) {
-    if (this._state === MediaStates.RECORDING) {
-      this.stop((err) => {
-        callback(err, true);
-      });
-    } else {
-      this.record((err) => {
-        callback(err, false);
-      });
-    }
+  /**
+   * Destroy the recorder.
+   * Should only be used if a recorder was constructed, and for some reason is now unwanted.
+   *
+   * @param callback
+   * @return Promise<void>
+   */
+  destroy(callback: CallbackWithBoolean): Promise<void> {
+    const promise = new Promise((resolve, reject) => {
+      this._reset();
+      RCTAudioRecorder.destroy(this._recorderId, err => err ? reject(err) : resolve());
+    });
 
-    return this;
+    return !callback
+      ? promise
+      : promise.then(callback).catch(callback);
   }
 
-  destroy(callback = _.noop) {
-    this._reset();
-    RCTAudioRecorder.destroy(this._recorderId, callback);
+  get state(): MediaStateType {
+    return this._state;
   }
 
-  get state()       { return this._state;                          }
-  get canRecord()   { return this._state >= MediaStates.PREPARED;  }
-  get canPrepare()  { return this._state == MediaStates.IDLE;      }
-  get isRecording() { return this._state == MediaStates.RECORDING; }
-  get isPrepared()  { return this._state == MediaStates.PREPARED;  }
-  get fsPath()      { return this._fsPath; }
+  get canRecord(): boolean {
+    return this._state >= MediaStates.PREPARED;
+  }
+
+  get canPrepare(): boolean {
+    return this._state === MediaStates.IDLE;
+  }
+
+  get isRecording(): boolean {
+    return this._state === MediaStates.RECORDING;
+  }
+
+  get isPrepared(): boolean {
+    return this._state === MediaStates.PREPARED;
+  }
+
+  get fsPath(): FsPath {
+    return this._fsPath;
+  }
 }
 
-export default Recorder;
