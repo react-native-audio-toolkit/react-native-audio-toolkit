@@ -321,6 +321,11 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             this.looping = options.getBoolean("looping");
         }
 
+        /*
+        FIXME Disable speed, pitch on Android to avoid starting play
+        player.setPlaybackParams() can make playing when player is prepare. See doc :setPlaybackParams.
+        And target API is 19 but PlayBackParams minSDK is 23
+
         if (options.hasKey("speed") || options.hasKey("pitch")) {
             PlaybackParams params = new PlaybackParams();
 
@@ -334,6 +339,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
 
             player.setPlaybackParams(params);
         }
+        */
 
         callback.invoke();
     }

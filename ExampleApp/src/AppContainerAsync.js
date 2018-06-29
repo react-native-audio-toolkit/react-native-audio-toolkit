@@ -45,7 +45,7 @@ class AppContainer extends React.Component<{}, State> {
     if (this.player) {
       await this.player.destroy();
     }
-    this.player = new Player(remoteSoundUrl, {autoDestroy: false});
+    this.player = new Player(recordFileName, {autoDestroy: false});
     this.player.looping = this.state.isLoopingOn;
 
     try {

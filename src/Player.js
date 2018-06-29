@@ -173,7 +173,8 @@ export default class Player extends EventEmitter {
             wakeLock: this._wakeLock,
             looping: this._looping,
 
-            // FIXME Speed or pitch make auto play on Android when the sound source is remote URL
+            // Speed and pitch are disabled in Android native source.
+            // Setting them makes start to play when player is ready and minSDK is 23
             speed: this._speed,
             pitch: this._pitch,
           },
