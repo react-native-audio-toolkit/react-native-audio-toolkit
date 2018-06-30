@@ -111,8 +111,8 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
     private Integer getRecorderId(MediaRecorder recorder) {
         for (int i = 0; i < sessionPool.size(); i++) {
             RecordSession session = sessionPool.valueAt(i);
-            if (Objects.equals(recorder, session.recorder)) {
-                return session.id;
+            if (Objects.equals(recorder, session.getRecorder())) {
+                return sessionPool.keyAt(i);
             }
         }
         return null;
@@ -129,18 +129,19 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         RecordSession oldSession = sessionPool.get(recorderId);
         if (oldSession != null) {
             Log.d(LOG_TAG, "Releasing old recorder session...");
-            destroy(oldSession.id, NOP);
+            destroy(oldSession.getId(), NOP);
         }
 
         RecordSession session = new RecordSession(context, recorderId, path, options);
-        session.recorder.setOnErrorListener(this);
-        session.recorder.setOnInfoListener(this);
+        session.setOnErrorListener(this);
+        session.setOnInfoListener(this);
         sessionPool.put(recorderId, session);
 
         try {
             session.prepare();
-            callback.invoke(null, session.uri.getPath());
+            callback.invoke(null, session.getUriPath());
         } catch (IOException e) {
+            Log.e(LOG_TAG, "failed to prepare", e);
             callback.invoke(errObj("preparefail", e.toString()));
         }
     }
@@ -157,6 +158,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
             recorder.start();
             callback.invoke();
         } catch (Exception e) {
+            Log.e(LOG_TAG, "failed to start", e);
             callback.invoke(errObj("startfail", e.toString()));
         }
     }
@@ -173,6 +175,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
             recorder.pause();
             callback.invoke();
         } catch (Exception e) {
+            Log.e(LOG_TAG, "Failed to pause", e);
             callback.invoke(errObj("pausefail", e.toString()));
             return;
         }
@@ -190,6 +193,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
             recorder.resume();
             callback.invoke();
         } catch (Exception e) {
+            Log.e(LOG_TAG, "Failed to resume", e);
             callback.invoke(errObj("resumefail", e.toString()));
         }
     }
@@ -206,6 +210,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
             recorder.stop();
             callback.invoke();
         } catch (Exception e) {
+            Log.e(LOG_TAG, "Failed to stop", e);
             callback.invoke(errObj("stopfail", e.toString()));
         }
     }

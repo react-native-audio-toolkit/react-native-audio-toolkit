@@ -15,20 +15,39 @@ import java.io.IOException;
 
 public class RecordSession {
     private static final String TAG = "RecordSession";
+    private static final String TMP_REC_POST_FIX = "_$TEMP$";
 
-    final int id;
-    final String path;
-    final MediaRecorder recorder;
-    final Uri uri;
+    private MediaRecorder recorder;
+    private ReadableMap options;
 
-    boolean autoDestroy = true;
+    private MediaRecorder.OnErrorListener errorListener;
+    private MediaRecorder.OnInfoListener infoListener;
+
+    private final int id;
+    private final String path;
+
+    private Context context;
+    private Uri currentRecUri;
+    private boolean autoDestroy = true;
+
+    private boolean isPaused = false;
 
     RecordSession(Context context, Integer recorderId, String path, ReadableMap options) {
+        this.context = context;
         this.id = recorderId;
+        if (path.endsWith("/")) {
+            path = path.substring(0, path.length() - 1);
+        }
         this.path = path;
-        uri = uriFromPath(context, this.path);
+        this.options = options;
 
-        recorder = new MediaRecorder();
+        if (options.hasKey("autoDestroy")) {
+            autoDestroy = options.getBoolean("autoDestroy");
+        }
+    }
+
+    private MediaRecorder createRecorder(boolean isMainRecFile) {
+        MediaRecorder recorder = new MediaRecorder();
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
 
         int format = parseFormatFromFileExt(this.path);
@@ -58,17 +77,22 @@ public class RecordSession {
         recorder.setAudioEncodingBitRate(bitrate);
         recorder.setAudioChannels(channels);
         recorder.setAudioSamplingRate(sampleRate);
-        recorder.setOutputFile(uri.getPath());
 
-        if (options.hasKey("autoDestroy")) {
-            autoDestroy = options.getBoolean("autoDestroy");
+        if (isMainRecFile) {
+            currentRecUri = uriFromPath(context, this.path);
+        } else {
+            currentRecUri = uriFromPath(context, this.path + TMP_REC_POST_FIX);
         }
+        recorder.setOutputFile(currentRecUri.getPath());
 
-        Log.d(TAG, "Record session created : {" +
+        recorder.setOnErrorListener(errorListener);
+        recorder.setOnInfoListener(infoListener);
+
+        Log.d(TAG, "Recorder created : {" +
                 "id=" + id +
                 ", path='" + path + '\'' +
                 ", autoDestroy=" + autoDestroy +
-                ", uri=" + uri.getPath() +
+                ", currentRecUri=" + currentRecUri.getPath() +
                 ", options: " +
                 "(format: " + format + ") " +
                 "(encoder: " + encoder + ") " +
@@ -76,6 +100,8 @@ public class RecordSession {
                 "(channels: " + channels + ") " +
                 "(sampleRate: " + sampleRate + ")" +
                 "}");
+
+        return recorder;
     }
 
     private int encoderFromPath(String path) {
@@ -91,6 +117,13 @@ public class RecordSession {
             String extPath = new ContextWrapper(context).getFilesDir() + "/" + path;
             File file = new File(extPath);
             return Uri.fromFile(file);
+        }
+    }
+
+    void appendFileIfResumed() {
+        if (currentRecUri.getPath().endsWith(TMP_REC_POST_FIX)) {
+            String mainRecordFile = uriFromPath(context, path).getPath();
+            Mp4Util.append(mainRecordFile, currentRecUri.getPath());
         }
     }
 
@@ -133,7 +166,28 @@ public class RecordSession {
         }
     }
 
+    public MediaRecorder getRecorder() {
+        return recorder;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getUriPath() {
+        return currentRecUri.getPath();
+    }
+
+    public void setOnErrorListener(MediaRecorder.OnErrorListener listener) {
+        this.errorListener = listener;
+    }
+
+    public void setOnInfoListener(MediaRecorder.OnInfoListener listener) {
+        this.infoListener = listener;
+    }
+
     public void prepare() throws IllegalStateException, IOException {
+        recorder = createRecorder(true);
         recorder.prepare();
         Log.d(TAG, id + ": Prepared");
     }
@@ -141,30 +195,39 @@ public class RecordSession {
     public void start() throws IllegalStateException {
         recorder.start();
         Log.d(TAG, id + ": Started");
-
-    }
-
-    public void pause() throws Exception {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            recorder.pause();
-        } else {
-            throw new Exception("Pause is not supported under Android 7.0");
-        }
-        Log.d(TAG, id + ": Paused");
     }
 
     public void resume() throws Exception {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             recorder.resume();
-        } else {
-            throw new Exception("Resume is not supported under Android 7.0");
+        } else if (isPaused) {
+            isPaused = false;
+            recorder = createRecorder(false);
+            recorder.prepare();
+            recorder.start();
         }
         Log.d(TAG, id + ": Resumed");
+    }
+
+    public void pause() throws Exception {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            recorder.pause();
+        } else if (!isPaused) {
+            isPaused = true;
+            recorder.stop();
+            recorder.release();
+            recorder = null;
+
+            appendFileIfResumed();
+        }
+        Log.d(TAG, id + ": Paused");
     }
 
     public void stop() throws IllegalStateException {
         recorder.stop();
         Log.d(TAG, id + ": Stopped");
+
+        appendFileIfResumed();
 
         if (autoDestroy) {
             Log.d(TAG, "Auto destroying recorder...");
