@@ -84,6 +84,11 @@ an actual Android/iOS device:
 3. Select your app from the Project Navigator, click on the `Build Phases` tab.
     Expand `Link Binary With Libraries`. Click the plus and add
     `libReactNativeAudioToolkit.a` from under Workspace.
+    
+4. Add a usage description to **Info.plist**.
+    ```<key>Privacy - Microphone Usage Description</key>
+       <string>This app requires access to your microphone</string>
+    ```
 
 ### Play some media!
 
