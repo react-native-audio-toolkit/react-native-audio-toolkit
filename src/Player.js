@@ -25,7 +25,7 @@ class Player extends EventEmitter {
     this._path = path;
     this._options = options;
 
-    this._playerId = playerId++;
+    this._playerId = options.id ? options.id : playerId++;
     this._reset();
 
     const appEventEmitter = Platform.OS === 'ios' ? NativeAppEventEmitter : DeviceEventEmitter;
