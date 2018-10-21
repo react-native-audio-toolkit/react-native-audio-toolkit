@@ -25,7 +25,6 @@ class Player extends EventEmitter {
     this._path = path;
     this._options = options;
 
-    this._playerId = playerId++;
     this._reset();
 
     const appEventEmitter = Platform.OS === 'ios' ? NativeAppEventEmitter : DeviceEventEmitter;
@@ -44,6 +43,7 @@ class Player extends EventEmitter {
     this._position = -1;
     this._lastSync = -1;
     this._looping = false;
+    this._speed = 1;
   }
 
   _storeInfo(info) {
@@ -240,6 +240,11 @@ class Player extends EventEmitter {
     this._setIfInitialized({ looping: value });
   }
 
+  set speed(value) {
+    this._speed = value;
+    this._setIfInitialized({ speed: value });
+  }
+
   get currentTime() {
     let pos = -1;
 
@@ -264,6 +269,9 @@ class Player extends EventEmitter {
   }
   get duration() {
     return this._duration;
+  }
+  get speed() {
+    return this._speed;
   }
 
   get state() {
