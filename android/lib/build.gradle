@@ -1,12 +1,21 @@
 apply plugin: "com.android.library"
 
+
+def _ext = rootProject.ext
+
+def _compileSdkVersion = _ext.has('compileSdkVersion') ? _ext.compileSdkVersion : 26
+def _buildToolsVersion = _ext.has('buildToolsVersion') ? _ext.buildToolsVersion : '26.0.3'
+def _minSdkVersion = _ext.has('minSdkVersion') ? _ext.minSdkVersion : 16
+def _targetSdkVersion = _ext.has('targetSdkVersion') ? _ext.targetSdkVersion : 26
+def _supportLibVersion = _ext.has('supportLibVersion') ? _ext.supportLibVersion : '26.1.0'
+
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.1"
+    compileSdkVersion _compileSdkVersion
+    buildToolsVersion _buildToolsVersion
 
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 23
+        minSdkVersion _minSdkVersion
+        targetSdkVersion _targetSdkVersion
         versionCode 1
         versionName "1.0"
     }
@@ -20,6 +29,7 @@ android {
 
 dependencies {
     compile fileTree(dir: "libs", include: ["*.jar"])
-    compile "com.android.support:appcompat-v7:23.0.1"
+//    compile "com.android.support:appcompat-v7:23.0.1"
+    compile "com.android.support:appcompat-v7:${_supportLibVersion}"
     compile "com.facebook.react:react-native:+"  // From node_modules
 }
