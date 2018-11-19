@@ -510,8 +510,12 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         mTimerTask = new TimerTask() {
           public void run() {
             MediaPlayer player = playerPool.get(doPlayerId);
-            if (player != null) {
-                emitEvent(doPlayerId, "progress", currentPosition(player));
+            try {
+                if (player != null && player.isPlaying()) {
+                    emitEvent(doPlayerId, "progress", currentPosition(player));
+                }
+            } catch (RuntimeException e) {
+                onError(player, e.hashCode(), e.hashCode());
             }
         }};
         timer = new Timer();
