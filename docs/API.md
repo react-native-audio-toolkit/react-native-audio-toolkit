@@ -17,6 +17,11 @@ Media methods
     ```js
     playbackOptions:
     {
+        
+      // Number to define Playback speed for audio
+      // if speed is not defined, default value is 1.0
+      speed : number (default: 1.0),
+
       // Boolean to indicate whether the player should self-destruct after
       // playback is finished. If this is not set, you are responsible for
       // destroying the object by calling player.destroy().

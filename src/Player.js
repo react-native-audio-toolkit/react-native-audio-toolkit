@@ -12,6 +12,7 @@ let playerId = 0;
 const defaultPlayerOptions = {
   autoDestroy: true,
   continuesToPlayInBackground: false,
+  speed: 1.0,
 };
 
 /**
@@ -21,15 +22,12 @@ const defaultPlayerOptions = {
 class Player extends EventEmitter {
   constructor(path, options = defaultPlayerOptions) {
     super();
-
     this._path = path;
     this._options = options;
-
     this._playerId = playerId++;
+    this._speed = (options.speed) ? options.speed : defaultPlayerOptions.speed;
     this._reset();
-
     const appEventEmitter = Platform.OS === 'ios' ? NativeAppEventEmitter : DeviceEventEmitter;
-
     appEventEmitter.addListener(`RCTAudioPlayerEvent:${this._playerId}`, (payload: Event) => {
       this._handleEvent(payload.event, payload.data);
     });
@@ -120,6 +118,7 @@ class Player extends EventEmitter {
           pan: this._pan,
           wakeLock: this._wakeLock,
           looping: this._looping,
+          speed: this._speed
         },
         next,
       );
@@ -239,6 +238,10 @@ class Player extends EventEmitter {
     this._looping = value;
     this._setIfInitialized({ looping: value });
   }
+  set speed(value) {
+    this._speed = value;
+    this._setIfInitialized({ speed: value });
+  }
 
   get currentTime() {
     let pos = -1;
@@ -251,9 +254,9 @@ class Player extends EventEmitter {
       pos = this._position + (Date.now() - this._lastSync);
       pos = Math.min(pos, this._duration);
 
-      return pos;
+      return pos * this._speed;
     }
-    return this._position;
+    return this._position * this._speed;
   }
 
   get volume() {
@@ -264,6 +267,9 @@ class Player extends EventEmitter {
   }
   get duration() {
     return this._duration;
+  }
+  get speed() {
+    return this._speed;
   }
 
   get state() {
