@@ -213,6 +213,27 @@ class Player extends EventEmitter {
       callback(err);
     });
   }
+  updateSpeed(speed, callback){
+    this._speed = speed;
+    this.destroy();
+    const tasks = [];
+    // Make sure player is prepared
+    tasks.push((next) => {
+      this.prepare(next);
+    });
+    // Start playback
+    tasks.push((next) => {
+      RCTAudioPlayer.play(this._playerId, next);
+    });
+    async.series(tasks, (err, results) => {
+      this._updateState(err, MediaStates.PLAYING, results);
+      callback(err,results);
+    });
+}
+currentTimeWithOutSpeed(){
+    this._position = this._position / this._speed;
+}
+  
 
   _setIfInitialized(options, callback = _.noop) {
     if (this._state >= MediaStates.PREPARED) {
