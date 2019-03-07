@@ -6,6 +6,7 @@ import android.media.MediaPlayer;
 import android.media.PlaybackParams;
 import android.media.AudioAttributes;
 import android.media.AudioAttributes.Builder;
+import android.os.Build;
 import android.os.Environment;
 import android.os.PowerManager;
 import android.support.annotation.Nullable;
@@ -328,7 +329,8 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             this.looping = options.getBoolean("looping");
         }
 
-        if (options.hasKey("speed") || options.hasKey("pitch")) {
+        // `PlaybackParams` was only added in API 23
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && (options.hasKey("speed") || options.hasKey("pitch"))) {
             PlaybackParams params = new PlaybackParams();
 
             if (options.hasKey("speed") && !options.isNull("speed")) {
