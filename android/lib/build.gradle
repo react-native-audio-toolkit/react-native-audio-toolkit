@@ -1,12 +1,16 @@
 apply plugin: "com.android.library"
 
+def projectVar(name, fallback) {
+    return project.findProperty(name) ?: fallback
+}
+
 android {
-    compileSdkVersion 24
-    buildToolsVersion "23.0.1"
+    compileSdkVersion projectVar('compileSdkVersion', 27)
+    buildToolsVersion projectVar('buildToolsVersion', '27.0.3')
 
     defaultConfig {
         minSdkVersion 19
-        targetSdkVersion 23
+        targetSdkVersion projectVar('targetSdkVersion', 27)
         versionCode 1
         versionName "1.0"
     }
@@ -19,7 +23,9 @@ android {
 }
 
 dependencies {
+    def supportLibVersion = projectVar('supportLibVersion', '27.1.1')
+
     compile fileTree(dir: "libs", include: ["*.jar"])
-    compile "com.android.support:appcompat-v7:23.0.1"
+    compile "com.android.support:appcompat-v7:$supportLibVersion"
     compile "com.facebook.react:react-native:+"  // From node_modules
 }
