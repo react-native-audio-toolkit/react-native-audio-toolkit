@@ -11,7 +11,7 @@ an actual Android/iOS device:
     npm install --save react-native-audio-toolkit
     ```
 
-* Follow the platform specific steps for each platform you wish to support:
+* Follow the platform specific steps for each platform you wish to support. Note: `react-native link` will not work correctly for android and you'll still have to manually do step 1 below in order to avoid "Configuration with name 'default' not found."
 
 ### Android setup
 
@@ -84,6 +84,11 @@ an actual Android/iOS device:
 3. Select your app from the Project Navigator, click on the `Build Phases` tab.
     Expand `Link Binary With Libraries`. Click the plus and add
     `libReactNativeAudioToolkit.a` from under Workspace.
+    
+4. Add a usage description to **Info.plist**.
+    ```<key>Privacy - Microphone Usage Description</key>
+       <string>This app requires access to your microphone</string>
+    ```
 
 ### Play some media!
 

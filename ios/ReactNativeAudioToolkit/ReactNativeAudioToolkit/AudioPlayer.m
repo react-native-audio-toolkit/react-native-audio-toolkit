@@ -137,7 +137,6 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId
     
     // If successful, check options and add to player pool
     if (player) {
-        
         NSNumber *autoDestroy = [options objectForKey:@"autoDestroy"];
         if (autoDestroy) {
             player.autoDestroy = [autoDestroy boolValue];
@@ -171,12 +170,13 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId
     if (version >= 10.0) {
         player.automaticallyWaitsToMinimizeStalling = false;
     }
-    Float64 durationSeconds = 0;
-    while (durationSeconds < 10){
+    Float64 loadedDurationSeconds = 0;
+    Float64 totalDurationSeconds = CMTimeGetSeconds(player.currentItem.duration);
+    while (loadedDurationSeconds < 10 && loadedDurationSeconds < totalDurationSeconds){
         NSValue *val = player.currentItem.loadedTimeRanges.firstObject;
         CMTimeRange timeRange;
         [val getValue:&timeRange];
-        durationSeconds = CMTimeGetSeconds(timeRange.duration);
+        loadedDurationSeconds = CMTimeGetSeconds(timeRange.duration);
         [NSThread sleepForTimeInterval:0.01f];
     }
     

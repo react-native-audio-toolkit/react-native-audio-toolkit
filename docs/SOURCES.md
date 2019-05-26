@@ -20,7 +20,7 @@ follow these steps:
     compatibility.
 
 Your file will now be built into your app's installation file, and you can play
-back the file using `new Player.play('example.mp3');`
+back the file using `new Player('example.mp3').play();`
 
 Stream media over network
 -------------------------
