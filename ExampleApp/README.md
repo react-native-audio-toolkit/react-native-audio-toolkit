@@ -9,24 +9,19 @@ Expecting you have the React Native development environment in place:
 #### Android
 
 ```sh
-cd ExampleApp
-npm install         # make sure you do this inside ExampleApp/
-npm start
-
-# In a separate terminal, run:
-adb reverse tcp:8081 tcp:8081
-react-native run-android
+git clone https://github.com/react-native-community/react-native-audio-toolkit.git
+cd react-native-audio-toolkit/ExampleApp
+npm install
+npm run start:android 
 ```
 
 #### iOS
 
 ```sh
-cd ExampleApp
-npm install         # make sure you do this inside ExampleApp/
-
-# Then:
-# 1. Open ExampleApp/ios/ExampleApp.xcodeproj in Xcode
-# 2. Click on the run button
+git clone https://github.com/react-native-community/react-native-audio-toolkit.git
+cd react-native-audio-toolkit/ExampleApp
+npm install
+npm run start:ios 
 ```
 
 Then start clicking the buttons, it should be quite simple.

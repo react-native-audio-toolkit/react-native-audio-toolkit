@@ -3,12 +3,19 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node node_modules/react-native/local-cli/cli.js start"
+    "rn-cli": "node node_modules/react-native/local-cli/cli.js",
+    "start:android": "npm run rn-cli -- run-android",
+    "start:ios": "npm run rn-cli -- run-ios"
   },
   "dependencies": {
-    "react": "15.2.0",
-    "react-native": "0.29.0",
-    "react-native-audio-toolkit": "file:../",
-    "react-native-button": "^1.6.0"
+    "@react-native-community/slider": "^1.1.2",
+    "react": "16.8.3",
+    "react-native": "0.59.8",
+    "react-native-audio-toolkit": "^1.0.6"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.5",
+    "@babel/runtime": "^7.4.5",
+    "metro-react-native-babel-preset": "^0.54.1"
   }
 }
