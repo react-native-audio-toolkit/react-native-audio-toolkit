@@ -62,11 +62,14 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
     private WritableMap errObj(final String code, final String message) {
         WritableMap err = Arguments.createMap();
 
-        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
         String stackTraceString = "";
-
-        for (StackTraceElement e : stackTrace) {
-            stackTraceString += e.toString() + "\n";
+        try {
+            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+            for (StackTraceElement e : stackTrace) {
+                stackTraceString += (e != null ? e.toString() : "null") + "\n";
+            }
+        } catch (Exception e) {
+            stackTraceString = "Exception occurred while parsing stack trace";
         }
 
         err.putString("err", code);
