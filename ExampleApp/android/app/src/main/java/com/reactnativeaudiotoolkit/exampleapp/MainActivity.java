@@ -1,4 +1,4 @@
-package com.futurice.exampleapp;
+package com.reactnativeaudiotoolkit.exampleapp;
 
 import com.facebook.react.ReactActivity;
 
