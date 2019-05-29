@@ -103,11 +103,14 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     private WritableMap errObj(final String code, final String message, final boolean enableLog) {
         WritableMap err = Arguments.createMap();
 
-        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
         String stackTraceString = "";
-
-        for (StackTraceElement e : stackTrace) {
-            stackTraceString += e.toString() + "\n";
+        try {
+            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+            for (StackTraceElement e : stackTrace) {
+                stackTraceString += (e != null ? e.toString() : "null") + "\n";
+            }
+        } catch (Exception e) {
+            stackTraceString = "Exception occurred while parsing stack trace";
         }
 
         err.putString("err", code);
