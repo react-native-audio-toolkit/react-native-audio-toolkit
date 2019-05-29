@@ -152,11 +152,32 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId
     }
     
     // Prepare the player
-    // Wait until player is ready
+    // Wait until player is ready or has failed
     while (player.status == AVPlayerStatusUnknown) {
         [NSThread sleepForTimeInterval:0.01f];
     }
-    
+
+    if (player.status == AVPlayerStatusFailed) {
+        NSString *errMsg = [NSString stringWithFormat:@"Could not initialize player, error: %@", player.error];
+        NSDictionary* dict = [Helpers errObjWithCode:@"preparefail"
+                                         withMessage:errMsg];
+        callback(@[dict]);
+        return;
+    }
+
+    // Wait until player's current item is ready or has failed
+    while (player.currentItem.status == AVPlayerItemStatusUnknown) {
+        [NSThread sleepForTimeInterval:0.01f];
+    }
+
+    if (player.currentItem.status == AVPlayerItemStatusFailed) {
+        NSString *errMsg = [NSString stringWithFormat:@"Could not initialize player, error: %@", player.currentItem.error];
+        NSDictionary* dict = [Helpers errObjWithCode:@"preparefail"
+                                         withMessage:errMsg];
+        callback(@[dict]);
+        return;
+    }
+
     //make sure loadedTimeRanges is not null
     while (player.currentItem.loadedTimeRanges.firstObject == nil){
         [NSThread sleepForTimeInterval:0.01f];
