@@ -158,7 +158,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         }
 
         if (callback != null) {
-            callback.invoke();
+            callback.invoke(null);
         }
     }
 
@@ -254,7 +254,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         try {
             recorder.start();
 
-            callback.invoke();
+            callback.invoke(null);
         } catch (Exception e) {
             callback.invoke(errObj("startfail", e.toString()));
         }
@@ -274,7 +274,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
                 Log.d(LOG_TAG, "Autodestroying recorder...");
                 destroy(recorderId);
             }
-            callback.invoke();
+            callback.invoke(null);
         } catch (Exception e) {
             callback.invoke(errObj("stopfail", e.toString()));
         }
@@ -304,7 +304,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
                 Log.d(LOG_TAG, "Autodestroying recorder...");
                 destroy(recorderId);
             }
-            callback.invoke();
+            callback.invoke(null);
         } catch (Exception e) {
             callback.invoke(errObj("stopfail", e.toString()));
         }

@@ -189,7 +189,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         }
 
         if (callback != null) {
-            callback.invoke();
+            callback.invoke(null);
         }
     }
 
@@ -347,9 +347,8 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             player.setPlaybackParams(params);
         }
 
-        callback.invoke();
+        callback.invoke(null);
     }
-
 
     @ReactMethod
     public void play(Integer playerId, Callback callback) {
@@ -409,7 +408,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
                 player.pause();
                 Log.d(LOG_TAG, "stop(): Autodestroying player...");
                 destroy(playerId);
-                callback.invoke();
+                callback.invoke(null);
             } else {
                 // "Fake" stopping on Android by pausing and seeking to 0 so
                 // that we remain in prepared state

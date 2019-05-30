@@ -1,6 +1,9 @@
 react-native-audio-toolkit API
 ==============================
 
+<!-- IMPORTANT: If you change anything in this file, make sure to also update:
+                react-native-audio-toolkit/typings/index.d.ts -->
+
 Media methods
 -------------
 
@@ -61,8 +64,8 @@ Media methods
     Helper method for toggling pause.
 
     Callback is called after the operation has finished. Callback receives
-    `Object error` as first argument, `Boolean playing` as second argument
-    indicating if the player ended up playing (true) or paused (false).
+    `Object error` as first argument, `Boolean paused` as second argument
+    indicating if the player ended up playing (false) or paused (true).
 
 
 * `stop(Function ?callback)`

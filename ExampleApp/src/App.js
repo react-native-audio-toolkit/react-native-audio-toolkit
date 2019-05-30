@@ -89,7 +89,7 @@ export default class App extends Component<Props, State> {
   }
 
   _playPause() {
-    this.player.playPause((err, playing) => {
+    this.player.playPause((err, paused) => {
       if (err) {
         this.setState({
           error: err.message
