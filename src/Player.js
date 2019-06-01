@@ -23,7 +23,18 @@ class Player extends EventEmitter {
     super();
 
     this._path = path;
-    this._options = options;
+
+    if (options == null) {
+      this._options = defaultPlayerOptions;
+    } else {
+      // Make sure all required options have values
+      if (options.autoDestroy == null)
+        options.autoDestroy = defaultPlayerOptions.autoDestroy;
+      if (options.continuesToPlayInBackground == null)
+        options.continuesToPlayInBackground = defaultPlayerOptions.continuesToPlayInBackground;
+
+      this._options = options;
+    }
 
     this._playerId = playerId++;
     this._reset();
@@ -39,6 +50,7 @@ class Player extends EventEmitter {
     this._state = MediaStates.IDLE;
     this._volume = 1.0;
     this._pan = 0.0;
+    this._speed = 1.0;
     this._wakeLock = false;
     this._duration = -1;
     this._position = -1;
@@ -120,6 +132,7 @@ class Player extends EventEmitter {
           pan: this._pan,
           wakeLock: this._wakeLock,
           looping: this._looping,
+          speed: this._speed,
         },
         next,
       );
@@ -240,19 +253,28 @@ class Player extends EventEmitter {
     this._setIfInitialized({ looping: value });
   }
 
+  set speed(value) {
+    this._speed = value;
+    this._setIfInitialized({ speed: value });
+  }
+
   get currentTime() {
-    let pos = -1;
+    // Queue up an async call to get an accurate current time
+    RCTAudioPlayer.getCurrentTime(this._playerId, (err, results) => {
+      this._storeInfo(results);
+    });
 
     if (this._position < 0) {
       return -1;
     }
 
     if (this._state === MediaStates.PLAYING) {
-      pos = this._position + (Date.now() - this._lastSync);
+      // Estimate the current time based on the latest info we received
+      let pos = this._position + (Date.now() - this._lastSync) * this._speed;
       pos = Math.min(pos, this._duration);
-
       return pos;
     }
+
     return this._position;
   }
 
@@ -264,6 +286,9 @@ class Player extends EventEmitter {
   }
   get duration() {
     return this._duration;
+  }
+  get speed() {
+    return this._speed;
   }
 
   get state() {

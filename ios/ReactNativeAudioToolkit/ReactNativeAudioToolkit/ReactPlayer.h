@@ -13,5 +13,6 @@
 
 @property (readwrite) BOOL autoDestroy;
 @property (readwrite) BOOL looping;
+@property (readwrite) float speed;
 
 @end

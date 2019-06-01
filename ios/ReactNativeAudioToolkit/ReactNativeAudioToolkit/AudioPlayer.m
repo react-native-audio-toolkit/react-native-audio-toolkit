@@ -223,7 +223,7 @@ RCT_EXPORT_METHOD(destroy:(nonnull NSNumber*)playerId withCallback:(RCTResponseS
 }
 
 RCT_EXPORT_METHOD(seek:(nonnull NSNumber*)playerId withPos:(nonnull NSNumber*)position withCallback:(RCTResponseSenderBlock)callback) {
-    AVPlayer* player = [self playerForKey:playerId];
+    ReactPlayer* player = (ReactPlayer *)[self playerForKey:playerId];
     
     if (!player) {
         NSDictionary* dict = [Helpers errObjWithCode:@"notfound"
@@ -258,41 +258,53 @@ RCT_EXPORT_METHOD(seek:(nonnull NSNumber*)playerId withPos:(nonnull NSNumber*)po
 
 RCT_EXPORT_METHOD(play:(nonnull NSNumber*)playerId withCallback:(RCTResponseSenderBlock)callback) {
     ReactPlayer* player = (ReactPlayer *)[self playerForKey:playerId];
-    
+
     if (!player) {
         NSDictionary* dict = [Helpers errObjWithCode:@"notfound"
                                          withMessage:[NSString stringWithFormat:@"playerId %@ not found.", playerId]];
         callback(@[dict]);
         return;
     }
-    
+
     [player play];
+    player.rate = player.speed;
+
     callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration) * 1000),
                                 @"position": @(CMTimeGetSeconds(player.currentTime) * 1000)}]);
-    
-
 }
 
 RCT_EXPORT_METHOD(set:(nonnull NSNumber*)playerId withOpts:(NSDictionary*)options withCallback:(RCTResponseSenderBlock)callback) {
     ReactPlayer *player = (ReactPlayer *)[self playerForKey:playerId];
-    
+
     if (!player) {
         NSDictionary* dict = [Helpers errObjWithCode:@"notfound"
                                          withMessage:[NSString stringWithFormat:@"playerId %@ not found.", playerId]];
         callback(@[dict]);
         return;
     }
-    
+
     NSNumber *volume = [options objectForKey:@"volume"];
     if (volume) {
         [player setVolume:[volume floatValue]];
     }
-    
+
     NSNumber *looping = [options objectForKey:@"looping"];
     if (looping) {
         player.looping = [looping boolValue];
     }
-    
+
+    NSNumber *speed = [options objectForKey:@"speed"];
+    if (speed) {
+        // Internal variable for usage later
+        player.speed = [speed floatValue];
+
+        // If the player wasn't already playing, then setting the speed value to a non-zero value
+        // will start it playing and we don't want that
+        if (player.rate != 0.0f) {
+            player.rate = player.speed;
+        }
+    }
+
     callback(@[[NSNull null]]);
 }
 
@@ -318,7 +330,7 @@ RCT_EXPORT_METHOD(stop:(nonnull NSNumber*)playerId withCallback:(RCTResponseSend
 }
 
 RCT_EXPORT_METHOD(pause:(nonnull NSNumber*)playerId withCallback:(RCTResponseSenderBlock)callback) {
-    AVPlayer* player = [self playerForKey:playerId];
+    ReactPlayer* player = (ReactPlayer *)[self playerForKey:playerId];
     
     if (!player) {
         NSDictionary* dict = [Helpers errObjWithCode:@"notfound"
@@ -334,20 +346,34 @@ RCT_EXPORT_METHOD(pause:(nonnull NSNumber*)playerId withCallback:(RCTResponseSen
 }
 
 RCT_EXPORT_METHOD(resume:(nonnull NSNumber*)playerId withCallback:(RCTResponseSenderBlock)callback) {
-    AVPlayer* player = [self playerForKey:playerId];
-    
+    ReactPlayer* player = (ReactPlayer *)[self playerForKey:playerId];
+
     if (!player) {
         NSDictionary* dict = [Helpers errObjWithCode:@"notfound"
                                          withMessage:[NSString stringWithFormat:@"playerId %@ not found.", playerId]];
         callback(@[dict]);
         return;
     }
-    
+
     [player play];
-    
+    player.rate = player.speed;
+
     callback(@[[NSNull null]]);
 }
 
+RCT_EXPORT_METHOD(getCurrentTime:(nonnull NSNumber*)playerId withCallback:(RCTResponseSenderBlock)callback) {
+    ReactPlayer* player = (ReactPlayer *)[self playerForKey:playerId];
+
+    if (!player) {
+        NSDictionary* dict = [Helpers errObjWithCode:@"notfound"
+                                         withMessage:[NSString stringWithFormat:@"playerId %@ not found.", playerId]];
+        callback(@[dict]);
+        return;
+    }
+
+    callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration) * 1000),
+                                @"position": @(CMTimeGetSeconds(player.currentTime) * 1000)}]);
+}
 
 -(void)itemDidFinishPlaying:(NSNotification *) notification {
     NSNumber *playerId = ((ReactPlayerItem *)notification.object).reactPlayerId;
@@ -360,7 +386,7 @@ RCT_EXPORT_METHOD(resume:(nonnull NSNumber*)playerId withCallback:(RCTResponseSe
             return;
         }];
     }
-    if (player.looping && player) {
+    if (player && player.looping) {
         // Send looping event and start playing again
         NSString *eventName = [NSString stringWithFormat:@"RCTAudioPlayerEvent:%@", playerId];
         [self.bridge.eventDispatcher sendAppEventWithName:eventName
@@ -368,7 +394,7 @@ RCT_EXPORT_METHOD(resume:(nonnull NSNumber*)playerId withCallback:(RCTResponseSe
                                                             @"data" : [NSNull null]
                                                             }];
         [player play];
-        
+        player.rate = player.speed;
     } else {
         NSString *eventName = [NSString stringWithFormat:@"RCTAudioPlayerEvent:%@", playerId];
         [self.bridge.eventDispatcher sendAppEventWithName:eventName
@@ -386,6 +412,5 @@ RCT_EXPORT_METHOD(resume:(nonnull NSNumber*)playerId withCallback:(RCTResponseSe
 
     }
 }
-
 
 @end
