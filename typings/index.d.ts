@@ -30,14 +30,14 @@ interface PlayerOptions {
      * If this is not set, you are responsible for destroying the object by calling `destroy()`.
      * (Default: true)
      */
-    autoDestroy: boolean;
+    autoDestroy?: boolean;
 
     /**
      * (Android only) Should playback continue if app is sent to background?
      * iOS will always pause in this case.
      * (Default: false)
      */
-    continuesToPlayInBackground: boolean;
+    continuesToPlayInBackground?: boolean;
 }
 
 /**
@@ -130,6 +130,14 @@ declare class Player extends EventEmitter {
      * Default is `false`.
      */
     looping: boolean;
+
+    /**
+     * Get/set the playback speed for audio.
+     * Default is `1.0`.
+     * 
+     * NOTE: On Android, this is only supported on Android 6.0+.
+     */
+    speed: number;
 
     /**
      * Get duration of prepared/playing media in milliseconds.

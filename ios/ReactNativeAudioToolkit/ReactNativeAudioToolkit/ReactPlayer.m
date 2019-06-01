@@ -15,6 +15,7 @@
     
     self.looping = NO;
     self.autoDestroy = YES;
+    self.speed = 1.0f;
     
     return self;
 }

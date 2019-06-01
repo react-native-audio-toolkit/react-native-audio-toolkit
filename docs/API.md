@@ -120,6 +120,11 @@ p.prepare((err) => {
     Get/set playback volume.
     The scale is from 0.0 (silence) to 1.0 (full volume).
 
+* `speed` - Number, default `1.0`
+
+    Get/set the playback speed for audio.
+    NOTE: On Android, this is only supported on Android 6.0+.
+
 * `duration` - Number (**read only**)
 
     Get duration of prepared/playing media in milliseconds. If no duration is
