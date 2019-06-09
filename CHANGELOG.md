@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 ### BREAKING CHANGE
+- Android: Change namespace from `com.futurice.rctaudiotoolkit` to `com.reactnativecommunity.rctaudiotoolkit` which requires users to re-link library. This can be done manually or automatically during the update process via:
+    ```
+    react-native unlink react-native-audio-toolkit
+    npm install --save react-native-audio-toolkit@2.0.0
+    react-native link react-native-audio-toolkit
+    ```
 - Android: Remove permissions from library AndroidManifest and instead require users to add them. See [SETUP.md](https://github.com/react-native-community/react-native-audio-toolkit/blob/master/docs/SETUP.md) and PR [#148](https://github.com/react-native-community/react-native-audio-toolkit/pull/148) for more details
 
 ### Added
@@ -22,7 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 - Fixed some incorrect examples in the documentation
 - Android: Guard against possible exceptions while parsing stack trace
-- Android: Fix build error related to defining `android:minSdkVersion` in the libraries AndroidManifest
+- Android: Fix build error related to defining `android:minSdkVersion` in the library's AndroidManifest
 - Android: Fix crash on devices running API level 22 or earlier
 - iOS: Fix `Player.pause()` not setting `PAUSED` state
 

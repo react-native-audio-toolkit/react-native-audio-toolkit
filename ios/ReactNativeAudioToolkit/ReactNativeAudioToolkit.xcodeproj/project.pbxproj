@@ -111,7 +111,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0730;
-				ORGANIZATIONNAME = Futurice;
+				ORGANIZATIONNAME = "React Native Community";
 				TargetAttributes = {
 					5E8FD9821D269F5D00CF68CC = {
 						CreatedOnToolsVersion = 7.3.1;
@@ -244,7 +244,6 @@
 					"$(SRCROOT)/../**",
 					"$(SRCROOT)/../../react-native/React/**",
 					"$(SRCROOT)/../../node_modules/react-native/React/**",
-					"$(SRCROOT)/../../ExampleApp/node_modules/react-native/React/**",
 					"$(SRCROOT)/../../../../node_modules/react-native/React/**",
 				);
 				OTHER_LDFLAGS = "-ObjC";
@@ -262,7 +261,6 @@
 					"$(SRCROOT)/../**",
 					"$(SRCROOT)/../../react-native/React/**",
 					"$(SRCROOT)/../../node_modules/react-native/React/**",
-					"$(SRCROOT)/../../ExampleApp/node_modules/react-native/React/**",
 					"$(SRCROOT)/../../../../node_modules/react-native/React/**",
 				);
 				OTHER_LDFLAGS = "-ObjC";
