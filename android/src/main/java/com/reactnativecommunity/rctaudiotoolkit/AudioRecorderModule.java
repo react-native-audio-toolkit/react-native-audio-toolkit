@@ -1,4 +1,4 @@
-package com.futurice.rctaudiotoolkit;
+package com.reactnativecommunity.rctaudiotoolkit;
 
 import android.annotation.TargetApi;
 import android.media.MediaRecorder;
