@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 - Specify exactly which files to include in npm package
+- Only import specific items from lodash to keep build size down
 - Android: `build.gradle` will use SDK version settings of the root project, if available
 - iOS: Buffer up to 10 seconds of audio before beginning playback
 

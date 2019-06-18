@@ -7,10 +7,12 @@ import {
   Platform
 } from 'react-native';
 
-import _ from 'lodash';
 import async from 'async';
 import EventEmitter from 'eventemitter3';
 import MediaStates from './MediaStates';
+
+// Only import specific items from lodash to keep build size down
+import noop from 'lodash/noop';
 
 var RCTAudioRecorder = NativeModules.AudioRecorder;
 
@@ -70,7 +72,7 @@ class Recorder extends EventEmitter {
     this.emit(event, data);
   }
 
-  prepare(callback = _.noop) {
+  prepare(callback = noop) {
     this._updateState(null, MediaStates.PREPARING);
 
     // Prepare recorder
@@ -83,7 +85,7 @@ class Recorder extends EventEmitter {
     return this;
   }
 
-  record(callback = _.noop) {
+  record(callback = noop) {
     let tasks = [];
 
     // Make sure recorder is prepared
@@ -95,7 +97,7 @@ class Recorder extends EventEmitter {
 
     // Start recording
     tasks.push((next) => {
-        RCTAudioRecorder.record(this._recorderId, next);
+      RCTAudioRecorder.record(this._recorderId, next);
     });
 
     async.series(tasks, (err) => {
@@ -106,7 +108,7 @@ class Recorder extends EventEmitter {
     return this;
   }
 
-  stop(callback = _.noop) {
+  stop(callback = noop) {
     if (this._state >= MediaStates.RECORDING) {
       RCTAudioRecorder.stop(this._recorderId, (err) => {
         this._updateState(err, MediaStates.DESTROYED);
@@ -119,7 +121,7 @@ class Recorder extends EventEmitter {
     return this;
   }
 
-  pause(callback = _.noop) {
+  pause(callback = noop) {
     if (this._state >= MediaStates.RECORDING) {
       RCTAudioRecorder.pause(this._recorderId, (err) => {
         this._updateState(err, MediaStates.PAUSED);
@@ -132,7 +134,7 @@ class Recorder extends EventEmitter {
     return this;
   }
 
-  toggleRecord(callback = _.noop) {
+  toggleRecord(callback = noop) {
     if (this._state === MediaStates.RECORDING) {
       this.stop((err) => {
         callback(err, true);
@@ -146,7 +148,7 @@ class Recorder extends EventEmitter {
     return this;
   }
 
-  destroy(callback = _.noop) {
+  destroy(callback = noop) {
     this._reset();
     RCTAudioRecorder.destroy(this._recorderId, callback);
   }

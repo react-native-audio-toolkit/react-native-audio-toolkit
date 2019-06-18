@@ -1,9 +1,14 @@
 import { NativeModules, DeviceEventEmitter, NativeAppEventEmitter, Platform } from 'react-native';
 
-import _ from 'lodash';
 import async from 'async';
 import EventEmitter from 'eventemitter3';
 import MediaStates from './MediaStates';
+
+// Only import specific items from lodash to keep build size down
+import filter from 'lodash/filter';
+import identity from 'lodash/identity';
+import last from 'lodash/last';
+import noop from 'lodash/noop';
 
 const RCTAudioPlayer = NativeModules.AudioPlayer;
 
@@ -76,7 +81,7 @@ class Player extends EventEmitter {
     }
 
     // Use last truthy value from results array as new media info
-    const info = _.last(_.filter(results, _.identity));
+    const info = last(filter(results, identity));
     this._storeInfo(info);
   }
 
@@ -113,7 +118,7 @@ class Player extends EventEmitter {
     this.emit(event, data);
   }
 
-  prepare(callback = _.noop) {
+  prepare(callback = noop) {
     this._updateState(null, MediaStates.PREPARING);
 
     const tasks = [];
@@ -146,7 +151,7 @@ class Player extends EventEmitter {
     return this;
   }
 
-  play(callback = _.noop) {
+  play(callback = noop) {
     const tasks = [];
 
     // Make sure player is prepared
@@ -169,7 +174,7 @@ class Player extends EventEmitter {
     return this;
   }
 
-  pause(callback = _.noop) {
+  pause(callback = noop) {
     RCTAudioPlayer.pause(this._playerId, (err, results) => {
       // Android emits a pause event on the native side
       if (Platform.OS === 'ios') {
@@ -181,7 +186,7 @@ class Player extends EventEmitter {
     return this;
   }
 
-  playPause(callback = _.noop) {
+  playPause(callback = noop) {
     if (this._state === MediaStates.PLAYING) {
       this.pause((err) => {
         callback(err, true);
@@ -195,7 +200,7 @@ class Player extends EventEmitter {
     return this;
   }
 
-  stop(callback = _.noop) {
+  stop(callback = noop) {
     RCTAudioPlayer.stop(this._playerId, (err, results) => {
       this._updateState(err, MediaStates.PREPARED);
       this._position = -1;
@@ -205,12 +210,12 @@ class Player extends EventEmitter {
     return this;
   }
 
-  destroy(callback = _.noop) {
+  destroy(callback = noop) {
     this._reset();
     RCTAudioPlayer.destroy(this._playerId, callback);
   }
 
-  seek(position = 0, callback = _.noop) {
+  seek(position = 0, callback = noop) {
     // Store old state, but not if it was already SEEKING
     if (this._state != MediaStates.SEEKING) {
       this._preSeekState = this._state;
@@ -228,7 +233,7 @@ class Player extends EventEmitter {
     });
   }
 
-  _setIfInitialized(options, callback = _.noop) {
+  _setIfInitialized(options, callback = noop) {
     if (this._state >= MediaStates.PREPARED) {
       RCTAudioPlayer.set(this._playerId, options, callback);
     }
