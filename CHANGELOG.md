@@ -29,6 +29,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 - Fixed some incorrect examples in the documentation
 - Android: Guard against possible exceptions while parsing stack trace
+- Android: Guard against exceptions that can appear in onHostPause
 - Android: Fix build error related to defining `android:minSdkVersion` in the library's AndroidManifest
 - Android: Fix crash on devices running API level 22 or earlier
 - iOS: Fix `Player.pause()` not setting `PAUSED` state
