@@ -8,7 +8,7 @@ import com.facebook.react.ReactPackage;
 import com.facebook.react.shell.MainReactPackage;
 import com.facebook.soloader.SoLoader;
 
-import com.futurice.rctaudiotoolkit.AudioPackage;
+import com.reactnativecommunity.rctaudiotoolkit.AudioPackage;
 import com.reactnativecommunity.slider.ReactSliderPackage;
 
 import java.util.Arrays;

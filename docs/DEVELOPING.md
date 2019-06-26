@@ -27,7 +27,7 @@ wml setup
 3. In the `react-native-audio-toolkit` root directory, run:
 
     ```
-    wml add . ExampleApp/node_modules/react-native-audio-toolkit
+    wml add . ExampleApp/node_modules/@react-native-community/audio-toolkit
     ```
 
 4. Start wml

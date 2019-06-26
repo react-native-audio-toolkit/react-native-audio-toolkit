@@ -3,13 +3,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## Unreleased
+
+
+## [2.0.0] - 2019-06-26
 ### BREAKING CHANGE
 - Android: Change namespace from `com.futurice.rctaudiotoolkit` to `com.reactnativecommunity.rctaudiotoolkit` which requires users to re-link library. This can be done manually or automatically during the update process via:
     ```
     react-native unlink react-native-audio-toolkit
-    npm install --save react-native-audio-toolkit@2.0.0
-    react-native link react-native-audio-toolkit
+    npm uninstall --save react-native-audio-toolkit
+    npm install --save @react-native-community/audio-toolkit
+    react-native link @react-native-community/audio-toolkit
     ```
 - Android: Remove permissions from library AndroidManifest and instead require users to add them. See [SETUP.md](https://github.com/react-native-community/react-native-audio-toolkit/blob/master/docs/SETUP.md) and PR [#148](https://github.com/react-native-community/react-native-audio-toolkit/pull/148) for more details
 
@@ -88,7 +92,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Initial release.
 
 
-[Unreleased]: https://github.com/react-native-community/react-native-audio-toolkit/compare/dc2f04a35f388016aa294bcc80e7f553d1988037...HEAD
+[2.0.0]: https://github.com/react-native-community/react-native-audio-toolkit/compare/dc2f04a35f388016aa294bcc80e7f553d1988037...HEAD
 [1.0.6]: https://github.com/react-native-community/react-native-audio-toolkit/compare/4746870166fe4beb9fbf075d45fab952de4558d6...dc2f04a35f388016aa294bcc80e7f553d1988037
 [1.0.5]: https://github.com/react-native-community/react-native-audio-toolkit/compare/6a2641ebc6b6177fa29ac81b694ea2dd64d5a2cd...4746870166fe4beb9fbf075d45fab952de4558d6
 [1.0.4]: https://github.com/react-native-community/react-native-audio-toolkit/compare/eba2326941e9b2f4405e832ce5af0a85bf6817ef...6a2641ebc6b6177fa29ac81b694ea2dd64d5a2cd

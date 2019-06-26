@@ -5,13 +5,21 @@ Expecting you have the React Native development environment in place, are
 starting with a React Native hello world project and have managed to run it on
 an actual Android/iOS device:
 
-* Install library via npm
-
+1. Install library via npm:
     ```
-    npm install --save react-native-audio-toolkit
+    npm install --save @react-native-community/audio-toolkit
     ```
 
-* Follow the platform specific steps for each platform you wish to support. Note: `react-native link` will not work correctly for android and you'll still have to manually do step 1 below in order to avoid "Configuration with name 'default' not found."
+2. Link the library by either:
+    1. Linking automatically using:
+        ```
+        react-native link @react-native-community/audio-toolkit
+        ```
+    2. Linking manually by following steps 1-3 of the Android/iOS setup below.
+
+3. Regardless of whether you link automatically or manually in step 2, make
+    sure to check out step 4 of the Android/iOS setup below as some manual
+    changes may be required.
 
 ### Android setup
 
@@ -20,8 +28,8 @@ an actual Android/iOS device:
     ```
     ...
 
-    include ':react-native-audio-toolkit'
-    project(':react-native-audio-toolkit').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-audio-toolkit/android/lib')
+    include ':@react-native-community_audio-toolkit'
+    project(':@react-native-community_audio-toolkit').projectDir = new File(rootProject.projectDir, '../node_modules/@react-native-community/audio-toolkit/android')
     ```
 
 2. Add dependency to `android/app/build.gradle`
@@ -31,7 +39,7 @@ an actual Android/iOS device:
 
     dependencies {
         ...
-        compile project(':react-native-audio-toolkit')
+        implementation project(':@react-native-community_audio-toolkit')
     }
     ```
 
@@ -44,7 +52,7 @@ an actual Android/iOS device:
     import com.facebook.react.ReactPackage;
     import com.facebook.react.shell.MainReactPackage;
 
-    import com.futurice.rctaudiotoolkit.AudioPackage; // <-------- here
+    import com.reactnativecommunity.rctaudiotoolkit.AudioPackage; // <-------- here
 
     ...
 
@@ -94,7 +102,7 @@ an actual Android/iOS device:
 
 1. Right click `Libraries`, click `Add Files to "ExampleApp"`
 
-2. Select `node_modules/react-native-audio-toolkit/ios/ReactNativeAudioToolkit/ReactNativeAudioToolkit.xcodeproj`
+2. Select `node_modules/@react-native-community/audio-toolkit/ios/ReactNativeAudioToolkit/ReactNativeAudioToolkit.xcodeproj`
 
 3. Select your app from the Project Navigator, click on the `Build Phases` tab.
     Expand `Link Binary With Libraries`. Click the plus and add
@@ -114,7 +122,7 @@ an actual Android/iOS device:
         Player,
         Recorder,
         MediaStates
-    } from 'react-native-audio-toolkit';
+    } from '@react-native-community/audio-toolkit';
 
     ...
     ```

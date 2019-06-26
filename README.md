@@ -1,6 +1,6 @@
 ![banner](/banner.png)
 
-[![npm version](https://badge.fury.io/js/react-native-audio-toolkit.svg)](https://badge.fury.io/js/react-native-audio-toolkit)
+[![npm version](https://badge.fury.io/js/%40react-native-community%2Faudio-toolkit.svg)](https://badge.fury.io/js/%40react-native-community%2Faudio-toolkit)
 
 This is a cross-platform (Android and iOS) audio library for React Native.
 Both audio playback and recording is supported. In addition to basic
@@ -34,6 +34,7 @@ Documentation
 * Examples on playback from various [media sources](/docs/SOURCES.md)
 * Notes on [developing the library itself](/docs/DEVELOPING.md)
 * Rough [state diagram](/docs/state_diagram.svg) of the [Player](src/Player.js)
+* View the [changelog](/CHANGELOG.md)
 
 License
 -------

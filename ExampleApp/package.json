@@ -8,10 +8,10 @@
     "start:ios": "npm run rn-cli -- run-ios"
   },
   "dependencies": {
+    "@react-native-community/audio-toolkit": "^2.0.0",
     "@react-native-community/slider": "^1.1.2",
     "react": "16.8.3",
-    "react-native": "0.59.8",
-    "react-native-audio-toolkit": "^1.0.6"
+    "react-native": "0.59.8"
   },
   "devDependencies": {
     "@babel/core": "^7.4.5",

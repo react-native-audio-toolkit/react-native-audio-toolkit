@@ -161,7 +161,7 @@ p.prepare((err) => {
     ```
 
     NOTE: This object is available as
-    `require('react-native-audio-toolkit').MediaStates`
+    `require('@react-native-community/audio-toolkit').MediaStates`
 
 * Helpers for states - Boolean (**read only**)
 
@@ -271,7 +271,7 @@ Player.isPrepared   true if player is prepared
     ```
 
     NOTE: This object is available as
-    `require('react-native-audio-toolkit').MediaStates`
+    `require('@react-native-community/audio-toolkit').MediaStates`
 
 * `fsPath` - String (**read only**)
 
