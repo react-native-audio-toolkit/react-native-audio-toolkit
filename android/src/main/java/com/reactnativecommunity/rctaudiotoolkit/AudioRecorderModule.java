@@ -283,7 +283,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
     @ReactMethod
     public void pause(Integer recorderId, Callback callback) {
         if (android.os.Build.VERSION.SDK_INT < 24) {
-            callback.invoke(errObj("notsupported", "Android version dos't support pause"));
+            callback.invoke(errObj("notsupported", "Android version doesn't support pause"));
             return;
         }
         pause24(recorderId,callback);
