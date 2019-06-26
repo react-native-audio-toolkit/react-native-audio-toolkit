@@ -11,7 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [2.0.0] - 2019-06-26
 ### BREAKING CHANGES
-- Android: Change namespace from `com.futurice.rctaudiotoolkit` to `com.reactnativecommunity.rctaudiotoolkit` which requires users to re-link library. This can be done manually or automatically during the update process via:
+- Changed npm package name from `react-native-audio-toolkit` to `@react-native-community/audio-toolkit` and changed Android namespace from `com.futurice.rctaudiotoolkit` to `com.reactnativecommunity.rctaudiotoolkit`. These changes require users to reinstall and re-link the library to update to this version. This can be done manually or automatically during the update process via:
     ```
     react-native unlink react-native-audio-toolkit
     npm uninstall --save react-native-audio-toolkit
