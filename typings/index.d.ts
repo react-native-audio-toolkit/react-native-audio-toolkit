@@ -14,15 +14,22 @@ declare enum MediaStates {
     PAUSED = 5
 }
 
+interface BaseError<T> {
+    err: "invalidpath" | "preparefail" | "startfail" | "notfound" | "stopfail" | T;
+    message: string;
+    stackTrace: string[] | string;
+}
 /**
  * For more details, see:
  * https://github.com/react-native-community/react-native-audio-toolkit/blob/master/docs/API.md#user-content-callbacks
  */
-export interface PlayerError {
-    err: "invalidpath" | "preparefail" | "startfail" | "notfound" | "stopfail" | "notsupported";
-    message: string;
-    stackTrace: string[] | string;
-}
+export type PlayerError = BaseError<"seekfail">;
+
+/**
+ * For more details, see:
+ * https://github.com/react-native-community/react-native-audio-toolkit/blob/master/docs/API.md#user-content-callbacks
+ */
+export type RecorderError = BaseError<"notsupported">;
 
 interface PlayerOptions {
     /**
@@ -254,14 +261,14 @@ declare class Recorder extends EventEmitter {
      * 
      * If there was an error, the callback is called with an error object as first parameter.
      */
-    prepare(callback?: ((err: PlayerError | null, fsPath: string) => void)): this;
+    prepare(callback?: ((err: RecorderError | null, fsPath: string) => void)): this;
 
     /**
      * Start recording to file in `path`.
      * 
      * @param callback Callback is called after recording has started or with error object if an error occurred.
      */
-    record(callback?: ((err: PlayerError | null) => void)): this;
+    record(callback?: ((err: RecorderError | null) => void)): this;
 
     /**
      * Stop recording and save the file.
@@ -269,26 +276,26 @@ declare class Recorder extends EventEmitter {
      * @param callback Callback is called after recording has stopped or with error object.
      * The recorder is destroyed after calling stop and should no longer be used.
      */
-    stop(callback?: ((err: PlayerError | null) => void)): this;
+    stop(callback?: ((err: RecorderError | null) => void)): this;
 
     /**
      * 
      * @param callback 
      */
-    pause(callback?: ((err: PlayerError | null) => void)): this;
+    pause(callback?: ((err: RecorderError | null) => void)): this;
 
     /**
      * 
      * @param callback 
      */
-    toggleRecord(callback?: ((err: PlayerError | null) => void)): this;
+    toggleRecord(callback?: ((err: RecorderError | null) => void)): this;
 
     /**
      * Destroy the recorder. Should only be used if a recorder was constructed, and for some reason is now unwanted.
      * 
      * @param callback Callback is called after the operation has finished.
      */
-    destroy(callback?: ((err: PlayerError | null) => void)): void;
+    destroy(callback?: ((err: RecorderError | null) => void)): void;
 
     /**
      * Get the filesystem path of file being recorded to.
