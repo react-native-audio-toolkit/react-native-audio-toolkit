@@ -334,11 +334,15 @@ The following $errorStrings might occur:
 'startfail' - Failed to start the player/recorder
 'notfound' - Player/recorder with provided id was not found
 'stopfail' - Failed to stop recording/playing
-'notsupported' - Device doesn't support the operation (Currently used for pause recording functionality on Android SDK < 24)
 ```
 
 ### Player-specific error callbacks:
 ```
 'seekfail' - new seek operation before the old one completed.
+```
+
+### Recorder-specific error callbacks:
+```
+'notsupported' - Device doesn't support the operation (Currently used for pause recording functionality on Android SDK < 24)
 ```
 
