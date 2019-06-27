@@ -1,5 +1,3 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.reactnativecommunity.rctaudiotoolkit">
-
-    <uses-sdk android:targetSdkVersion="28" />
 </manifest> 
