@@ -2,9 +2,9 @@
 node_modules
 
 # Project files
+CODEOWNERS
 CONTRIBUTING.md
 CODE_OF_CONDUCT.md
-README.md
 
 # Config files
 .babelrc

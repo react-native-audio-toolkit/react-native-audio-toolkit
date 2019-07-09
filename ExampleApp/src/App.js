@@ -63,7 +63,11 @@ export default class App extends Component<Props, State> {
 
     this._progressInterval = setInterval(() => {
       if (this.player && this._shouldUpdateProgressBar()) {
-        this.setState({ progress: Math.max(0, this.player.currentTime) / this.player.duration });
+        let currentProgress = Math.max(0, this.player.currentTime) / this.player.duration;
+        if (isNaN(currentProgress)) {
+          currentProgress = 0;
+        }
+        this.setState({ progress: currentProgress });
       }
     }, 100);
   }

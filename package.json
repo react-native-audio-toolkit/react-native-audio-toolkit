@@ -1,16 +1,9 @@
 {
   "name": "@react-native-community/audio-toolkit",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Cross-platform audio library for React Native",
   "main": "index.js",
   "types": "typings/index.d.ts",
-  "files": [
-    "/android",
-    "/index.js",
-    "/ios",
-    "/src",
-    "/typings"
-  ],
   "directories": {
     "doc": "docs"
   },

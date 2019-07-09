@@ -4,7 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+
+
+## [2.0.2] - 2019-07-09
+### Added
 - Cocoapods support
+
+### Changed
+- Add more specific error strings to TypeScript error types
+
+### Fixed
+- Android: Fix Gradle warning related to defining the targetSdk within the AndroidManifest.xml
 
 ## [2.0.1] - 2019-06-26
 ### Fixed
@@ -96,7 +106,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Initial release.
 
 
-[2.0.1]: https://github.com/react-native-community/react-native-audio-toolkit/compare/ed89597b2e319c9073f2156c81c48c7ff8a7993f...HEAD
+[2.0.2]: https://github.com/react-native-community/react-native-audio-toolkit/compare/caa399431afdcb70a2aa73fe436cdf00e3ea92d0...HEAD
+[2.0.1]: https://github.com/react-native-community/react-native-audio-toolkit/commit/caa399431afdcb70a2aa73fe436cdf00e3ea92d0
 [2.0.0]: https://github.com/react-native-community/react-native-audio-toolkit/compare/dc2f04a35f388016aa294bcc80e7f553d1988037...ed89597b2e319c9073f2156c81c48c7ff8a7993f
 [1.0.6]: https://github.com/react-native-community/react-native-audio-toolkit/compare/4746870166fe4beb9fbf075d45fab952de4558d6...dc2f04a35f388016aa294bcc80e7f553d1988037
 [1.0.5]: https://github.com/react-native-community/react-native-audio-toolkit/compare/6a2641ebc6b6177fa29ac81b694ea2dd64d5a2cd...4746870166fe4beb9fbf075d45fab952de4558d6
