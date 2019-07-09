@@ -14,15 +14,22 @@ declare enum MediaStates {
     PAUSED = 5
 }
 
+interface BaseError<T> {
+    err: "invalidpath" | "preparefail" | "startfail" | "notfound" | "stopfail" | T;
+    message: string;
+    stackTrace: string[] | string;
+}
 /**
  * For more details, see:
  * https://github.com/react-native-community/react-native-audio-toolkit/blob/master/docs/API.md#user-content-callbacks
  */
-interface Error {
-    err: string;
-    message: string;
-    stackTrace: string[] | string;
-}
+export type PlayerError = BaseError<"seekfail">;
+
+/**
+ * For more details, see:
+ * https://github.com/react-native-community/react-native-audio-toolkit/blob/master/docs/API.md#user-content-callbacks
+ */
+export type RecorderError = BaseError<"notsupported">;
 
 interface PlayerOptions {
     /**
@@ -59,21 +66,21 @@ declare class Player extends EventEmitter {
      * 
      * @param callback Callback is called with empty first parameter when file is ready for playback with `play()`.
      */
-    prepare(callback?: ((err: Error | null) => void)): this;
+    prepare(callback?: ((err: PlayerError | null) => void)): this;
 
     /**
      * Start playback.
      * 
      * @param callback If callback is given, it is called when playback has started.
      */
-    play(callback?: ((err: Error | null) => void)): this;
+    play(callback?: ((err: PlayerError | null) => void)): this;
 
     /**
      * Pauses playback. Playback can be resumed by calling `play()` with no parameters.
      * 
      * @param callback Callback is called after the operation has finished.
      */
-    pause(callback?: ((err: Error | null) => void)): this;
+    pause(callback?: ((err: PlayerError | null) => void)): this;
 
     /**
      * Helper method for toggling pause.
@@ -82,7 +89,7 @@ declare class Player extends EventEmitter {
      * argument, Boolean paused as second argument indicating if the player ended up playing (`false`)
      * or paused (`true`).
      */
-    playPause(callback?: ((err: Error | null, paused: boolean) => void)): this;
+    playPause(callback?: ((err: PlayerError | null, paused: boolean) => void)): this;
 
     /**
      * Stop playback. If autoDestroy option was set during initialization, clears all media resources from memory.
@@ -90,14 +97,14 @@ declare class Player extends EventEmitter {
      * 
      * @param callback 
      */
-    stop(callback?: ((err: Error | null) => void)): this;
+    stop(callback?: ((err: PlayerError | null) => void)): this;
 
     /**
      * Stops playback and destroys the player. The player should no longer be used.
      * 
      * @param callback Callback is called after the operation has finished.
      */
-    destroy(callback?: ((err: Error | null) => void)): void;
+    destroy(callback?: ((err: PlayerError | null) => void)): void;
 
     /**
      * Seek in currently playing media.
@@ -107,7 +114,7 @@ declare class Player extends EventEmitter {
      * operation is performed before the previous has finished, the previous operation gets an error in its
      * callback with the err field set to oldcallback. The previous operation should likely do nothing in this case.
      */
-    seek(position?: number, callback?: ((err: Error | null) => void)): void;
+    seek(position?: number, callback?: ((err: PlayerError | null) => void)): void;
 
     /**
      * Get/set playback volume. The scale is from 0.0 (silence) to 1.0 (full volume). Default is 1.0.
@@ -254,14 +261,14 @@ declare class Recorder extends EventEmitter {
      * 
      * If there was an error, the callback is called with an error object as first parameter.
      */
-    prepare(callback?: ((err: Error | null, fsPath: string) => void)): this;
+    prepare(callback?: ((err: RecorderError | null, fsPath: string) => void)): this;
 
     /**
      * Start recording to file in `path`.
      * 
      * @param callback Callback is called after recording has started or with error object if an error occurred.
      */
-    record(callback?: ((err: Error | null) => void)): this;
+    record(callback?: ((err: RecorderError | null) => void)): this;
 
     /**
      * Stop recording and save the file.
@@ -269,26 +276,26 @@ declare class Recorder extends EventEmitter {
      * @param callback Callback is called after recording has stopped or with error object.
      * The recorder is destroyed after calling stop and should no longer be used.
      */
-    stop(callback?: ((err: Error | null) => void)): this;
+    stop(callback?: ((err: RecorderError | null) => void)): this;
 
     /**
      * 
      * @param callback 
      */
-    pause(callback?: ((err: Error | null) => void)): this;
+    pause(callback?: ((err: RecorderError | null) => void)): this;
 
     /**
      * 
      * @param callback 
      */
-    toggleRecord(callback?: ((err: Error | null) => void)): this;
+    toggleRecord(callback?: ((err: RecorderError | null) => void)): this;
 
     /**
      * Destroy the recorder. Should only be used if a recorder was constructed, and for some reason is now unwanted.
      * 
      * @param callback Callback is called after the operation has finished.
      */
-    destroy(callback?: ((err: Error | null) => void)): void;
+    destroy(callback?: ((err: RecorderError | null) => void)): void;
 
     /**
      * Get the filesystem path of file being recorded to.

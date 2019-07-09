@@ -341,3 +341,8 @@ The following $errorStrings might occur:
 'seekfail' - new seek operation before the old one completed.
 ```
 
+### Recorder-specific error callbacks:
+```
+'notsupported' - Device doesn't support the operation (Currently used for pause recording functionality on Android SDK < 24)
+```
+
