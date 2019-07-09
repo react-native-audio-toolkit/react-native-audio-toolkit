@@ -100,6 +100,8 @@ an actual Android/iOS device:
 
 ### iOS setup
 
+React Native 0.59 and earlier:
+
 1. Right click `Libraries`, click `Add Files to "ExampleApp"`
 
 2. Select `node_modules/@react-native-community/audio-toolkit/ios/ReactNativeAudioToolkit/ReactNativeAudioToolkit.xcodeproj`
@@ -112,6 +114,9 @@ an actual Android/iOS device:
     ```<key>Privacy - Microphone Usage Description</key>
        <string>This app requires access to your microphone</string>
     ```
+
+React Native 0.60 and later
+- Follow step 4 above. Steps 1 - 3 are not required.
 
 ### Play some media!
 
