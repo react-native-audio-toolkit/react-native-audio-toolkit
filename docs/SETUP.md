@@ -113,7 +113,7 @@ React Native 0.59 and earlier:
 4. Add a usage description to **Info.plist**.
     ```
       <key>NSMicrophoneUsageDescription</key>
-	  <string>This app requires access to your microphone</string>
+      <string>This app requires access to your microphone</string>
     ```
 
 React Native 0.60 and later
