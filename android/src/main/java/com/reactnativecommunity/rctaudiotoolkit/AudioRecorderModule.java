@@ -4,7 +4,6 @@ import android.annotation.TargetApi;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Environment;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.net.Uri;
 import android.webkit.URLUtil;
