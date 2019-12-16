@@ -28,6 +28,11 @@ Media methods
       // (Android only) Should playback continue if app is sent to background?
       // iOS will always pause in this case.
       continuesToPlayInBackground : boolean (default: False)
+
+      // Boolean to determine whether other audio sources on the device will mix
+      // with sounds being played back by this module. If this is not set, playback
+      // of audio will stop other sources
+      mixWithOthers : boolean (default: False)
     }
     ```
 
