@@ -47,6 +47,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     private ReactApplicationContext context;
     private AudioManager mAudioManager;
     private Integer lastPlayerId;
+    boolean mixWithOthers = false;
 
     public AudioPlayerModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -302,6 +303,13 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             continueInBackground = options.getBoolean("continuesToPlayInBackground");
         }
 
+        // Don't mix audio with others by default
+        this.mixWithOthers = false;
+
+        if (options.hasKey("mixWithOthers")) {
+            this.mixWithOthers = options.getBoolean("mixWithOthers");
+        }
+
         this.playerAutoDestroy.put(playerId, autoDestroy);
         this.playerContinueInBackground.put(playerId, continueInBackground);
 
@@ -383,7 +391,9 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         }
 
         try {
-            this.mAudioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+            if (!this.mixWithOthers) {
+                this.mAudioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+            }
             player.start();
 
             callback.invoke(null, getInfo(player));
