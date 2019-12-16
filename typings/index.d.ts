@@ -14,6 +14,12 @@ declare enum MediaStates {
     PAUSED = 5
 }
 
+declare enum PlaybackCategories {
+    Playback = 1,
+    Ambient = 2,
+    SoloAmbient = 3,
+}
+
 interface BaseError<T> {
     err: "invalidpath" | "preparefail" | "startfail" | "notfound" | "stopfail" | T;
     message: string;
@@ -45,6 +51,12 @@ interface PlayerOptions {
      * (Default: false)
      */
     continuesToPlayInBackground?: boolean;
+
+    /**
+     * (iOS only) Define the audio session category
+     * (Default: Playback)
+     */
+    category?: PlaybackCategories;
 }
 
 /**

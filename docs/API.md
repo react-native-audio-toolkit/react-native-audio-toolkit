@@ -28,6 +28,10 @@ Media methods
       // (Android only) Should playback continue if app is sent to background?
       // iOS will always pause in this case.
       continuesToPlayInBackground : boolean (default: False)
+
+      // (iOS only) Define the audio session category
+      // Options: Playback, Ambient and SoloAmbient
+      category : PlaybackCategory (default: PlaybackCategory.Playback)
     }
     ```
 
