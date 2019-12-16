@@ -124,7 +124,7 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId
     
     // Set audio session
     NSNumber *category = [options objectForKey:@"category"];
-    NSString avAudioSessionCategory;
+    NSString *avAudioSessionCategory;
     switch ([category intValue]) {
         case 1:
         default:
