@@ -8,7 +8,8 @@
     "doc": "docs"
   },
   "scripts": {
-    "start": "node node_modules/react-native/local-cli/cli.js start"
+    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "lint": "eslint ."
   },
   "homepage": "https://github.com/react-native-community/react-native-audio-toolkit#readme",
   "license": "MIT",
@@ -30,5 +31,13 @@
     "audio",
     "audio toolkit",
     "audio-toolkit"
-  ]
+  ],
+  "devDependencies": {
+    "@react-native-community/eslint-config": "^0.0.6",
+    "@react-native-community/eslint-plugin": "^1.0.0",
+    "eslint": "^6.8.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "prettier": "^1.19.1",
+    "typescript": "^3.7.4"
+  }
 }
