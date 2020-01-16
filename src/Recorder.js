@@ -4,7 +4,7 @@ import {
   NativeModules,
   DeviceEventEmitter,
   NativeAppEventEmitter,
-  Platform
+  Platform,
 } from 'react-native';
 
 import async from 'async';
@@ -19,7 +19,7 @@ var RCTAudioRecorder = NativeModules.AudioRecorder;
 var recorderId = 0;
 
 var defaultRecorderOptions = {
-  autoDestroy: true
+  autoDestroy: true,
 };
 
 /**
@@ -36,11 +36,15 @@ class Recorder extends EventEmitter {
     this._recorderId = recorderId++;
     this._reset();
 
-    let appEventEmitter = Platform.OS === 'ios' ? NativeAppEventEmitter : DeviceEventEmitter;
+    let appEventEmitter =
+      Platform.OS === 'ios' ? NativeAppEventEmitter : DeviceEventEmitter;
 
-    appEventEmitter.addListener('RCTAudioRecorderEvent:' + this._recorderId, (payload: Event) => {
-      this._handleEvent(payload.event, payload.data);
-    });
+    appEventEmitter.addListener(
+      'RCTAudioRecorderEvent:' + this._recorderId,
+      (payload: Event) => {
+        this._handleEvent(payload.event, payload.data);
+      }
+    );
   }
 
   _reset() {
@@ -76,11 +80,16 @@ class Recorder extends EventEmitter {
     this._updateState(null, MediaStates.PREPARING);
 
     // Prepare recorder
-    RCTAudioRecorder.prepare(this._recorderId, this._path, this._options, (err, fsPath) => {
-      this._fsPath = fsPath;
-      this._updateState(err, MediaStates.PREPARED);
-      callback(err, fsPath);
-    });
+    RCTAudioRecorder.prepare(
+      this._recorderId,
+      this._path,
+      this._options,
+      (err, fsPath) => {
+        this._fsPath = fsPath;
+        this._updateState(err, MediaStates.PREPARED);
+        callback(err, fsPath);
+      }
+    );
 
     return this;
   }
@@ -90,17 +99,17 @@ class Recorder extends EventEmitter {
 
     // Make sure recorder is prepared
     if (this._state === MediaStates.IDLE) {
-      tasks.push((next) => {
+      tasks.push(next => {
         this.prepare(next);
       });
     }
 
     // Start recording
-    tasks.push((next) => {
+    tasks.push(next => {
       RCTAudioRecorder.record(this._recorderId, next);
     });
 
-    async.series(tasks, (err) => {
+    async.series(tasks, err => {
       this._updateState(err, MediaStates.RECORDING);
       callback(err);
     });
@@ -110,7 +119,7 @@ class Recorder extends EventEmitter {
 
   stop(callback = noop) {
     if (this._state >= MediaStates.RECORDING) {
-      RCTAudioRecorder.stop(this._recorderId, (err) => {
+      RCTAudioRecorder.stop(this._recorderId, err => {
         this._updateState(err, MediaStates.DESTROYED);
         callback(err);
       });
@@ -123,7 +132,7 @@ class Recorder extends EventEmitter {
 
   pause(callback = noop) {
     if (this._state >= MediaStates.RECORDING) {
-      RCTAudioRecorder.pause(this._recorderId, (err) => {
+      RCTAudioRecorder.pause(this._recorderId, err => {
         this._updateState(err, MediaStates.PAUSED);
         callback(err);
       });
@@ -136,11 +145,11 @@ class Recorder extends EventEmitter {
 
   toggleRecord(callback = noop) {
     if (this._state === MediaStates.RECORDING) {
-      this.stop((err) => {
+      this.stop(err => {
         callback(err, true);
       });
     } else {
-      this.record((err) => {
+      this.record(err => {
         callback(err, false);
       });
     }
@@ -153,12 +162,24 @@ class Recorder extends EventEmitter {
     RCTAudioRecorder.destroy(this._recorderId, callback);
   }
 
-  get state()       { return this._state;                          }
-  get canRecord()   { return this._state >= MediaStates.PREPARED;  }
-  get canPrepare()  { return this._state == MediaStates.IDLE;      }
-  get isRecording() { return this._state == MediaStates.RECORDING; }
-  get isPrepared()  { return this._state == MediaStates.PREPARED;  }
-  get fsPath()      { return this._fsPath; }
+  get state() {
+    return this._state;
+  }
+  get canRecord() {
+    return this._state >= MediaStates.PREPARED;
+  }
+  get canPrepare() {
+    return this._state === MediaStates.IDLE;
+  }
+  get isRecording() {
+    return this._state === MediaStates.RECORDING;
+  }
+  get isPrepared() {
+    return this._state === MediaStates.PREPARED;
+  }
+  get fsPath() {
+    return this._fsPath;
+  }
 }
 
 export default Recorder;

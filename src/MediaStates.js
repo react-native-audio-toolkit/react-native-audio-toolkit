@@ -9,7 +9,7 @@ let MediaStates = {
   SEEKING: 3,
   PLAYING: 4,
   RECORDING: 4,
-  PAUSED: 5
+  PAUSED: 5,
 };
 
 export default MediaStates;
