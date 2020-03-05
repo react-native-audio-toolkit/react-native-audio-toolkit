@@ -89,11 +89,12 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@react-native-community/eslint-config@^0.0.6":
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/@react-native-community/eslint-config/-/eslint-config-0.0.6.tgz#9f1dffde994a14db7504a969f21cdf49f470eb34"
-  integrity sha512-jtMZ1fzYYykrllbTCATZ8n5HS6Npwv9gusPk/+lMUBrmLXolGFiHFJQIpdcQzWFQb6POigAxo0O+xSiwlsT7Rw==
+"@react-native-community/eslint-config@^0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@react-native-community/eslint-config/-/eslint-config-0.0.7.tgz#2a91d336b413d8c77ac5fa634b66703f481243ac"
+  integrity sha512-khKxg3BMsXZYSXLat0ygSqTM0KdgciK+gm+hGecM7HzQA10hNTKeMmoFNiNxV+M/5PUyTsnRAz4RtWPVWLuPfQ==
   dependencies:
+    "@react-native-community/eslint-plugin" "^1.0.0"
     "@typescript-eslint/eslint-plugin" "^1.5.0"
     "@typescript-eslint/parser" "^1.5.0"
     babel-eslint "10.0.3"
