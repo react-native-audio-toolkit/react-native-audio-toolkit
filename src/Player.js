@@ -59,7 +59,7 @@ class Player extends EventEmitter {
       `RCTAudioPlayerEvent:${this._playerId}`,
       (payload: Event) => {
         this._handleEvent(payload.event, payload.data);
-      }
+      },
     );
   }
 
@@ -151,7 +151,7 @@ class Player extends EventEmitter {
           looping: this._looping,
           speed: this._speed,
         },
-        next
+        next,
       );
     });
 
@@ -253,7 +253,7 @@ class Player extends EventEmitter {
 
   set volume(value) {
     this._volume = value;
-    this._setIfInitialized({ volume: value });
+    this._setIfInitialized({volume: value});
   }
 
   set currentTime(value) {
@@ -262,17 +262,17 @@ class Player extends EventEmitter {
 
   set wakeLock(value) {
     this._wakeLock = value;
-    this._setIfInitialized({ wakeLock: value });
+    this._setIfInitialized({wakeLock: value});
   }
 
   set looping(value) {
     this._looping = value;
-    this._setIfInitialized({ looping: value });
+    this._setIfInitialized({looping: value});
   }
 
   set speed(value) {
     this._speed = value;
-    this._setIfInitialized({ speed: value });
+    this._setIfInitialized({speed: value});
   }
 
   get currentTime() {

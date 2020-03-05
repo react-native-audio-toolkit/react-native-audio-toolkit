@@ -43,7 +43,7 @@ class Recorder extends EventEmitter {
       'RCTAudioRecorderEvent:' + this._recorderId,
       (payload: Event) => {
         this._handleEvent(payload.event, payload.data);
-      }
+      },
     );
   }
 
@@ -88,7 +88,7 @@ class Recorder extends EventEmitter {
         this._fsPath = fsPath;
         this._updateState(err, MediaStates.PREPARED);
         callback(err, fsPath);
-      }
+      },
     );
 
     return this;
