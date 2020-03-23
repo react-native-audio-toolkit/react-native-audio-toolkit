@@ -14,9 +14,16 @@ const RCTAudioPlayer = NativeModules.AudioPlayer;
 
 let playerId = 0;
 
+export const PlaybackCategories = {
+  Playback: 1,
+  Ambient: 2,
+  SoloAmbient: 3,
+}
+
 const defaultPlayerOptions = {
   autoDestroy: true,
   continuesToPlayInBackground: false,
+  category: PlaybackCategories.Playback,
   mixWithOthers: false,
 };
 
@@ -38,6 +45,8 @@ class Player extends EventEmitter {
         options.autoDestroy = defaultPlayerOptions.autoDestroy;
       if (options.continuesToPlayInBackground == null)
         options.continuesToPlayInBackground = defaultPlayerOptions.continuesToPlayInBackground;
+      if (options.category == null)
+        options.category = defaultPlayerOptions.category;
       if (options.mixWithOthers == null)
         options.mixWithOthers = defaultPlayerOptions.mixWithOthers;
 

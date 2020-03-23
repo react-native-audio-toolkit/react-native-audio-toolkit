@@ -123,9 +123,23 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId
                                                object:item];
     
     // Set audio session
+    NSNumber *category = [options objectForKey:@"category"];
+    NSString *avAudioSessionCategory;
+    switch ([category intValue]) {
+        case 1:
+        default:
+            avAudioSessionCategory = AVAudioSessionCategoryPlayback;
+            break;
+        case 2:
+            avAudioSessionCategory = AVAudioSessionCategoryAmbient;
+            break;
+        case 3:
+            avAudioSessionCategory = AVAudioSessionCategorySoloAmbient;
+            break;
+    }
     NSNumber *mixWithOthers = [options objectForKey:@"mixWithOthers"];
     NSError *error = nil;
-    [[AVAudioSession sharedInstance] setCategory: AVAudioSessionCategoryPlayback withOptions: mixWithOthers ? AVAudioSessionCategoryOptionMixWithOthers : 0 error: &error];
+    [[AVAudioSession sharedInstance] setCategory: avAudioSessionCategory withOptions: mixWithOthers ? AVAudioSessionCategoryOptionMixWithOthers : 0 error: &error];
     if (error) {
         NSDictionary* dict = [Helpers errObjWithCode:@"preparefail"
                                          withMessage:@"Failed to set audio session category."];
