@@ -9,7 +9,6 @@
 //  Licensed under the MIT license. For more information, see LICENSE.
 
 #import <AVFoundation/AVFoundation.h>
-#import "RCTEventDispatcher.h"
 
 @interface ReactPlayer : AVPlayer
 
