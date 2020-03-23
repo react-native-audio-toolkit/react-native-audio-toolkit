@@ -4,8 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
-- Add ability to override iOS audio session category
+
+
+## [2.0.3] - 2020-03-23
+### Added
 - Add Player option mixWithOthers
+- iOS: Add ability to override audio session category
+
+### Changed
+- Android: Remove unneeded references to Android support library, improving Android X support
+
+### Fixed
+- iOS: Made linking to RCTBridgeModule.h more robust
+- iOS: Fixed podspec not using right Git tag string
 
 ## [2.0.2] - 2019-07-09
 ### Added
@@ -107,7 +118,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Initial release.
 
 
-[2.0.2]: https://github.com/react-native-community/react-native-audio-toolkit/compare/caa399431afdcb70a2aa73fe436cdf00e3ea92d0...HEAD
+[2.0.3]: https://github.com/react-native-community/react-native-audio-toolkit/compare/f51bac3ee751e72f916abb657c2f594e870a36ac...HEAD
+[2.0.2]: https://github.com/react-native-community/react-native-audio-toolkit/compare/caa399431afdcb70a2aa73fe436cdf00e3ea92d0...f51bac3ee751e72f916abb657c2f594e870a36ac
 [2.0.1]: https://github.com/react-native-community/react-native-audio-toolkit/commit/caa399431afdcb70a2aa73fe436cdf00e3ea92d0
 [2.0.0]: https://github.com/react-native-community/react-native-audio-toolkit/compare/dc2f04a35f388016aa294bcc80e7f553d1988037...ed89597b2e319c9073f2156c81c48c7ff8a7993f
 [1.0.6]: https://github.com/react-native-community/react-native-audio-toolkit/compare/4746870166fe4beb9fbf075d45fab952de4558d6...dc2f04a35f388016aa294bcc80e7f553d1988037

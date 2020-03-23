@@ -50,7 +50,6 @@ interface PlayerOptions {
      * iOS will always pause in this case.
      * (Default: false)
      */
-
     continuesToPlayInBackground?: boolean;
 
     /**
