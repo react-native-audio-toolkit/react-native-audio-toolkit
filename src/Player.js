@@ -1,4 +1,9 @@
-import { NativeModules, DeviceEventEmitter, NativeAppEventEmitter, Platform } from 'react-native';
+import {
+  NativeModules,
+  DeviceEventEmitter,
+  NativeAppEventEmitter,
+  Platform,
+} from 'react-native';
 
 import async from 'async';
 import EventEmitter from 'eventemitter3';
@@ -33,10 +38,13 @@ class Player extends EventEmitter {
       this._options = defaultPlayerOptions;
     } else {
       // Make sure all required options have values
-      if (options.autoDestroy == null)
+      if (options.autoDestroy == null) {
         options.autoDestroy = defaultPlayerOptions.autoDestroy;
-      if (options.continuesToPlayInBackground == null)
-        options.continuesToPlayInBackground = defaultPlayerOptions.continuesToPlayInBackground;
+      }
+      if (options.continuesToPlayInBackground == null) {
+        options.continuesToPlayInBackground =
+          defaultPlayerOptions.continuesToPlayInBackground;
+      }
 
       this._options = options;
     }
@@ -44,11 +52,15 @@ class Player extends EventEmitter {
     this._playerId = playerId++;
     this._reset();
 
-    const appEventEmitter = Platform.OS === 'ios' ? NativeAppEventEmitter : DeviceEventEmitter;
+    const appEventEmitter =
+      Platform.OS === 'ios' ? NativeAppEventEmitter : DeviceEventEmitter;
 
-    appEventEmitter.addListener(`RCTAudioPlayerEvent:${this._playerId}`, (payload: Event) => {
-      this._handleEvent(payload.event, payload.data);
-    });
+    appEventEmitter.addListener(
+      `RCTAudioPlayerEvent:${this._playerId}`,
+      (payload: Event) => {
+        this._handleEvent(payload.event, payload.data);
+      },
+    );
   }
 
   _reset() {
@@ -124,12 +136,12 @@ class Player extends EventEmitter {
     const tasks = [];
 
     // Prepare player
-    tasks.push((next) => {
+    tasks.push(next => {
       RCTAudioPlayer.prepare(this._playerId, this._path, this._options, next);
     });
 
     // Set initial values for player options
-    tasks.push((next) => {
+    tasks.push(next => {
       RCTAudioPlayer.set(
         this._playerId,
         {
@@ -156,13 +168,13 @@ class Player extends EventEmitter {
 
     // Make sure player is prepared
     if (this._state === MediaStates.IDLE) {
-      tasks.push((next) => {
+      tasks.push(next => {
         this.prepare(next);
       });
     }
 
     // Start playback
-    tasks.push((next) => {
+    tasks.push(next => {
       RCTAudioPlayer.play(this._playerId, next);
     });
 
@@ -188,11 +200,11 @@ class Player extends EventEmitter {
 
   playPause(callback = noop) {
     if (this._state === MediaStates.PLAYING) {
-      this.pause((err) => {
+      this.pause(err => {
         callback(err, true);
       });
     } else {
-      this.play((err) => {
+      this.play(err => {
         callback(err, false);
       });
     }
@@ -217,7 +229,7 @@ class Player extends EventEmitter {
 
   seek(position = 0, callback = noop) {
     // Store old state, but not if it was already SEEKING
-    if (this._state != MediaStates.SEEKING) {
+    if (this._state !== MediaStates.SEEKING) {
       this._preSeekState = this._state;
     }
 
@@ -241,7 +253,7 @@ class Player extends EventEmitter {
 
   set volume(value) {
     this._volume = value;
-    this._setIfInitialized({ volume: value });
+    this._setIfInitialized({volume: value});
   }
 
   set currentTime(value) {
@@ -250,22 +262,22 @@ class Player extends EventEmitter {
 
   set wakeLock(value) {
     this._wakeLock = value;
-    this._setIfInitialized({ wakeLock: value });
+    this._setIfInitialized({wakeLock: value});
   }
 
   set looping(value) {
     this._looping = value;
-    this._setIfInitialized({ looping: value });
+    this._setIfInitialized({looping: value});
   }
 
   set speed(value) {
     this._speed = value;
-    this._setIfInitialized({ speed: value });
+    this._setIfInitialized({speed: value});
   }
 
   get currentTime() {
     // Queue up an async call to get an accurate current time
-    RCTAudioPlayer.getCurrentTime(this._playerId, (err, results) => {
+    RCTAudioPlayer.getCurrentTime(this._playerId, (_err, results) => {
       this._storeInfo(results);
     });
 
@@ -306,19 +318,19 @@ class Player extends EventEmitter {
     return this._state >= MediaStates.PLAYING;
   }
   get canPrepare() {
-    return this._state == MediaStates.IDLE;
+    return this._state === MediaStates.IDLE;
   }
   get isPlaying() {
-    return this._state == MediaStates.PLAYING;
+    return this._state === MediaStates.PLAYING;
   }
   get isStopped() {
     return this._state <= MediaStates.PREPARED;
   }
   get isPaused() {
-    return this._state == MediaStates.PAUSED;
+    return this._state === MediaStates.PAUSED;
   }
   get isPrepared() {
-    return this._state == MediaStates.PREPARED;
+    return this._state === MediaStates.PREPARED;
   }
 }
 
