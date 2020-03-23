@@ -24,6 +24,7 @@ const defaultPlayerOptions = {
   autoDestroy: true,
   continuesToPlayInBackground: false,
   category: PlaybackCategories.Playback,
+  mixWithOthers: false,
 };
 
 /**
@@ -46,6 +47,8 @@ class Player extends EventEmitter {
         options.continuesToPlayInBackground = defaultPlayerOptions.continuesToPlayInBackground;
       if (options.category == null)
         options.category = defaultPlayerOptions.category;
+      if (options.mixWithOthers == null)
+        options.mixWithOthers = defaultPlayerOptions.mixWithOthers;
 
       this._options = options;
     }

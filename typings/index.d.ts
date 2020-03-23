@@ -50,6 +50,7 @@ interface PlayerOptions {
      * iOS will always pause in this case.
      * (Default: false)
      */
+
     continuesToPlayInBackground?: boolean;
 
     /**
@@ -57,6 +58,13 @@ interface PlayerOptions {
      * (Default: Playback)
      */
     category?: PlaybackCategories;
+
+    /**
+     * Boolean to determine whether other audio sources on the device will mix
+     * with sounds being played back by this module.
+     * (Default: false)
+     */
+    mixWithOthers?: boolean;
 }
 
 /**

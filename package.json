@@ -20,9 +20,9 @@
     "url": "https://github.com/react-native-community/react-native-audio-toolkit/issues"
   },
   "dependencies": {
-    "async": "^2.0.0",
+    "async": "^2.6.3",
     "eventemitter3": "^1.2.0",
-    "lodash": "^4.13.1"
+    "lodash": "^4.17.15"
   },
   "keywords": [
     "react-native",
