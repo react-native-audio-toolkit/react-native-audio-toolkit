@@ -9,13 +9,13 @@
   },
   "dependencies": {
     "@react-native-community/audio-toolkit": "^2.0.2",
-    "@react-native-community/slider": "^1.1.2",
+    "@react-native-community/slider": "^1.1.4",
     "react": "16.8.3",
-    "react-native": "0.59.8"
+    "react-native": "0.59.10"
   },
   "devDependencies": {
-    "@babel/core": "^7.4.5",
-    "@babel/runtime": "^7.4.5",
+    "@babel/core": "^7.9.0",
+    "@babel/runtime": "^7.9.2",
     "metro-react-native-babel-preset": "^0.54.1"
   }
 }
