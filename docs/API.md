@@ -31,7 +31,9 @@ Media methods
 
       // (iOS only) Define the audio session category
       // Options: Playback, Ambient and SoloAmbient
-      category : PlaybackCategory (default: PlaybackCategory.Playback)
+      // you need to import PlaybackCategories: import { PlaybackCategories } from '@react-native-community/audio-toolkit'
+      // more infos about categories here: https://developer.apple.com/documentation/avfoundation/avaudiosession/category
+      category : PlaybackCategories (default: PlaybackCategories.Playback)
 
       // Boolean to determine whether other audio sources on the device will mix
       // with sounds being played back by this module. If this is not set, playback
