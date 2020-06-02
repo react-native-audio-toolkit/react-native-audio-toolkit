@@ -219,7 +219,9 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId
     
     // Callback when ready / failed
     if (player.currentItem.status == AVPlayerStatusReadyToPlay) {
-        player.automaticallyWaitsToMinimizeStalling = false;
+        if (version >= 10.0) {
+            player.automaticallyWaitsToMinimizeStalling = false;
+        }
         callback(@[[NSNull null]]);
     } else {
         NSDictionary* dict = [Helpers errObjWithCode:@"preparefail"
