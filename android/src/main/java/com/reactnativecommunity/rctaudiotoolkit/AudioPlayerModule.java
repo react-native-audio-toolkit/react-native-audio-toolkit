@@ -251,8 +251,6 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         destroy(playerId);
         this.lastPlayerId = playerId;
 
-        Uri uri = uriFromPath(path);
-
         //MediaPlayer player = MediaPlayer.create(this.context, uri, null, attributes);
         MediaPlayer player = new MediaPlayer();
 
@@ -264,13 +262,23 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
 
         player.setAudioAttributes(attributes);
         */
-
-        try {
-            Log.d(LOG_TAG, uri.getPath());
-            player.setDataSource(this.context, uri);
-        } catch (IOException e) {
-            callback.invoke(errObj("invalidpath", e.toString()));
-            return;
+        if(path.startsWith("data:audio/")) {
+             try {
+                 player.setDataSource(path);
+             }
+             catch (IOException e) {
+                callback.invoke(errObj("invalid base64 data url", e.toString()));
+                return;
+            }
+        } else {
+            try {
+                Uri uri = uriFromPath(path);
+                Log.d(LOG_TAG, uri.getPath());
+                player.setDataSource(this.context, uri);
+            } catch (IOException e) {
+                callback.invoke(errObj("invalidpath", e.toString()));
+                return;
+            }
         }
 
         player.setOnErrorListener(this);
