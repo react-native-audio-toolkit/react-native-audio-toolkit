@@ -373,7 +373,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
 
             player.setPlaybackParams(params);
 
-            if (needToPauseAfterSet) {
+            if (needToPauseAfterSet && player.isPlaying()) {
                 player.pause();
             }
         }
