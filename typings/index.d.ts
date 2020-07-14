@@ -254,6 +254,13 @@ interface RecorderOptions {
      * (Default: 'medium')
      */
     quality: string;
+
+    /**
+     * Set monitor interval in millisecond.
+     * Passing a value recorder will receive
+     * db level while recording.
+     */
+    meteringInterval: number;
 }
 
 /**
