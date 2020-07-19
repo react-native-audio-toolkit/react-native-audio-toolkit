@@ -4,7 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+### Added
+- Add inline base64 audio URL support
+- Add ability to generate metering events while recording, which measure sound input levels
 
+### Fixed
+- Android: Fixed a compatibility issue on Android where on some Android models (e.g. HUAWEI) a -38 error is generated
+- iOS: Fixed duration not being provided until getCurrentTime is called
 
 ## [2.0.3] - 2020-03-23
 ### Added

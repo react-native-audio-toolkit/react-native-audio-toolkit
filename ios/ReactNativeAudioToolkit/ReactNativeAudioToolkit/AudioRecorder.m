@@ -75,7 +75,7 @@
 }
 
 - (void)sendMeteringUpdate {
-    if(!_meteringRecorder) {
+    if (!_meteringRecorder) {
         [self stopMeteringTimer];
         return;
     }
@@ -220,7 +220,7 @@ RCT_EXPORT_METHOD(stop:(nonnull NSNumber *)recorderId withCallback:(RCTResponseS
         callback(@[dict]);
         return;
     }
-    if(recorderId == _meteringRecorderId) {
+    if (recorderId == _meteringRecorderId) {
         [self stopMeteringTimer];
     }
     callback(@[[NSNull null]]);

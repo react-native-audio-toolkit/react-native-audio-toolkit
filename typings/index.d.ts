@@ -256,9 +256,9 @@ interface RecorderOptions {
     quality: string;
 
     /**
-     * Set monitor interval in millisecond.
-     * Passing a value recorder will receive
-     * db level while recording.
+     * Optional argument to activate metering events.
+     * This will cause a 'meter' event to fire every given milliseconds,
+     * e.g. 250 will fire 4 time in a second.
      */
     meteringInterval: number;
 }

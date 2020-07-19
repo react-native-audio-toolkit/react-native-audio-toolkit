@@ -51,8 +51,8 @@
 - (BOOL)loadingRequestHandling:(AVAssetResourceLoadingRequest *)loadingRequest {
     NSLog(@"loadingRequestHandling");
     
-    if(loadingRequest.contentInformationRequest != nil) {
-        // fill up contentInformationRequest end return
+    if (loadingRequest.contentInformationRequest != nil) {
+        // Fill up contentInformationRequest end return
         loadingRequest.contentInformationRequest.contentType = @"public.mp3";
         loadingRequest.contentInformationRequest.contentLength = _data.length;
         [loadingRequest.contentInformationRequest setByteRangeAccessSupported:YES];
@@ -60,11 +60,11 @@
         return YES;
     }
     
-    // slice data as requested
+    // Slice data as requested
     AVAssetResourceLoadingDataRequest *dataRequest = loadingRequest.dataRequest;
     
     long long startOffset = dataRequest.requestedOffset;
-    if (dataRequest.currentOffset != 0){
+    if (dataRequest.currentOffset != 0) {
         startOffset = dataRequest.currentOffset;
     }
     NSUInteger unreadBytes = _data.length - startOffset;
@@ -72,7 +72,7 @@
     NSRange r = {startOffset, numberOfBytesToRespondWith};
     NSData *data = [_data subdataWithRange:r];
     
-    // provide sliced data
+    // Provide sliced data
     if(data){
         [dataRequest respondWithData:data];
         [loadingRequest finishLoading];
@@ -92,13 +92,12 @@
 #pragma mark - utilities
 
 + (NSData *)base64DataFromBase64String: (NSString *)base64String {
-  if (base64String != nil) {
-    // NSData from the Base64 encoded str
-    NSData *base64Data = [[NSData alloc] initWithBase64EncodedString:base64String options:NSASCIIStringEncoding];
-    return base64Data;
-  }
-  return nil;
+    if (base64String != nil) {
+        // NSData from the Base64 encoded str
+        NSData *base64Data = [[NSData alloc] initWithBase64EncodedString:base64String options:NSASCIIStringEncoding];
+        return base64Data;
+    }
+    return nil;
 }
-
 
 @end

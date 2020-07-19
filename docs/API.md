@@ -31,8 +31,8 @@ Media methods
 
       // (iOS only) Define the audio session category
       // Options: Playback, Ambient and SoloAmbient
-      // you need to import PlaybackCategories: import { PlaybackCategories } from '@react-native-community/audio-toolkit'
-      // more infos about categories here: https://developer.apple.com/documentation/avfoundation/avaudiosession/category
+      // More info about categories can be found here:
+      //   https://developer.apple.com/documentation/avfoundation/avaudiosession/category
       category : PlaybackCategories (default: PlaybackCategories.Playback)
 
       // Boolean to determine whether other audio sources on the device will mix
@@ -223,9 +223,9 @@ Player.isPrepared   true if player is prepared
       // Possible values: 'min', 'low', 'medium', 'high', 'max'
       quality : String (default: 'medium')
 
-      // Optional argument to activate metering events
-      // this will cause 'meter' event to fire everi given milliseconds.
-      // i.e. 250 will fire 4 time in a second.
+      // Optional argument to activate metering events.
+      // This will cause a 'meter' event to fire every given milliseconds,
+      // e.g. 250 will fire 4 time in a second.
       meteringInterval : Number (default: undefined)
     }
     ```
@@ -317,7 +317,7 @@ are supported:
 
 * `looped` - Playback of a file has looped.
 
-* `meter` - recurring event during recording session (see `meteringInterval` in `recorderOptions`). `data` associated to this event follows the format:
+* `meter` - Recurring event during recording session (see `meteringInterval` in `recorderOptions`). `data` associated to this event follows the format:
     ```js
     {
         "id",             // frame number

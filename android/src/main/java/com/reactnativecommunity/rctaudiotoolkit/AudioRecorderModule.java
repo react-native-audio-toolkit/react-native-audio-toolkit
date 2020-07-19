@@ -150,7 +150,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         meteringUpdateTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                if(meteringRecorderId != null && meteringRecorder != null) {
+                if (meteringRecorderId != null && meteringRecorder != null) {
                     WritableMap body = Arguments.createMap();
                     body.putDouble("id", meteringFrameId++);
 
@@ -185,7 +185,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
             recorder.release();
             this.recorderPool.remove(recorderId);
             this.recorderAutoDestroy.remove(recorderId);
-            if(recorderId == meteringRecorderId) {
+            if (recorderId == meteringRecorderId) {
                 meteringRecorderId = null;
                 meteringRecorder = null;
             }
@@ -286,7 +286,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
             if (meteringRecorderId != null) {
                 Log.i(LOG_TAG, "multiple recorder metering are not currently supporter. Metering will be active on the last recorder.");
             }
-            if(meteringInterval <= 0) {
+            if (meteringInterval <= 0) {
                 Log.w(LOG_TAG, "metering interval must be grater then 0. Ignoring metering");
             } else {
                 meteringRecorder = recorder;
@@ -305,7 +305,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         }
 
         try {
-            if(recorderId == meteringRecorderId) {
+            if (recorderId == meteringRecorderId) {
                 startMeteringTimer(meteringInterval);
             }
             recorder.start();
@@ -325,7 +325,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         }
 
         try {
-            if(recorderId == meteringRecorderId) {
+            if (recorderId == meteringRecorderId) {
                 stopMeteringTimer();
             }
             recorder.stop();
@@ -348,7 +348,6 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         pause24(recorderId,callback);
     }
 
-
     @TargetApi(24)
     private void pause24(Integer recorderId, Callback callback) {
         MediaRecorder recorder = this.recorderPool.get(recorderId);
@@ -358,7 +357,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         }
 
         try {
-            if(recorderId == meteringRecorderId) {
+            if (recorderId == meteringRecorderId) {
                 stopMeteringTimer();
             }
             recorder.pause();
@@ -415,6 +414,5 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
         data.putString("message", "Android MediaRecorder info");
 
         emitEvent(recorderId, "info", data);
-
     }
 }
