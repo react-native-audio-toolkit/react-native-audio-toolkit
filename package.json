@@ -22,7 +22,7 @@
   "dependencies": {
     "async": "^2.6.3",
     "eventemitter3": "^1.2.0",
-    "lodash": "^4.17.15"
+    "lodash": "^4.17.19"
   },
   "keywords": [
     "react-native",
