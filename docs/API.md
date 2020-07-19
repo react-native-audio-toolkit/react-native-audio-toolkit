@@ -220,6 +220,11 @@ Player.isPrepared   true if player is prepared
       // Quality of the recording, iOS only.
       // Possible values: 'min', 'low', 'medium', 'high', 'max'
       quality : String (default: 'medium')
+
+      // Optional argument to activate metering events
+      // this will cause 'meter' event to fire everi given milliseconds.
+      // i.e. 250 will fire 4 time in a second.
+      meteringInterval : Number (default: undefined)
     }
     ```
 
@@ -310,6 +315,15 @@ are supported:
 
 * `looped` - Playback of a file has looped.
 
+* `meter` - recurring event during recording session (see `meteringInterval` in `recorderOptions`). `data` associated to this event follows the format:
+    ```js
+    {
+        "id",             // frame number
+        "value",          // sound level in decibels, -160 is a silence level
+        "rawValue"        // raw level value, OS-dependent
+    }
+    ```
+    **Currently, only one recored at a time generates meter events. Last prepared Recorder wins.**
 
 Listen to these events with  `player.on('eventname', callback(data))`.  Data
 may contain additional information about the event, for example a more detailed
