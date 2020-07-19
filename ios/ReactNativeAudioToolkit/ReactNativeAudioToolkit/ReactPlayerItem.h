@@ -10,7 +10,9 @@
 
 #import <AVFoundation/AVFoundation.h>
 @class ReactPlayer;
-@interface ReactPlayerItem : AVPlayerItem
+@interface ReactPlayerItem : AVPlayerItem <AVAssetResourceLoaderDelegate>
+
++ (instancetype)playerItemWithData:(NSData *)data;
 
 @property (nonatomic, strong) NSNumber *reactPlayerId;
 

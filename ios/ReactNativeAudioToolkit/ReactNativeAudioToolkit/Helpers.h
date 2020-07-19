@@ -17,4 +17,6 @@
 
 +(NSDictionary *)recorderSettingsFromOptions:(NSDictionary *)options;
 
++(NSData *)decodeBase64DataUrl:(NSString*)url;
+
 @end

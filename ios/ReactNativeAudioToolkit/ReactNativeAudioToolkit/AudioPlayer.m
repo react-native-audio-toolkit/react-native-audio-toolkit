@@ -16,7 +16,6 @@
 #import "ReactPlayerItem.h"
 #import <AVFoundation/AVPlayer.h>
 #import <AVFoundation/AVPlayerItem.h>
-#import <AVFoundation/AVAsset.h>
 
 
 @interface AudioPlayer ()
@@ -102,18 +101,31 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId
         callback(@[dict]);
         return;
     }
-        
-    // Try to find the correct file
-    NSURL *url = [self findUrlForPath:path];
-    if (!url) {
-        NSDictionary* dict = [Helpers errObjWithCode:@"invalidpath" withMessage:@"No file found at path"];
+    ReactPlayerItem *item;
+    if ([path hasPrefix:@"data:audio/"]) {
+        // inline data
+        NSData *data = [Helpers decodeBase64DataUrl:path];
+        if (!data) {
+            NSDictionary* dict = [Helpers errObjWithCode:@"invalidpath" withMessage:@"invalid data:audio URL"];
+            callback(@[dict]);
+            return;
+        }
+        item = (ReactPlayerItem *)[ReactPlayerItem playerItemWithData: data];
+     } else {
+        // Try to find the correct file
+        NSURL *url = [self findUrlForPath:path];
+        if (!url) {
+            NSDictionary* dict = [Helpers errObjWithCode:@"invalidpath" withMessage:@"No file found at path"];
+            callback(@[dict]);
+            return;
+        }
+        item = (ReactPlayerItem *)[ReactPlayerItem playerItemWithURL: url];
+    }
+    if (!item) {
+        NSDictionary* dict = [Helpers errObjWithCode:@"preparefail" withMessage:@"error initializing player item"];
         callback(@[dict]);
         return;
     }
-    
-    // Load asset from the url
-    AVURLAsset *asset = [AVURLAsset assetWithURL: url];
-    ReactPlayerItem *item = (ReactPlayerItem *)[ReactPlayerItem playerItemWithAsset: asset];
     item.reactPlayerId = playerId;
     
     // Add notification to know when file has stopped playing
