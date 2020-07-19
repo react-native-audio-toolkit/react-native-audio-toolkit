@@ -41,6 +41,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     Map<Integer, Boolean> playerAutoDestroy = new HashMap<>();
     Map<Integer, Boolean> playerContinueInBackground = new HashMap<>();
     Map<Integer, Callback> playerSeekCallback = new HashMap<>();
+    Map<Integer, Float> playerSpeed = new HashMap<>();
 
     boolean looping = false;
     private ReactApplicationContext context;
@@ -165,7 +166,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         if (file.exists()) {
             return Uri.fromFile(file);
         }
-        
+
         // Try finding file in Android "raw" resources
         if (path.lastIndexOf('.') != -1) {
             fileNameWithoutExt = path.substring(0, path.lastIndexOf('.'));
@@ -174,7 +175,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         }
 
         int resId = this.context.getResources().getIdentifier(fileNameWithoutExt,
-            "raw", this.context.getPackageName());
+                "raw", this.context.getPackageName());
         if (resId != 0) {
             return Uri.parse("android.resource://" + this.context.getPackageName() + "/" + resId);
         }
@@ -193,6 +194,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             this.playerAutoDestroy.remove(playerId);
             this.playerContinueInBackground.remove(playerId);
             this.playerSeekCallback.remove(playerId);
+            this.playerSpeed.remove(playerId);
 
             WritableMap data = new WritableNativeMap();
             data.putString("message", "Destroyed player");
@@ -363,16 +365,13 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && (options.hasKey("speed") || options.hasKey("pitch"))) {
             PlaybackParams params = new PlaybackParams();
 
-            boolean needToPauseAfterSet = false;
             if (options.hasKey("speed") && !options.isNull("speed")) {
-                // If the player wasn't already playing, then setting the speed value to a non-zero value
-                // will start it playing and we don't want that so we need to make sure to pause it straight
-                // after setting the speed value
-                boolean wasAlreadyPlaying = player.isPlaying();
+                // Since setSpeed should cause player to start,
+                // in case player is not playing we store and apply it later
                 float speedValue = (float) options.getDouble("speed");
-                needToPauseAfterSet = !wasAlreadyPlaying && speedValue != 0.0f;
-
-                params.setSpeed(speedValue);
+                this.playerSpeed.put(playerId,speedValue);
+                //apply param only if isPlaying. If not, we defer it on start
+                if(player.isPlaying()) params.setSpeed(speedValue);
             }
 
             if (options.hasKey("pitch") && !options.isNull("pitch")) {
@@ -380,10 +379,6 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             }
 
             player.setPlaybackParams(params);
-
-            if (needToPauseAfterSet) {
-                player.pause();
-            }
         }
 
         callback.invoke();
@@ -401,7 +396,23 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             if (!this.mixWithOthers) {
                 this.mAudioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
             }
-            player.start();
+
+            //lets start using setSpeed when supported.
+            Float speedValue = this.playerSpeed.get(playerId);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && speedValue != null) {
+                PlaybackParams params = new PlaybackParams();
+                params.setSpeed(speedValue);
+                player.setPlaybackParams(params);
+
+                // check if device is honoring android spec: when setSpeed player should start
+                // https://developer.android.com/reference/android/media/MediaPlayer#setPlaybackParams(android.media.PlaybackParams)
+                // if not happen, explicitly call start
+                if(!player.isPlaying()) {
+                    player.start();
+                }
+            } else {
+                player.start();
+            }
 
             callback.invoke(null, getInfo(player));
         } catch (Exception e) {
