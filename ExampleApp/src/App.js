@@ -9,7 +9,7 @@
 import React, { Component } from 'react';
 import { Button, PermissionsAndroid, Platform, SafeAreaView, StyleSheet, Switch, Text, View } from 'react-native';
 import Slider from '@react-native-community/slider';
-import { Player, Recorder, MediaStates } from '@react-native-community/audio-toolkit';
+import { Player, Recorder } from '@react-native-community/audio-toolkit';
 
 const filename = 'test.mp4';
 
