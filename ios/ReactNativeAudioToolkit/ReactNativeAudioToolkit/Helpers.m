@@ -45,6 +45,8 @@
         if ([formatString isEqualToString:@"ac3"]) {
             format = [NSNumber numberWithInt:kAudioFormatMPEG4AAC];
         }
+        else if([formatString isEqualToString:@"wav"])
+          format = [NSNumber numberWithInt:kAudioFormatLinearPCM];
     }
     
     
