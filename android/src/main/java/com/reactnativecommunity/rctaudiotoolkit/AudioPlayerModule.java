@@ -42,8 +42,8 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
     Map<Integer, Boolean> playerContinueInBackground = new HashMap<>();
     Map<Integer, Callback> playerSeekCallback = new HashMap<>();
     Map<Integer, Float> playerSpeed = new HashMap<>();
+    Map<Integer, Boolean> playerLooping = new HashMap<>();
 
-    boolean looping = false;
     private ReactApplicationContext context;
     private AudioManager mAudioManager;
     private Integer lastPlayerId;
@@ -195,6 +195,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             this.playerContinueInBackground.remove(playerId);
             this.playerSeekCallback.remove(playerId);
             this.playerSpeed.remove(playerId);
+            this.playerLooping.remove(playerId);
 
             WritableMap data = new WritableNativeMap();
             data.putString("message", "Destroyed player");
@@ -358,7 +359,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         }
 
         if (options.hasKey("looping") && !options.isNull("looping")) {
-            this.looping = options.getBoolean("looping");
+            this.playerLooping.put(playerId, options.getBoolean("looping"));
         }
 
         // `PlaybackParams` was only added in API 23
@@ -540,8 +541,10 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
 
         WritableMap data = new WritableNativeMap();
 
+        Boolean looping = this.playerLooping.get(playerId);
+
         player.seekTo(0);
-        if (this.looping) {
+        if (looping) {
             player.start();
             data.putString("message", "Media playback looped");
             emitEvent(playerId, "looped", data);
@@ -550,7 +553,7 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
             emitEvent(playerId, "ended", data);
         }
 
-        if (!this.looping && this.playerAutoDestroy.get(playerId)) {
+        if (!looping && this.playerAutoDestroy.get(playerId)) {
             Log.d(LOG_TAG, "onCompletion(): Autodestroying player...");
             destroy(playerId);
         }
