@@ -295,6 +295,9 @@ class Player extends EventEmitter {
     return this._position;
   }
 
+  get path() {
+    return this._path;
+  }
   get volume() {
     return this._volume;
   }
