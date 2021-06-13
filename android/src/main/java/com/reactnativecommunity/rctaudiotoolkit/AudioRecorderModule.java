@@ -151,18 +151,22 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
             @Override
             public void run() {
                 if (meteringRecorderId != null && meteringRecorder != null) {
-                    WritableMap body = Arguments.createMap();
-                    body.putDouble("id", meteringFrameId++);
+                    try {
+                        WritableMap body = Arguments.createMap();
+                        body.putDouble("id", meteringFrameId++);
 
-                    int amplitude = meteringRecorder.getMaxAmplitude();
-                    if (amplitude == 0) {
-                        body.putInt("value", -160);
-                        body.putInt("rawValue", 0);
-                    } else {
-                        body.putInt("rawValue", amplitude);
-                        body.putInt("value", (int) (20 * Math.log10(((double) amplitude) / 32767d)));
+                        int amplitude = meteringRecorder.getMaxAmplitude();
+                        if (amplitude == 0) {
+                            body.putInt("value", -160);
+                            body.putInt("rawValue", 0);
+                        } else {
+                            body.putInt("rawValue", amplitude);
+                            body.putInt("value", (int) (20 * Math.log10(((double) amplitude) / 32767d)));
+                        }
+                        emitEvent(meteringRecorderId, "meter", body);
+                    } catch (Exception e) { 
+                        Log.e(LOG_TAG, e.toString());
                     }
-                    emitEvent(meteringRecorderId, "meter", body);
                 }
             }
         }, 0, monitorInterval);
