@@ -106,7 +106,7 @@ public class AudioRecorderModule extends ReactContextBaseJavaModule implements
 
     private int encoderFromName(String name) {
         switch (name) {
-            case "aac-lc':
+            case "aac-lc":
                 return MediaRecorder.AudioEncoder.AAC;      
             case "aac":
                 return MediaRecorder.AudioEncoder.AAC;
