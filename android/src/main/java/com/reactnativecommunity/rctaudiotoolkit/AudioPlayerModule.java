@@ -256,14 +256,15 @@ public class AudioPlayerModule extends ReactContextBaseJavaModule implements Med
         //MediaPlayer player = MediaPlayer.create(this.context, uri, null, attributes);
         MediaPlayer player = new MediaPlayer();
 
-        /*
-        AudioAttributes attributes = new AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_UNKNOWN)
-            .setContentType(AudioAttributes.CONTENT_TYPE_UNKNOWN)
-            .build();
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            AudioAttributes attributes = new Builder()
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .build();
 
-        player.setAudioAttributes(attributes);
-        */
+            player.setAudioAttributes(attributes);
+        }
+
         if (path.startsWith("data:audio/")) {
             // Inline data
              try {
