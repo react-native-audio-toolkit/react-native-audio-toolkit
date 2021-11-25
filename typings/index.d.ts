@@ -254,6 +254,13 @@ interface RecorderOptions {
      * (Default: 'medium')
      */
     quality: string;
+
+    /**
+     * Optional argument to activate metering events.
+     * This will cause a 'meter' event to fire every given milliseconds,
+     * e.g. 250 will fire 4 time in a second.
+     */
+    meteringInterval: number;
 }
 
 /**

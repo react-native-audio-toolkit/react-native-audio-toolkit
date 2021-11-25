@@ -21,11 +21,19 @@
 
 @end
 
-@implementation AudioRecorder
+@implementation AudioRecorder {
+    id _meteringUpdateTimer;
+    int _meteringFrameId;
+    int _meteringUpdateInterval;
+    NSNumber *_meteringRecorderId;
+    AVAudioRecorder *_meteringRecorder;
+    NSDate *_prevMeteringUpdateTime;
+}
 
 @synthesize bridge = _bridge;
 
 - (void)dealloc {
+    [self stopMeteringTimer];
     AVAudioSession *audioSession = [AVAudioSession sharedInstance];
     NSError *error = nil;
     [audioSession setActive:NO error:&error];
@@ -45,6 +53,53 @@
 
 -(NSNumber *) keyForRecorder:(nonnull AVAudioRecorder*)recorder {
     return [[_recorderPool allKeysForObject:recorder] firstObject];
+}
+
+#pragma mark - Metering functions
+
+- (void)stopMeteringTimer {
+    [_meteringUpdateTimer invalidate];
+    _meteringFrameId = 0;
+    _prevMeteringUpdateTime = nil;
+    _meteringRecorderId = nil;
+    _meteringRecorder = nil;
+}
+
+- (void)startMeteringTimer:(int)monitorInterval {
+    _meteringUpdateInterval = monitorInterval;
+
+    [self stopMeteringTimer];
+
+    _meteringUpdateTimer = [CADisplayLink displayLinkWithTarget:self selector:@selector(sendMeteringUpdate)];
+    [_meteringUpdateTimer addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
+}
+
+- (void)sendMeteringUpdate {
+    if (!_meteringRecorder) {
+        [self stopMeteringTimer];
+        return;
+    }
+    if (!_meteringRecorder.isRecording) {
+        return;
+    }
+
+    if (_prevMeteringUpdateTime == nil ||
+     (([_prevMeteringUpdateTime timeIntervalSinceNow] * -1000.0) >= _meteringUpdateInterval)) {
+        _meteringFrameId++;
+        NSMutableDictionary *body = [[NSMutableDictionary alloc] init];
+        [body setObject:[NSNumber numberWithFloat:_meteringFrameId] forKey:@"id"];
+
+        [_meteringRecorder updateMeters];
+        float _currentLevel = [_meteringRecorder averagePowerForChannel: 0];
+        [body setObject:[NSNumber numberWithFloat:_currentLevel] forKey:@"value"];
+        [body setObject:[NSNumber numberWithFloat:_currentLevel] forKey:@"rawValue"];
+        NSString *eventName = [NSString stringWithFormat:@"RCTAudioRecorderEvent:%@", _meteringRecorderId];
+        [self.bridge.eventDispatcher sendAppEventWithName:eventName
+                                                     body:@{@"event" : @"meter",
+                                                            @"data" : body
+                                                          }];
+        _prevMeteringUpdateTime = [NSDate date];
+    }
 }
 
 #pragma mark - React exposed functions
@@ -127,6 +182,16 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)recorderId
         return;
     }
     
+    NSNumber *meteringInterval = [options objectForKey:@"meteringInterval"];
+    if (meteringInterval) {
+        recorder.meteringEnabled = YES;
+        [self startMeteringTimer:[meteringInterval intValue]];
+        if (_meteringRecorderId != nil)
+            NSLog(@"multiple recorder metering are not currently supporter. Metering will be active on the last recorder.");
+        _meteringRecorderId = recorderId;
+        _meteringRecorder = recorder;
+    }
+    
     callback(@[[NSNull null], filePath]);
 }
 
@@ -154,6 +219,9 @@ RCT_EXPORT_METHOD(stop:(nonnull NSNumber *)recorderId withCallback:(RCTResponseS
         NSDictionary* dict = [Helpers errObjWithCode:@"notfound" withMessage:@"Recorder with that id was not found"];
         callback(@[dict]);
         return;
+    }
+    if (recorderId == _meteringRecorderId) {
+        [self stopMeteringTimer];
     }
     callback(@[[NSNull null]]);
 }

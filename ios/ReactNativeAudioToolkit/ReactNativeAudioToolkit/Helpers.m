@@ -77,4 +77,21 @@
     return recordSettings;
 }
 
++(NSData *)decodeBase64DataUrl:(NSString*)url {
+    NSRange b64r = [url rangeOfString:@";base64,"];
+    if (b64r.location == NSNotFound) {
+        NSLog(@"decodeBase64DataUrl - base64 not found in data: url");
+        return nil;
+    }
+    NSInteger idx = b64r.location + @";base64,".length;
+    NSString *b64string = [url substringFromIndex:idx];
+    NSData *b64decoded = [[NSData alloc] initWithBase64EncodedString:b64string options:NSASCIIStringEncoding];
+    if (b64decoded == nil) {
+        NSLog(@"decodeBase64DataUrl - error decoding base64 data");
+        return nil;
+    }
+    
+    return b64decoded;
+}
+
 @end

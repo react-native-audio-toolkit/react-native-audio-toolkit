@@ -31,7 +31,9 @@ Media methods
 
       // (iOS only) Define the audio session category
       // Options: Playback, Ambient and SoloAmbient
-      category : PlaybackCategory (default: PlaybackCategory.Playback)
+      // More info about categories can be found here:
+      //   https://developer.apple.com/documentation/avfoundation/avaudiosession/category
+      category : PlaybackCategories (default: PlaybackCategories.Playback)
 
       // Boolean to determine whether other audio sources on the device will mix
       // with sounds being played back by this module. If this is not set, playback
@@ -220,6 +222,11 @@ Player.isPrepared   true if player is prepared
       // Quality of the recording, iOS only.
       // Possible values: 'min', 'low', 'medium', 'high', 'max'
       quality : String (default: 'medium')
+
+      // Optional argument to activate metering events.
+      // This will cause a 'meter' event to fire every given milliseconds,
+      // e.g. 250 will fire 4 time in a second.
+      meteringInterval : Number (default: undefined)
     }
     ```
 
@@ -310,6 +317,15 @@ are supported:
 
 * `looped` - Playback of a file has looped.
 
+* `meter` - Recurring event during recording session (see `meteringInterval` in `recorderOptions`). `data` associated to this event follows the format:
+    ```js
+    {
+        "id",             // frame number
+        "value",          // sound level in decibels, -160 is a silence level
+        "rawValue"        // raw level value, OS-dependent
+    }
+    ```
+    **Currently, only one recored at a time generates meter events. Last prepared Recorder wins.**
 
 Listen to these events with  `player.on('eventname', callback(data))`.  Data
 may contain additional information about the event, for example a more detailed
