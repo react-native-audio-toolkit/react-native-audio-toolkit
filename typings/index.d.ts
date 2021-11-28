@@ -230,7 +230,7 @@ interface RecorderOptions {
 
     /**
      * Override format. Possible values:
-     *   - Cross-platform:  'mp4', 'aac'
+     *   - Cross-platform:  'mp4', 'aac', 'opus'
      *   - Android only:    'ogg', 'webm', 'amr'
      * 
      * (Default: based on filename extension)
@@ -240,7 +240,7 @@ interface RecorderOptions {
     /**
      * Override encoder. Android only.
      * 
-     * Possible values: 'aac', 'mp4', 'webm', 'ogg', 'amr'
+     * Possible values: 'aac', 'mp4', 'webm', 'ogg', 'amr', 'opus'
      * 
      * (Default: based on filename extension)
      */

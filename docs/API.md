@@ -210,13 +210,13 @@ Player.isPrepared   true if player is prepared
       sampleRate : Number (default: 44100)
 
       // Override format. Possible values:
-      // Cross-platform:  'mp4', 'aac'
+      // Cross-platform:  'mp4', 'aac', 'opus'
       // Android only:    'ogg', 'webm', 'amr'
       format : String (default: based on filename extension)
 
       // Override encoder. Android only.
       // Possible values:
-      // 'aac', 'mp4', 'webm', 'ogg', 'amr'
+      // 'aac', 'mp4', 'webm', 'ogg', 'amr', 'opus'
       encoder : String (default: based on filename extension)
 
       // Quality of the recording, iOS only.
