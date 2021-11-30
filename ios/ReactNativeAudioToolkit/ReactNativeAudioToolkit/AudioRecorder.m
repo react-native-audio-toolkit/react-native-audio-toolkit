@@ -28,6 +28,7 @@
     NSNumber *_meteringRecorderId;
     AVAudioRecorder *_meteringRecorder;
     NSDate *_prevMeteringUpdateTime;
+    AVAudioSessionCategory _save_catalog;
 }
 
 @synthesize bridge = _bridge;
@@ -130,15 +131,18 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber *)recorderId
     
     NSURL *url = [NSURL fileURLWithPath:filePath];
     
+    NSError *error = nil;
     // Initialize audio session
     AVAudioSession *audioSession = [AVAudioSession sharedInstance];
-    NSError *error = nil;
-    [audioSession setCategory:AVAudioSessionCategoryRecord withOptions:AVAudioSessionCategoryOptionAllowBluetooth error:&error];
-    if (error) {
-        NSDictionary* dict = [Helpers errObjWithCode:@"preparefail" withMessage:@"Failed to set audio session category"];
-        callback(@[dict]);
+    if(audioSession.category!=AVAudioSessionCategoryRecord){
+        _save_catalog = audioSession.category;
+        [audioSession setCategory:AVAudioSessionCategoryRecord withOptions:AVAudioSessionCategoryOptionAllowBluetooth error:&error];
+        if (error) {
+            NSDictionary* dict = [Helpers errObjWithCode:@"preparefail" withMessage:@"Failed to set audio session category"];
+            callback(@[dict]);
         
-        return;
+            return;
+        }
     }
     
     // Set audio session active
@@ -222,6 +226,11 @@ RCT_EXPORT_METHOD(stop:(nonnull NSNumber *)recorderId withCallback:(RCTResponseS
     }
     if (recorderId == _meteringRecorderId) {
         [self stopMeteringTimer];
+    }
+    if(_save_catalog){
+        AVAudioSession *session = [AVAudioSession sharedInstance];
+        [session setCategory:_save_catalog error:nil];
+        //[session setActive:true error:nil];
     }
     callback(@[[NSNull null]]);
 }
