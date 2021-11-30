@@ -136,6 +136,11 @@ declare class Player extends EventEmitter {
     seek(position?: number, callback?: ((err: PlayerError | null) => void)): void;
 
     /**
+     * Get path of the audio.
+     */
+    path: string;
+
+    /**
      * Get/set playback volume. The scale is from 0.0 (silence) to 1.0 (full volume). Default is 1.0.
      */
     volume: number;
