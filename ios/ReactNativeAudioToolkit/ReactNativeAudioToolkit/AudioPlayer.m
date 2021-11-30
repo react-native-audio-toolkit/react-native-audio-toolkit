@@ -208,8 +208,22 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId
     }
 
     //make sure loadedTimeRanges is not null
-    while (player.currentItem.loadedTimeRanges.firstObject == nil){
-        [NSThread sleepForTimeInterval:0.01f];
+    while (player.currentItem.loadedTimeRanges.firstObject == nil) {
+        if (player.currentItem.status == AVPlayerItemStatusReadyToPlay) {
+            /* If the loadedTimeRanges.firstObject is nil and status is AVPlayerItemStatusReadyToPlay.
+               The player should have loadedTimeRanges. So something is not right with the file */
+            NSDictionary* dict = [Helpers errObjWithCode:@"preparefail"
+                                             withMessage:@"timerange error"];
+            
+            if (player.autoDestroy) {
+                [self destroyPlayerWithId:playerId];
+            }
+            
+            callback(@[dict]);
+            return;
+        } else {
+            [NSThread sleepForTimeInterval:0.01f];
+        }
     }
     
     //wait until 10 seconds are buffered then play
