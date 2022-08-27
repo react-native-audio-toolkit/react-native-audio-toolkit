@@ -16,4 +16,7 @@
 @property (readwrite) BOOL looping;
 @property (readwrite) float speed;
 
+- (NSNumber *)duration;
+- (NSNumber *)position;
+
 @end
