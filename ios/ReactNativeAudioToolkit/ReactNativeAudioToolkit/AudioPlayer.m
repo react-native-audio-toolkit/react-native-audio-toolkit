@@ -233,7 +233,7 @@ RCT_EXPORT_METHOD(prepare:(nonnull NSNumber*)playerId
     // Callback when ready / failed
     if (player.currentItem.status == AVPlayerStatusReadyToPlay) {
         player.automaticallyWaitsToMinimizeStalling = false;
-        callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration) * 1000)}]);
+        callback(@[[NSNull null], @{@"duration": [player duration]}]);
     } else {
         NSDictionary* dict = [Helpers errObjWithCode:@"preparefail"
                                          withMessage:[NSString stringWithFormat:@"Preparing player failed"]];
@@ -266,21 +266,19 @@ RCT_EXPORT_METHOD(seek:(nonnull NSNumber*)playerId withPos:(nonnull NSNumber*)po
     if (position >= 0) {
         NSLog(@"%@", position);
         if (position == 0) {
-            [player.currentItem
-             seekToTime:kCMTimeZero
-             toleranceBefore:kCMTimeZero // for precise positioning
-             toleranceAfter:kCMTimeZero
-             completionHandler:^(BOOL finished) {
-                 callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration) * 1000),
-                                             @"position": @(CMTimeGetSeconds(player.currentTime) * 1000)}]);
-             }];
+            [player.currentItem seekToTime:kCMTimeZero
+                           toleranceBefore:kCMTimeZero // for precise positioning
+                            toleranceAfter:kCMTimeZero
+                         completionHandler:^(BOOL finished) {
+                callback(@[[NSNull null], @{@"duration": [player duration],
+                                            @"position": [player position]}]);
+            }];
         } else {
-            [player.currentItem
-             seekToTime:CMTimeMakeWithSeconds([position doubleValue] / 1000, 60000)
-             completionHandler:^(BOOL finished) {
-                 callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration) * 1000),
-                                             @"position": @(CMTimeGetSeconds(player.currentTime) * 1000)}]);
-             }];
+            [player.currentItem seekToTime:CMTimeMakeWithSeconds([position doubleValue] / 1000, 60000)
+                         completionHandler:^(BOOL finished) {
+                callback(@[[NSNull null], @{@"duration": [player duration],
+                                            @"position": [player position]}]);
+            }];
         }
     }
 }
@@ -298,8 +296,8 @@ RCT_EXPORT_METHOD(play:(nonnull NSNumber*)playerId withCallback:(RCTResponseSend
     [player play];
     player.rate = player.speed;
 
-    callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration) * 1000),
-                                @"position": @(CMTimeGetSeconds(player.currentTime) * 1000)}]);
+    callback(@[[NSNull null], @{@"duration": [player duration],
+                                @"position": [player position]}]);
 }
 
 RCT_EXPORT_METHOD(set:(nonnull NSNumber*)playerId withOpts:(NSDictionary*)options withCallback:(RCTResponseSenderBlock)callback) {
@@ -354,8 +352,8 @@ RCT_EXPORT_METHOD(stop:(nonnull NSNumber*)playerId withCallback:(RCTResponseSend
         [player.currentItem seekToTime:CMTimeMakeWithSeconds(0.0, 60000)];
     }
     
-    callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration) * 1000),
-                                @"position": @(CMTimeGetSeconds(player.currentTime) * 1000)}]);
+    callback(@[[NSNull null], @{@"duration": [player duration],
+                                @"position": [player position]}]);
 }
 
 RCT_EXPORT_METHOD(pause:(nonnull NSNumber*)playerId withCallback:(RCTResponseSenderBlock)callback) {
@@ -370,8 +368,8 @@ RCT_EXPORT_METHOD(pause:(nonnull NSNumber*)playerId withCallback:(RCTResponseSen
     
     [player pause];
 
-    callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration) * 1000),
-                                @"position": @(CMTimeGetSeconds(player.currentTime) * 1000)}]);
+    callback(@[[NSNull null], @{@"duration": [player duration],
+                                @"position": [player position]}]);
 }
 
 RCT_EXPORT_METHOD(resume:(nonnull NSNumber*)playerId withCallback:(RCTResponseSenderBlock)callback) {
@@ -400,8 +398,8 @@ RCT_EXPORT_METHOD(getCurrentTime:(nonnull NSNumber*)playerId withCallback:(RCTRe
         return;
     }
 
-    callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration) * 1000),
-                                @"position": @(CMTimeGetSeconds(player.currentTime) * 1000)}]);
+    callback(@[[NSNull null], @{@"duration": [player duration],
+                                @"position": [player position]}]);
 }
 
 -(void)itemDidFinishPlaying:(NSNotification *) notification {
