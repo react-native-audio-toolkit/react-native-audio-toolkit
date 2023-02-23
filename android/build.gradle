@@ -20,7 +20,7 @@ android {
     buildToolsVersion getExtOrDefault('buildToolsVersion', "28.0.3")
 
     defaultConfig {
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion getExtOrDefault('targetSdkVersion', 28)
     }
     lintOptions{

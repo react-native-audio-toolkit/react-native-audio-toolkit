@@ -1,8 +1,8 @@
-react-native-audio-toolkit demo
-===============================
+This repo is a fork, the issue is an outdated minSdkVersion inside of the library.
 
-Running the demo app
---------------------
+# react-native-audio-toolkit demo
+
+## Running the demo app
 
 Expecting you have the React Native development environment in place:
 
@@ -12,7 +12,7 @@ Expecting you have the React Native development environment in place:
 git clone https://github.com/react-native-community/react-native-audio-toolkit.git
 cd react-native-audio-toolkit/ExampleApp
 npm install
-npm run start:android 
+npm run start:android
 ```
 
 #### iOS
@@ -21,7 +21,7 @@ npm run start:android
 git clone https://github.com/react-native-community/react-native-audio-toolkit.git
 cd react-native-audio-toolkit/ExampleApp
 npm install
-npm run start:ios 
+npm run start:ios
 ```
 
 Then start clicking the buttons, it should be quite simple.
